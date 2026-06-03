@@ -139,6 +139,67 @@ export const deleteAddress = asyncHandler(async (req: AuthRequest, res) => {
   res.json({ success: true, data: user.addresses });
 });
 
+async function sendOtpEmail(email: string, otp: string) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("Resend API Key is missing. Skipping email send.");
+    return;
+  }
+
+  const sender: string = "DEHYDE <otp@dehyde.in>";
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: sender,
+        to: email.toLowerCase(),
+        subject: "DEHYDE Verification Code",
+        html: `
+          <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <h2 style="font-family: Georgia, serif; letter-spacing: 2px; margin: 0; color: #1a1a1a;">D E H Y D E</h2>
+            </div>
+            <p style="font-size: 14px; color: #333;">Your one-time verification code is:</p>
+            <div style="background-color: #f9f9f9; padding: 18px; text-align: center; font-size: 26px; font-weight: bold; letter-spacing: 5px; color: #1a1a1a; margin: 20px 0; border: 1px solid #eaeaea; border-radius: 4px;">
+              ${otp}
+            </div>
+            <p style="font-size: 12px; color: #666; line-height: 1.5;">This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+          </div>
+        `,
+      }),
+    });
+
+    const data: any = await res.json();
+    if (!res.ok) {
+      console.error("Resend API Error details:", data);
+      // Fallback: If domain dehyde.in is not verified on Resend yet, try using default sandbox onboarding sender
+      if (sender !== "DEHYDE <onboarding@resend.dev>") {
+        console.log("Retrying with onboarding@resend.dev sandbox sender...");
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`,
+          },
+          body: JSON.stringify({
+            from: "DEHYDE <onboarding@resend.dev>",
+            to: email.toLowerCase(),
+            subject: "DEHYDE Verification Code",
+            html: `<p>Your DEHYDE verification code is <strong>${otp}</strong>.</p>`,
+          }),
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Failed to send email via Resend:", err);
+  }
+}
+
 export const requestEmailOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -157,6 +218,9 @@ export const requestEmailOtp = asyncHandler(async (req, res) => {
   
   const isNewUser = !user.name; // If user has no name, we need their name during verification
   
+  // Send actual email via Resend (asynchronous)
+  sendOtpEmail(email, otp).catch(console.error);
+
   res.json({
     success: true,
     message: "OTP sent to email",
