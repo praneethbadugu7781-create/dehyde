@@ -21,7 +21,7 @@ async function getShippingFee(subtotal: number) {
 }
 
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { items, shippingAddress, couponCode, coinsToRedeem = 0 } = req.body;
+  const { items, shippingAddress, couponCode, coinsToRedeem = 0, shippingMethod = "standard" } = req.body;
   const userId = req.user!.userId;
 
   let subtotal = 0;
@@ -62,7 +62,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     });
     if (coupon && coupon.usedCount < coupon.usageLimit && subtotal >= coupon.minOrder) {
       discount =
-        coupon.type === "percent"
+         coupon.type === "percent"
           ? Math.min((subtotal * coupon.value) / 100, coupon.maxDiscount ?? Infinity)
           : coupon.value;
     }
@@ -71,7 +71,14 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
   const { maxCoins } = await calculateMaxRedeemable(userId, subtotal - discount);
   const coinsRedeemed = Math.min(coinsToRedeem, maxCoins);
   const coinDiscount = coinsRedeemed;
-  const shipping = await getShippingFee(subtotal - discount - coinDiscount);
+
+  const settings = await Settings.findOne({ key: "global" });
+  let shipping = 0;
+  if (shippingMethod === "express") {
+    shipping = settings?.expressShippingFee ?? 149;
+  } else {
+    shipping = await getShippingFee(subtotal - discount - coinDiscount);
+  }
   const total = Math.max(0, subtotal - discount - coinDiscount + shipping);
 
   const orderNumber = generateOrderNumber();
@@ -86,6 +93,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     coinsRedeemed,
     coinDiscount,
     shipping,
+    shippingMethod,
     total,
     coinsEarned,
     status: "pending",

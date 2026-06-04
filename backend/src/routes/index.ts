@@ -9,6 +9,7 @@ import adminRoutes from "./adminRoutes.js";
 import uploadRoutes from "./uploadRoutes.js";
 
 import bannerRoutes from "./bannerRoutes.js";
+import settingRoutes from "./settingRoutes.js";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.use("/rewards", walletRoutes);
 router.use("/admin", adminRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/banners", bannerRoutes);
+router.use("/settings", settingRoutes);
 
 router.get("/health", (_req, res) => {
   res.json({

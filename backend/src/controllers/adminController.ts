@@ -95,6 +95,14 @@ export const createBanner = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: banner });
 });
 
+export const getSettings = asyncHandler(async (_req, res) => {
+  let settings = await Settings.findOne({ key: "global" });
+  if (!settings) {
+    settings = await Settings.create({ key: "global" });
+  }
+  res.json({ success: true, data: settings });
+});
+
 export const updateSettings = asyncHandler(async (req, res) => {
   const settings = await Settings.findOneAndUpdate({ key: "global" }, req.body, {
     upsert: true,

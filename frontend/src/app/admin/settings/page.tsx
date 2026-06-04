@@ -10,8 +10,15 @@ import { Input } from "@/components/ui/input";
 interface SettingsData {
   _id: string;
   rewardsEnabled: boolean;
-  pointsToCurrencyRatio: number;
-  maxRedemptionPercent: number;
+  maxCoinRedemptionPercent: number;
+  coinExpiryDays: number;
+  freeShippingThreshold: number;
+  defaultShippingFee: number;
+  warehousePincode: string;
+  warehouseCity: string;
+  warehouseState: string;
+  warehouseAddress: string;
+  expressShippingFee: number;
 }
 
 export default function AdminSettingsPage() {
@@ -32,15 +39,21 @@ export default function AdminSettingsPage() {
   const fetchSettings = () => {
     if (!accessToken) return;
     setLoading(true);
-    // Note: Assuming a settings endpoint exists, if not we fall back to defaults
     apiClient
       .get<{ success: boolean; data: SettingsData }>("/admin/settings", accessToken)
       .then((res) => setSettings(res.data || null))
       .catch(() => setSettings({
         _id: "",
         rewardsEnabled: true,
-        pointsToCurrencyRatio: 1,
-        maxRedemptionPercent: 30
+        maxCoinRedemptionPercent: 30,
+        coinExpiryDays: 365,
+        freeShippingThreshold: 2999,
+        defaultShippingFee: 99,
+        warehousePincode: "560001",
+        warehouseCity: "Bengaluru",
+        warehouseState: "Karnataka",
+        warehouseAddress: "DEHYDE Fulfillment Center, MG Road",
+        expressShippingFee: 149
       }))
       .finally(() => setLoading(false));
   };
@@ -85,6 +98,7 @@ export default function AdminSettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="space-y-8 bg-white border border-gray-100 p-6 md:p-10 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
       >
+        {/* 1. Rewards System */}
         <div>
           <h2 className="text-xl font-serif text-charcoal mb-2">Reward Coins Configuration</h2>
           <p className="text-sm text-charcoal/50 mb-6">Manage how customers earn and spend DEHYDE reward coins.</p>
@@ -103,12 +117,12 @@ export default function AdminSettingsPage() {
 
             <div className="grid sm:grid-cols-2 gap-8 py-4 border-b border-gray-100">
               <div>
-                <p className="font-medium text-charcoal mb-2">Coin Value Ratio</p>
-                <p className="text-xs text-charcoal/50 mb-4">How many rupees is 1 coin worth?</p>
+                <p className="font-medium text-charcoal mb-2">Coin Expiry (Days)</p>
+                <p className="text-xs text-charcoal/50 mb-4">How many days until earned coins expire?</p>
                 <Input 
                   type="number" 
-                  value={settings.pointsToCurrencyRatio} 
-                  onChange={(e) => update("pointsToCurrencyRatio", Number(e.target.value))} 
+                  value={settings.coinExpiryDays} 
+                  onChange={(e) => update("coinExpiryDays", Number(e.target.value))} 
                   className="bg-white border-gray-200 text-charcoal" 
                 />
               </div>
@@ -117,12 +131,102 @@ export default function AdminSettingsPage() {
                 <p className="text-xs text-charcoal/50 mb-4">Maximum cart percentage payable with coins</p>
                 <Input 
                   type="number" 
-                  value={settings.maxRedemptionPercent} 
-                  onChange={(e) => update("maxRedemptionPercent", Number(e.target.value))} 
+                  value={settings.maxCoinRedemptionPercent} 
+                  onChange={(e) => update("maxCoinRedemptionPercent", Number(e.target.value))} 
                   className="bg-white border-gray-200 text-charcoal" 
                   max="100"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Shipping Rates & Limits */}
+        <div className="pt-6 border-t border-gray-100">
+          <h2 className="text-xl font-serif text-charcoal mb-2">Shipping Rates & Limits</h2>
+          <p className="text-sm text-charcoal/50 mb-6">Manage shipping fees and thresholds for Standard and Express modes.</p>
+          
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div>
+              <p className="font-medium text-charcoal mb-2">Free Shipping Threshold</p>
+              <p className="text-xs text-charcoal/50 mb-4">Order total required for free Standard delivery (₹)</p>
+              <Input 
+                type="number" 
+                value={settings.freeShippingThreshold} 
+                onChange={(e) => update("freeShippingThreshold", Number(e.target.value))} 
+                className="bg-white border-gray-200 text-charcoal" 
+              />
+            </div>
+            <div>
+              <p className="font-medium text-charcoal mb-2">Standard Shipping Fee</p>
+              <p className="text-xs text-charcoal/50 mb-4">Flat fee for orders below threshold (₹)</p>
+              <Input 
+                type="number" 
+                value={settings.defaultShippingFee} 
+                onChange={(e) => update("defaultShippingFee", Number(e.target.value))} 
+                className="bg-white border-gray-200 text-charcoal" 
+              />
+            </div>
+            <div>
+              <p className="font-medium text-charcoal mb-2">Express Shipping Fee</p>
+              <p className="text-xs text-charcoal/50 mb-4">Flat fee for Express shipping speed surcharge (₹)</p>
+              <Input 
+                type="number" 
+                value={settings.expressShippingFee} 
+                onChange={(e) => update("expressShippingFee", Number(e.target.value))} 
+                className="bg-white border-gray-200 text-charcoal" 
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Warehouse Location */}
+        <div className="pt-6 border-t border-gray-100">
+          <h2 className="text-xl font-serif text-charcoal mb-2">Warehouse Location & Fulfillment</h2>
+          <p className="text-sm text-charcoal/50 mb-6">Define the base warehouse coordinates used to calculate customer delivery distances.</p>
+          
+          <div className="space-y-6">
+            <div className="grid sm:grid-cols-3 gap-6">
+              <div>
+                <p className="font-medium text-charcoal mb-2">Warehouse Pincode</p>
+                <p className="text-xs text-charcoal/50 mb-4">6-digit Indian Postal Code</p>
+                <Input 
+                  type="text" 
+                  value={settings.warehousePincode} 
+                  onChange={(e) => update("warehousePincode", e.target.value)} 
+                  className="bg-white border-gray-200 text-charcoal" 
+                  maxLength={6}
+                />
+              </div>
+              <div>
+                <p className="font-medium text-charcoal mb-2">Fulfillment City</p>
+                <p className="text-xs text-charcoal/50 mb-4">City name for shipping origin label</p>
+                <Input 
+                  type="text" 
+                  value={settings.warehouseCity} 
+                  onChange={(e) => update("warehouseCity", e.target.value)} 
+                  className="bg-white border-gray-200 text-charcoal" 
+                />
+              </div>
+              <div>
+                <p className="font-medium text-charcoal mb-2">Fulfillment State</p>
+                <p className="text-xs text-charcoal/50 mb-4">State name for shipping origin label</p>
+                <Input 
+                  type="text" 
+                  value={settings.warehouseState} 
+                  onChange={(e) => update("warehouseState", e.target.value)} 
+                  className="bg-white border-gray-200 text-charcoal" 
+                />
+              </div>
+            </div>
+            <div>
+              <p className="font-medium text-charcoal mb-2">Full Warehouse Address</p>
+              <Input 
+                type="text" 
+                value={settings.warehouseAddress} 
+                onChange={(e) => update("warehouseAddress", e.target.value)} 
+                className="bg-white border-gray-200 text-charcoal" 
+              />
             </div>
           </div>
         </div>

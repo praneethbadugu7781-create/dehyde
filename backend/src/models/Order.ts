@@ -31,6 +31,7 @@ export interface IOrder extends Document {
   coinsRedeemed: number;
   coinDiscount: number;
   shipping: number;
+  shippingMethod?: string;
   total: number;
   coinsEarned: number;
   status: OrderStatus;
@@ -65,6 +66,7 @@ const orderSchema = new Schema<IOrder>(
     coinsRedeemed: { type: Number, default: 0 },
     coinDiscount: { type: Number, default: 0 },
     shipping: { type: Number, default: 0 },
+    shippingMethod: { type: String, default: "standard" },
     total: Number,
     coinsEarned: { type: Number, default: 0 },
     status: {

@@ -23,6 +23,52 @@ export default function ProductDetailsClient({ product }: Props) {
   const [size, setSize] = useState(product.sizes?.[0] || "");
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
 
+  const [pincode, setPincode] = useState("");
+  const [estimate, setEstimate] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [loadingPincode, setLoadingPincode] = useState(false);
+
+  useEffect(() => {
+    const savedPincode = localStorage.getItem("hyde_checked_pincode");
+    if (savedPincode) {
+      setPincode(savedPincode);
+      setLoadingPincode(true);
+      apiClient
+        .post<{ success: boolean; data: any }>("/settings/estimate", { pincode: savedPincode, subtotal: product.price })
+        .then((res) => {
+          setEstimate(res.data);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingPincode(false));
+    }
+  }, [product._id, product.price]);
+
+  const checkDelivery = async () => {
+    if (pincode.length !== 6) {
+      setError("Please enter a valid 6-digit pincode.");
+      return;
+    }
+    setLoadingPincode(true);
+    setError("");
+    setEstimate(null);
+    try {
+      const res = await apiClient.post<{ success: boolean; data: any }>("/settings/estimate", {
+        pincode,
+        subtotal: product.price,
+      });
+      if (res.success && res.data) {
+        setEstimate(res.data);
+        localStorage.setItem("hyde_checked_pincode", pincode);
+      } else {
+        setError("Unable to calculate delivery estimate for this pincode.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Could not fetch delivery details. Please check the pincode.");
+    } finally {
+      setLoadingPincode(false);
+    }
+  };
+
 
   useEffect(() => {
     // Fetch related products on client side
@@ -184,6 +230,84 @@ export default function ProductDetailsClient({ product }: Props) {
             <Button variant="outline" className="flex-1" onClick={() => handleAdd(true)}>
               Buy now
             </Button>
+          </div>
+
+          {/* Pincode Checker Card */}
+          <div className="mt-8 border border-charcoal/10 p-5 rounded-lg bg-cream/20">
+            <p className="text-[10px] uppercase tracking-editorial text-charcoal font-semibold mb-3">
+              Delivery Availability & Estimations
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="Enter 6-digit Pincode"
+                value={pincode}
+                onChange={(e) => {
+                  setPincode(e.target.value.replace(/\D/g, ""));
+                  setEstimate(null);
+                  setError("");
+                }}
+                className="flex-1 bg-white border border-charcoal/20 px-4 py-2.5 text-xs tracking-wider outline-none placeholder:text-muted focus:border-charcoal transition-colors text-charcoal"
+              />
+              <button
+                type="button"
+                onClick={checkDelivery}
+                disabled={pincode.length !== 6 || loadingPincode}
+                className="bg-charcoal text-offwhite hover:bg-black px-6 py-2.5 text-xs uppercase tracking-widest transition-colors font-medium disabled:opacity-40"
+              >
+                {loadingPincode ? "Checking..." : "Check"}
+              </button>
+            </div>
+            
+            {error && (
+              <p className="text-red-500 text-xs mt-3 font-medium">{error}</p>
+            )}
+            
+            {estimate && (
+              <div className="mt-4 space-y-3 border-t border-charcoal/10 pt-4 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted">Destination:</span>
+                  <span className="font-semibold text-charcoal">{estimate.city}, {estimate.state}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted">Fulfillment Distance:</span>
+                  <span className="font-semibold text-charcoal">~{estimate.distance} km from {estimate.warehouseName} Warehouse</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted">Cash on Delivery (COD):</span>
+                  <span className={`font-semibold ${estimate.isCodAvailable ? 'text-green-600' : 'text-amber-600'}`}>
+                    {estimate.isCodAvailable ? "Available" : "Prepaid Only"}
+                  </span>
+                </div>
+                
+                <div className="mt-2 border-t border-charcoal/5 pt-2 grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-white border border-charcoal/5 rounded">
+                    <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider">Standard Delivery</p>
+                    <p className="text-green-600 font-semibold mt-1">{estimate.standard.dateString}</p>
+                    <p className="text-muted mt-0.5">Shipping: {estimate.standard.price === 0 ? "Complimentary" : `₹${estimate.standard.price}`}</p>
+                    <p className="text-[10px] text-muted/80 mt-1">via {estimate.standard.courier}</p>
+                  </div>
+                  
+                  {estimate.express.isAvailable ? (
+                    <div className="p-3 bg-white border border-charcoal/5 rounded">
+                      <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider flex items-center gap-1">
+                        Express Delivery
+                        <span className="bg-charcoal text-offwhite text-[8px] px-1 py-0.2 rounded font-normal uppercase scale-90">Fast</span>
+                      </p>
+                      <p className="text-green-600 font-semibold mt-1">{estimate.express.dateString}</p>
+                      <p className="text-muted mt-0.5">Shipping: ₹{estimate.express.price}</p>
+                      <p className="text-[10px] text-muted/80 mt-1">via {estimate.express.courier}</p>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-stone/5 border border-dashed border-charcoal/10 rounded flex flex-col justify-center items-center text-center">
+                      <p className="text-[10px] text-muted uppercase font-semibold">Express Delivery</p>
+                      <p className="text-muted text-[10px] mt-1">Unavailable (&gt;2500 km)</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mt-12 space-y-4 border-t border-charcoal/10 pt-8 text-sm text-muted">

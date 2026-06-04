@@ -32,6 +32,11 @@ async function seed() {
       coinExpiryDays: 365,
       freeShippingThreshold: 2999,
       defaultShippingFee: 99,
+      warehousePincode: "560001",
+      warehouseCity: "Bengaluru",
+      warehouseState: "Karnataka",
+      warehouseAddress: "DEHYDE Fulfillment Center, MG Road",
+      expressShippingFee: 149,
     },
     { upsert: true }
   );

@@ -17,6 +17,7 @@ router.post("/banners", admin.createBanner);
 router.patch("/banners/:id", admin.updateBanner);
 router.delete("/banners/:id", admin.deleteBanner);
 router.patch("/change-password", admin.changePassword);
+router.get("/settings", admin.getSettings);
 router.patch("/settings", admin.updateSettings);
 router.post("/wallet/adjust", admin.adjustWallet);
 router.get("/products", products.getProducts);
