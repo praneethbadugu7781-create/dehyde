@@ -185,13 +185,13 @@ export function ProductCard({ product, index = 0 }: Props) {
       {/* Info Blocks (Title, Price, Swatches) */}
       <div className="p-4 flex flex-col flex-1 bg-white justify-between">
         <Link href={`/product/${product.slug}`} className="block">
-          <h3 className="text-xs md:text-sm font-semibold tracking-tight text-black line-clamp-1">
+          <h3 className="font-campton font-medium text-[15px] md:text-[16px] leading-[1.2] tracking-normal text-black capitalize overflow-hidden h-[40px] line-clamp-2">
             {product.title}
           </h3>
-          <div className="mt-2 flex items-center gap-2 font-medium text-xs text-neutral-900">
+          <div className="mt-2.5 flex items-center gap-2 font-sans font-bold text-sm md:text-[16px] text-black">
             <span>{formatPrice(product.price)}</span>
             {product.compareAtPrice && (
-              <span className="text-[10px] text-neutral-400 line-through">
+              <span className="text-xs text-neutral-400 line-through font-normal">
                 {formatPrice(product.compareAtPrice)}
               </span>
             )}
