@@ -19,7 +19,7 @@ export default function ProductDetailsClient({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem);
   const [related, setRelated] = useState<Product[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [size, setSize] = useState("");
+  const [size, setSize] = useState(product.sizes?.[0] || "");
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
 
   useEffect(() => {
@@ -36,7 +36,10 @@ export default function ProductDetailsClient({ product }: Props) {
   const activeImage = images[selectedImage] || productImage(product);
 
   const handleAdd = (buyNow = false) => {
-    if (!size) return;
+    if (!size) {
+      alert("Please select a size first.");
+      return;
+    }
     addItem({
       productId: product._id,
       slug: product.slug,
@@ -149,10 +152,10 @@ export default function ProductDetailsClient({ product }: Props) {
           </div>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button className="flex-1" onClick={() => handleAdd(false)} disabled={!size}>
+            <Button className="flex-1" onClick={() => handleAdd(false)}>
               Add to cart
             </Button>
-            <Button variant="outline" className="flex-1" onClick={() => handleAdd(true)} disabled={!size}>
+            <Button variant="outline" className="flex-1" onClick={() => handleAdd(true)}>
               Buy now
             </Button>
           </div>
