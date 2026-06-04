@@ -27,11 +27,11 @@ const BANNERS: BannerData[] = [
   },
   {
     id: "banner2",
-    title: "Dresses",
+    title: "Oversized Tees",
     subtitle: "For Every Mood",
     price: "₹ 599 / ONWARDS",
-    image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=2400&q=90",
-    cta: "Explore Dresses",
+    image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=2400&q=90",
+    cta: "Explore Oversized Tees",
     link: "/shop?category=oversized-tees"
   },
   {

@@ -252,49 +252,15 @@ export function MostLovedStyles() {
 
       {/* 2. Most Loved Styles Layout */}
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10 py-20 md:py-28">
-        {/* Creative Title row with Category silhouette navigation */}
-        <div className="flex flex-col items-center justify-center text-center gap-6 mb-12">
-          <div className="flex items-center justify-center gap-8 md:gap-16 w-full max-w-4xl">
-            {/* Men Silhouette Button */}
-            <Link 
-              href="/shop?category=men" 
-              className="group flex flex-col items-center gap-2 hover:opacity-100 transition-opacity"
-            >
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-black/10 flex items-center justify-center bg-white shadow-sm group-hover:border-black transition-all duration-300">
-                <svg className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
-              </div>
-              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 group-hover:text-black transition-colors">
-                Men
-              </span>
-            </Link>
-
-            {/* Core Section title */}
-            <div className="flex-1">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-bold block mb-2">
-                Hot Picks
-              </span>
-              <h2 className="font-display text-3xl md:text-5xl font-extrabold tracking-[-0.02em] text-black uppercase">
-                Most Loved Styles
-              </h2>
-            </div>
-
-            {/* Women Silhouette Button */}
-            <Link 
-              href="/shop?category=women" 
-              className="group flex flex-col items-center gap-2 hover:opacity-100 transition-opacity"
-            >
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-black/10 flex items-center justify-center bg-white shadow-sm group-hover:border-black transition-all duration-300">
-                <svg className="w-6 h-6 text-neutral-400 group-hover:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-              </div>
-              <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-neutral-400 group-hover:text-black transition-colors">
-                Women
-              </span>
-            </Link>
-          </div>
+        {/* Creative Title row */}
+        <div className="flex flex-col items-center justify-center text-center gap-2 mb-12">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-bold block mb-2">
+            Hot Picks
+          </span>
+          <h2 className="font-display text-3xl md:text-5xl font-extrabold tracking-[-0.02em] text-black uppercase">
+            Most Loved Styles
+          </h2>
+        </div>
 
           {/* Toggle Tab Selectors */}
           <div className="flex gap-4 border-b border-black/5 pb-2 mt-8">
@@ -319,7 +285,6 @@ export function MostLovedStyles() {
               New In
             </button>
           </div>
-        </div>
 
         {/* Product Cards Grid with Fade transition */}
         <AnimatePresence mode="wait">
