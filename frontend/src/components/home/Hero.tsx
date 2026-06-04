@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { apiClient } from "@/lib/api";
 
 interface BannerData {
   id: string;
@@ -17,12 +18,12 @@ interface BannerData {
   layout: "campaign" | "bottom-left";
 }
 
-const BANNERS: BannerData[] = [
+const FALLBACK_BANNERS: BannerData[] = [
   {
     id: "banner1",
     title: "Premium wear for modern living",
     subtitle: "Warm Winter Layers",
-    image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=2400&q=90",
+    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=2400&q=90",
     cta: "See all collections",
     link: "/shop",
     layout: "campaign"
@@ -39,10 +40,10 @@ const BANNERS: BannerData[] = [
   },
   {
     id: "banner3",
-    title: "Tailored",
+    title: "Tailored Essentials",
     subtitle: "For Every Moment",
-    price: "₹ 199 / ONWARDS",
-    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=2400&q=90",
+    price: "₹ 1,199 / ONWARDS",
+    image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=2400&q=90",
     cta: "Explore Tailored",
     link: "/shop?category=casual-shirts",
     layout: "bottom-left"
@@ -50,8 +51,40 @@ const BANNERS: BannerData[] = [
 ];
 
 export function Hero() {
+  const [banners, setBanners] = useState<BannerData[]>(FALLBACK_BANNERS);
   const [activeBannerIdx, setActiveBannerIdx] = useState(0);
   const [showDots, setShowDots] = useState(true);
+
+  useEffect(() => {
+    async function loadBanners() {
+      try {
+        const res = await apiClient.get<{ success: boolean; data: any[] }>("/banners?placement=hero");
+        if (res.success && res.data && res.data.length > 0) {
+          const dbBanners: BannerData[] = res.data
+            .filter((b) => b.isActive)
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map((b, idx) => ({
+              id: b._id,
+              title: b.title || "DEHYDE Campaign",
+              subtitle: b.subtitle || "Premium Modern Streetwear",
+              price: b.price || "",
+              image: b.image,
+              cta: b.cta || "Shop Now",
+              link: b.link || "/shop",
+              // Layout fallback: Banner 1 is campaign format, others bottom-left format
+              layout: idx === 0 ? "campaign" : "bottom-left"
+            }));
+
+          if (dbBanners.length > 0) {
+            setBanners(dbBanners);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load banners from admin panel", err);
+      }
+    }
+    loadBanners();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,21 +94,21 @@ export function Hero() {
       // Determine active slide index based on viewport center scroll offset
       const centerPos = scrollPos + h / 2;
       const activeIdx = Math.floor(centerPos / h);
-      setActiveBannerIdx(Math.min(Math.max(activeIdx, 0), BANNERS.length - 1));
+      setActiveBannerIdx(Math.min(Math.max(activeIdx, 0), banners.length - 1));
 
-      // Hide indicator dots when scrolled past the 3 full-screen banners
-      setShowDots(scrollPos < h * 2.6);
+      // Hide indicator dots when scrolled past the full-screen banners
+      setShowDots(scrollPos < h * (banners.length - 0.4));
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [banners.length]);
 
   return (
     <div className="relative w-full flex flex-col">
-      {/* 3 Stacked Full-Screen Snap Sections */}
-      {BANNERS.map((banner, idx) => {
+      {/* Stacked Full-Screen Snap Sections */}
+      {banners.map((banner, idx) => {
         const isFirst = idx === 0;
 
         return (
@@ -212,12 +245,12 @@ export function Hero() {
             <div
               onClick={() => {
                 const nextIdx = idx + 1;
-                if (nextIdx < BANNERS.length) {
+                if (nextIdx < banners.length) {
                   const targetEl = document.getElementById(`hero-banner-${nextIdx}`);
                   targetEl?.scrollIntoView({ behavior: "smooth" });
                 } else {
                   // Scroll past Hero completely to the existing page content
-                  const scrollH = window.innerHeight * BANNERS.length;
+                  const scrollH = window.innerHeight * banners.length;
                   window.scrollTo({ top: scrollH, behavior: "smooth" });
                 }
               }}
@@ -246,7 +279,7 @@ export function Hero() {
       {/* Floating Side Dot Navigation Indicator */}
       {showDots && (
         <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-4">
-          {BANNERS.map((_, idx) => {
+          {banners.map((_, idx) => {
             const isActive = activeBannerIdx === idx;
             return (
               <button

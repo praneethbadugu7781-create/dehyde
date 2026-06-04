@@ -12,6 +12,7 @@ interface Banner {
   _id: string;
   title: string;
   subtitle?: string;
+  price?: string;
   image: string;
   link?: string;
   cta?: string;
@@ -23,6 +24,7 @@ interface Banner {
 const emptyForm = {
   title: "",
   subtitle: "",
+  price: "",
   image: "",
   link: "/shop",
   cta: "Explore Collection",
@@ -98,6 +100,7 @@ export default function AdminBannersPage() {
     setForm({
       title: banner.title || "",
       subtitle: banner.subtitle || "",
+      price: banner.price || "",
       image: banner.image || "",
       link: banner.link || "/shop",
       cta: banner.cta || "Explore Collection",
@@ -175,6 +178,10 @@ export default function AdminBannersPage() {
               <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Subtitle / Lead Text</label>
               <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. Premium streetwear from India" value={form.subtitle} onChange={(e) => update("subtitle", e.target.value)} />
             </div>
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Price Label (e.g. ₹ 599 / ONWARDS)</label>
+              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. ₹ 599 / ONWARDS" value={form.price} onChange={(e) => update("price", e.target.value)} />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -243,7 +250,9 @@ export default function AdminBannersPage() {
                         Order: {banner.order}
                       </span>
                     </div>
-                    <p className="text-[10px] text-charcoal/50 mt-1 uppercase tracking-wider font-mono truncate">{banner.placement} · {banner.cta} → {banner.link}</p>
+                    <p className="text-[10px] text-charcoal/50 mt-1 uppercase tracking-wider font-mono truncate">
+                      {banner.placement} · {banner.cta} → {banner.link} {banner.price ? `· Price: ${banner.price}` : ""}
+                    </p>
                   </div>
                 </div>
 
