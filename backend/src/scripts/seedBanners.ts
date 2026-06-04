@@ -3,9 +3,9 @@ import { Banner } from "../models/Banner.js";
 
 const DEFAULT_BANNERS = [
   {
-    title: "Premium wear for modern living",
+    title: "Winter Wear",
     subtitle: "Warm Winter Layers",
-    price: "",
+    price: "₹ 1,499 / ONWARDS",
     image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=2400&q=90",
     cta: "See all collections",
     link: "/shop",
@@ -25,12 +25,12 @@ const DEFAULT_BANNERS = [
     placement: "hero"
   },
   {
-    title: "Tailored Essentials",
+    title: "Streetwear",
     subtitle: "For Every Moment",
     price: "₹ 1,199 / ONWARDS",
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=2400&q=90",
-    cta: "Explore Tailored",
-    link: "/shop?category=casual-shirts",
+    cta: "Explore Streetwear",
+    link: "/shop?category=streetwear",
     order: 2,
     isActive: true,
     placement: "hero"

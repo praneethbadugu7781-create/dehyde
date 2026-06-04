@@ -21,12 +21,13 @@ interface BannerData {
 const FALLBACK_BANNERS: BannerData[] = [
   {
     id: "banner1",
-    title: "Premium wear for modern living",
+    title: "Winter Wear",
     subtitle: "Warm Winter Layers",
+    price: "₹ 1,499 / ONWARDS",
     image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=2400&q=90",
     cta: "See all collections",
     link: "/shop",
-    layout: "campaign"
+    layout: "bottom-left"
   },
   {
     id: "banner2",
@@ -129,71 +130,67 @@ export function Hero() {
             id={`hero-banner-${idx}`}
             className="snap-start w-full h-[100vh] relative overflow-hidden bg-black flex flex-col justify-end"
           >
-            {/* Background Image with subtle Parallax Scale */}
-            <motion.div 
-              initial={{ scale: 1.05 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: false, amount: 0.1 }}
-              transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 z-0 origin-center"
-            >
-              <Image
-                src={banner.image}
-                alt={banner.title}
-                fill
-                priority={isFirst}
-                className="object-cover object-center"
-                sizes="100vw"
-              />
-              <div className="absolute inset-0 bg-black/35" />
-            </motion.div>
+            {/* Clickable Background Link */}
+            <Link href={banner.link} className="absolute inset-0 z-0 cursor-pointer">
+              <motion.div 
+                initial={{ scale: 1.05 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: false, amount: 0.1 }}
+                transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 origin-center"
+              >
+                <Image
+                  src={banner.image}
+                  alt={banner.title}
+                  fill
+                  priority={isFirst}
+                  className="object-cover object-center"
+                  sizes="100vw"
+                />
+              </motion.div>
+              {/* Subtle bottom-left gradient overlay for high contrast text readability while keeping the image bright */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent z-1" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-1" />
+            </Link>
 
             {/* Content Wrapper */}
-            <div className="relative z-10 mx-auto w-full max-w-[1400px] px-6 md:px-10 pb-24 md:pb-28">
-              <div className="max-w-2xl flex flex-col items-start text-white">
+            <div className="relative z-10 mx-auto w-full max-w-[1400px] px-8 md:px-24 pb-20 md:pb-24 pointer-events-none select-none">
+              <Link href={banner.link} className="inline-flex flex-col items-start text-white pointer-events-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: false, amount: 0.3 }}
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col items-start"
+                  className="flex flex-col items-start text-left"
                 >
                   {/* Title (Jost Bold Uppercase) */}
-                  <h2 className="font-display text-5xl md:text-8xl font-black tracking-wide leading-[0.95] uppercase">
+                  <h2 className="font-display text-4xl md:text-6xl font-black tracking-wide leading-none uppercase">
                     {banner.title}
                   </h2>
                   
                   {/* Subtitle (Instrument Serif Italic) */}
-                  <p className="mt-2.5 font-serif italic text-2xl md:text-3.5xl font-normal text-white/90 tracking-wide leading-tight">
+                  <p className="mt-2 font-serif italic text-2xl md:text-3xl font-normal text-white/95 tracking-wide leading-tight">
                     {banner.subtitle}
                   </p>
                   
                   {/* Price Tag (Jost Bold with Suffix) */}
                   {banner.price && (
-                    <div className="mt-5 flex items-baseline gap-2 font-display">
-                      <span className="text-3xl md:text-5xl font-extrabold tracking-tight">
+                    <div className="mt-4 flex items-baseline font-display">
+                      <span className="text-3xl md:text-4.5xl font-extrabold tracking-tight">
                         {parsePrice(banner.price).main}
                       </span>
                       {parsePrice(banner.price).suffix && (
-                        <span className="text-xs md:text-sm uppercase tracking-[0.25em] text-white/75 font-semibold font-sans ml-1">
+                        <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-white/70 font-semibold font-sans ml-2.5">
                           {parsePrice(banner.price).suffix}
                         </span>
                       )}
                     </div>
                   )}
-                  
-                  {/* CTA Action button (Clickable pill) */}
-                  <Link
-                    href={banner.link}
-                    className="mt-7 inline-flex items-center justify-center text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-semibold rounded-full bg-white text-black px-6 md:px-7 py-3 md:py-3.5 hover:bg-neutral-200 transition-all duration-300 shadow-sm"
-                  >
-                    {banner.cta || "Shop Now"}
-                  </Link>
                 </motion.div>
-              </div>
+              </Link>
             </div>
 
-            {/* Scroll Down Animated chevron at bottom center */}
+            {/* Scroll Down Animated Nested Chevrons */}
             <div
               onClick={() => {
                 const nextIdx = idx + 1;
@@ -201,28 +198,32 @@ export function Hero() {
                   const targetEl = document.getElementById(`hero-banner-${nextIdx}`);
                   targetEl?.scrollIntoView({ behavior: "smooth" });
                 } else {
-                  // Scroll past Hero completely to the existing page content
                   const scrollH = window.innerHeight * banners.length;
                   window.scrollTo({ top: scrollH, behavior: "smooth" });
                 }
               }}
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 cursor-pointer group text-white/60 hover:text-white transition-colors select-none"
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 cursor-pointer group text-white/60 hover:text-white transition-colors select-none"
             >
-              <span className="text-[9px] uppercase tracking-[0.25em] font-bold">
-                Scroll Down
-              </span>
               <div className="flex flex-col items-center">
                 <motion.div
-                  animate={{ y: [0, 5, 0] }}
+                  animate={{ y: [0, 4, 0] }}
                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                  className="w-1.5 h-1.5 border-b-2 border-r-2 border-white rotate-45"
+                  className="w-2 h-2 border-b-2 border-r-2 border-white rotate-45"
                 />
                 <motion.div
-                  animate={{ y: [0, 5, 0] }}
+                  animate={{ y: [0, 4, 0] }}
                   transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.2 }}
-                  className="w-1.5 h-1.5 border-b-2 border-r-2 border-white rotate-45 -mt-0.5"
+                  className="w-2 h-2 border-b-2 border-r-2 border-white rotate-45 -mt-0.5"
+                />
+                <motion.div
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.4 }}
+                  className="w-2 h-2 border-b-2 border-r-2 border-white rotate-45 -mt-0.5"
                 />
               </div>
+              <span className="text-[8px] uppercase tracking-[0.3em] font-bold mt-1">
+                SCROLL DOWN
+              </span>
             </div>
           </section>
         );
