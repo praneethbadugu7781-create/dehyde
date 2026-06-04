@@ -6,6 +6,7 @@ const router = Router();
 
 // Mappings of the first 2 digits of the pincode to State name, representative city
 const PINCODE_MAP: Record<string, { state: string; city: string }> = {
+  // Region 1: North
   "11": { state: "Delhi", city: "New Delhi" },
   "12": { state: "Haryana", city: "Faridabad" },
   "13": { state: "Haryana", city: "Panchkula" },
@@ -15,6 +16,9 @@ const PINCODE_MAP: Record<string, { state: string; city: string }> = {
   "17": { state: "Himachal Pradesh", city: "Shimla" },
   "18": { state: "Jammu & Kashmir", city: "Jammu" },
   "19": { state: "Jammu & Kashmir", city: "Srinagar" },
+  "1": { state: "Delhi", city: "New Delhi" }, // fallback for region 1
+
+  // Region 2: North/Central
   "20": { state: "Uttar Pradesh", city: "Ghaziabad" },
   "21": { state: "Uttar Pradesh", city: "Kanpur" },
   "22": { state: "Uttar Pradesh", city: "Lucknow" },
@@ -24,63 +28,82 @@ const PINCODE_MAP: Record<string, { state: string; city: string }> = {
   "26": { state: "Uttarakhand", city: "Dehradun" },
   "27": { state: "Uttar Pradesh", city: "Gorakhpur" },
   "28": { state: "Uttar Pradesh", city: "Jhansi" },
+  "2": { state: "Uttar Pradesh", city: "Lucknow" }, // fallback for region 2
+
+  // Region 3: West
   "30": { state: "Rajasthan", city: "Jaipur" },
   "31": { state: "Rajasthan", city: "Udaipur" },
   "32": { state: "Rajasthan", city: "Kota" },
   "33": { state: "Rajasthan", city: "Jodhpur" },
   "34": { state: "Rajasthan", city: "Bikaner" },
-  "36": { state: "Gujarat", city: "Ahmedabad" },
-  "37": { state: "Gujarat", city: "Rajkot" },
-  "38": { state: "Gujarat", city: "Surat" },
-  "39": { state: "Gujarat", city: "Vadodara" },
+  "36": { state: "Gujarat", city: "Rajkot" },
+  "37": { state: "Gujarat", city: "Jamnagar" },
+  "38": { state: "Gujarat", city: "Ahmedabad" },
+  "39": { state: "Gujarat", city: "Surat" },
+  "3": { state: "Rajasthan", city: "Jaipur" }, // fallback for region 3
+
+  // Region 4: West/Central
   "40": { state: "Maharashtra", city: "Mumbai" },
   "41": { state: "Maharashtra", city: "Pune" },
-  "42": { state: "Maharashtra", city: "Aurangabad" },
-  "43": { state: "Maharashtra", city: "Kolhapur" },
+  "42": { state: "Maharashtra", city: "Nashik" },
+  "43": { state: "Maharashtra", city: "Aurangabad" },
   "44": { state: "Maharashtra", city: "Nagpur" },
   "45": { state: "Madhya Pradesh", city: "Indore" },
   "46": { state: "Madhya Pradesh", city: "Bhopal" },
   "47": { state: "Madhya Pradesh", city: "Gwalior" },
   "48": { state: "Madhya Pradesh", city: "Jabalpur" },
   "49": { state: "Chhattisgarh", city: "Raipur" },
+  "4": { state: "Maharashtra", city: "Mumbai" }, // fallback for region 4
+
+  // Region 5: South
   "50": { state: "Telangana", city: "Hyderabad" },
-  "51": { state: "Andhra Pradesh", city: "Guntur" },
-  "52": { state: "Andhra Pradesh", city: "Visakhapatnam" },
-  "53": { state: "Andhra Pradesh", city: "Vijayawada" },
+  "51": { state: "Andhra Pradesh", city: "Kurnool" },
+  "52": { state: "Andhra Pradesh", city: "Vijayawada" },
+  "53": { state: "Andhra Pradesh", city: "Visakhapatnam" },
   "56": { state: "Karnataka", city: "Bengaluru" },
   "57": { state: "Karnataka", city: "Mysuru" },
   "58": { state: "Karnataka", city: "Hubli" },
   "59": { state: "Karnataka", city: "Belagavi" },
+  "5": { state: "Andhra Pradesh", city: "Vijayawada" }, // fallback for region 5
+
+  // Region 6: South
   "60": { state: "Tamil Nadu", city: "Chennai" },
-  "61": { state: "Tamil Nadu", city: "Madurai" },
-  "62": { state: "Tamil Nadu", city: "Coimbatore" },
-  "63": { state: "Tamil Nadu", city: "Trichy" },
-  "64": { state: "Tamil Nadu", city: "Salem" },
-  "67": { state: "Kerala", city: "Kochi" },
-  "68": { state: "Kerala", city: "Trivandrum" },
-  "69": { state: "Kerala", city: "Kozhikode" },
+  "61": { state: "Tamil Nadu", city: "Thanjavur" },
+  "62": { state: "Tamil Nadu", city: "Madurai" },
+  "63": { state: "Tamil Nadu", city: "Salem" },
+  "64": { state: "Tamil Nadu", city: "Coimbatore" },
+  "67": { state: "Kerala", city: "Kozhikode" },
+  "68": { state: "Kerala", city: "Kochi" },
+  "69": { state: "Kerala", city: "Trivandrum" },
+  "6": { state: "Tamil Nadu", city: "Chennai" }, // fallback for region 6
+
+  // Region 7: East/Northeast
   "70": { state: "West Bengal", city: "Kolkata" },
-  "71": { state: "West Bengal", city: "Siliguri" },
-  "72": { state: "West Bengal", city: "Durgapur" },
-  "73": { state: "West Bengal", city: "Kharagpur" },
-  "74": { state: "West Bengal", city: "Howrah" },
+  "71": { state: "West Bengal", city: "Howrah" },
+  "72": { state: "West Bengal", city: "Kharagpur" },
+  "73": { state: "West Bengal", city: "Siliguri" },
+  "74": { state: "West Bengal", city: "Nadia" },
   "75": { state: "Odisha", city: "Bhubaneswar" },
-  "76": { state: "Odisha", city: "Cuttack" },
+  "76": { state: "Odisha", city: "Sambalpur" },
   "77": { state: "Odisha", city: "Rourkela" },
   "78": { state: "Assam", city: "Guwahati" },
   "79": { state: "Meghalaya", city: "Shillong" },
+  "7": { state: "West Bengal", city: "Kolkata" }, // fallback for region 7
+
+  // Region 8: East
   "80": { state: "Bihar", city: "Patna" },
-  "81": { state: "Bihar", city: "Muzaffarpur" },
-  "82": { state: "Bihar", city: "Bhagalpur" },
+  "81": { state: "Bihar", city: "Bhagalpur" },
+  "82": { state: "Jharkhand", city: "Dhanbad" },
   "83": { state: "Jharkhand", city: "Ranchi" },
-  "84": { state: "Jharkhand", city: "Jamshedpur" },
-  "85": { state: "Jharkhand", city: "Dhanbad" }
+  "84": { state: "Bihar", city: "Muzaffarpur" },
+  "85": { state: "Bihar", city: "Purnea" },
+  "8": { state: "Bihar", city: "Patna" } // fallback for region 8
 };
 
 function getPincodeDetails(pincode: string) {
   const prefix2 = pincode.substring(0, 2);
   const prefix1 = pincode.substring(0, 1);
-  return PINCODE_MAP[prefix2] || PINCODE_MAP[prefix1 + "0"] || { state: "India", city: "Domestic Circle" };
+  return PINCODE_MAP[prefix2] || PINCODE_MAP[prefix1] || { state: "India", city: "Domestic Circle" };
 }
 
 // Get non-sensitive public settings
