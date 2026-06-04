@@ -99,12 +99,12 @@ export function ProductCard({ product, index = 0 }: Props) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05, duration: 0.5 }}
-      className="group relative flex flex-col bg-white border border-black/5 rounded-lg overflow-hidden hover:shadow-lg hover:border-black/15 transition-all duration-300"
+      className="group relative flex flex-col bg-transparent overflow-hidden transition-all duration-300"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Product Image Frame */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#f8f8f8] border-b border-black/5">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#f8f8f8]">
         <Link href={`/product/${product.slug}`} className="absolute inset-0">
           {currentImage ? (
             <>
@@ -183,12 +183,12 @@ export function ProductCard({ product, index = 0 }: Props) {
       </div>
 
       {/* Info Blocks (Title, Price, Swatches) */}
-      <div className="p-4 flex flex-col flex-1 bg-white justify-between">
+      <div className="pt-2 flex flex-col flex-1 bg-transparent justify-between px-0">
         <Link href={`/product/${product.slug}`} className="block">
-          <h3 className="font-campton font-medium text-[15px] md:text-[16px] leading-[1.2] tracking-normal text-black capitalize overflow-hidden h-[40px] line-clamp-2">
+          <h3 className="card-product__title">
             {product.title}
           </h3>
-          <div className="mt-2.5 flex items-center gap-2 font-sans font-bold text-sm md:text-[16px] text-black">
+          <div className="mt-2 flex items-center gap-2 font-sans font-bold text-sm md:text-[16px] text-black">
             <span>{formatPrice(product.price)}</span>
             {product.compareAtPrice && (
               <span className="text-xs text-neutral-400 line-through font-normal">
