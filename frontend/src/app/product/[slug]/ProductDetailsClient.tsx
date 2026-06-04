@@ -19,8 +19,10 @@ export default function ProductDetailsClient({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem);
   const [related, setRelated] = useState<Product[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [variantImageOverride, setVariantImageOverride] = useState<string | null>(null);
   const [size, setSize] = useState(product.sizes?.[0] || "");
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
+
 
   useEffect(() => {
     // Fetch related products on client side
@@ -33,7 +35,7 @@ export default function ProductDetailsClient({ product }: Props) {
   }, [product.slug]);
 
   const images = product.images?.length ? product.images : product.variants?.flatMap((v) => v.images || []) || [];
-  const activeImage = images[selectedImage] || productImage(product);
+  const activeImage = variantImageOverride || images[selectedImage] || productImage(product);
 
   const handleAdd = (buyNow = false) => {
     if (!size) {
@@ -80,9 +82,12 @@ export default function ProductDetailsClient({ product }: Props) {
                 <button
                   key={img}
                   type="button"
-                  onClick={() => setSelectedImage(i)}
+                  onClick={() => {
+                    setSelectedImage(i);
+                    setVariantImageOverride(null);
+                  }}
                   className={`relative aspect-square overflow-hidden ${
-                    selectedImage === i ? "ring-1 ring-charcoal" : "opacity-60"
+                    (variantImageOverride === null && selectedImage === i) || variantImageOverride === img ? "ring-1 ring-charcoal" : "opacity-60"
                   }`}
                 >
                   <Image src={img} alt="" fill className="object-cover" sizes="100px" />
@@ -115,19 +120,40 @@ export default function ProductDetailsClient({ product }: Props) {
 
           <div className="mt-10">
             <p className="text-[10px] uppercase tracking-editorial text-muted">Color — {color}</p>
-            <motion.div className="mt-3 flex gap-3">
-              {product.variants.map((v) => (
-                <button
-                  key={v.color}
-                  type="button"
-                  onClick={() => setColor(v.color)}
-                  className={`h-8 w-8 rounded-full border-2 ${
-                    color === v.color ? "border-charcoal" : "border-transparent"
-                  }`}
-                  style={{ backgroundColor: v.colorHex || "#1a1a1a" }}
-                  aria-label={v.color}
-                />
-              ))}
+            <motion.div className="mt-3 flex flex-wrap gap-3">
+              {product.variants.map((v) => {
+                const swatchImage = v.images?.[0];
+                const isSelected = color === v.color;
+                return (
+                  <button
+                    key={v.color}
+                    type="button"
+                    onClick={() => {
+                      setColor(v.color);
+                      if (swatchImage) {
+                        setVariantImageOverride(swatchImage);
+                      }
+                    }}
+                    className={`h-12 w-12 rounded-full border-2 overflow-hidden relative transition-all ${
+                      isSelected ? "border-charcoal scale-105 shadow-sm" : "border-gray-200 hover:border-charcoal/50"
+                    }`}
+                    aria-label={v.color}
+                  >
+                    {swatchImage ? (
+                      <img
+                        src={swatchImage}
+                        alt={v.color}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        className="absolute inset-0 rounded-full"
+                        style={{ backgroundColor: v.colorHex || "#1a1a1a" }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </motion.div>
           </div>
 
