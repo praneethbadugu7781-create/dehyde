@@ -262,7 +262,7 @@ export default function CheckoutPage() {
                   ) : (
                     <div className="p-4 border border-dashed border-charcoal/10 rounded-lg flex flex-col justify-center items-center text-center bg-stone/5">
                       <p className="font-semibold text-xs text-muted uppercase tracking-wider">Express Delivery</p>
-                      <p className="text-muted text-[10px] mt-2 leading-relaxed">Unavailable for remote locations (&gt;2500 km)</p>
+                      <p className="text-muted text-[10px] mt-2 leading-relaxed">Unavailable for this region</p>
                     </div>
                   )}
                 </div>

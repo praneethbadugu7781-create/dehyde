@@ -14,10 +14,6 @@ interface SettingsData {
   coinExpiryDays: number;
   freeShippingThreshold: number;
   defaultShippingFee: number;
-  warehousePincode: string;
-  warehouseCity: string;
-  warehouseState: string;
-  warehouseAddress: string;
   expressShippingFee: number;
 }
 
@@ -49,10 +45,6 @@ export default function AdminSettingsPage() {
         coinExpiryDays: 365,
         freeShippingThreshold: 2999,
         defaultShippingFee: 99,
-        warehousePincode: "560001",
-        warehouseCity: "Bengaluru",
-        warehouseState: "Karnataka",
-        warehouseAddress: "DEHYDE Fulfillment Center, MG Road",
         expressShippingFee: 149
       }))
       .finally(() => setLoading(false));
@@ -174,57 +166,6 @@ export default function AdminSettingsPage() {
                 type="number" 
                 value={settings.expressShippingFee} 
                 onChange={(e) => update("expressShippingFee", Number(e.target.value))} 
-                className="bg-white border-gray-200 text-charcoal" 
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 3. Warehouse Location */}
-        <div className="pt-6 border-t border-gray-100">
-          <h2 className="text-xl font-serif text-charcoal mb-2">Warehouse Location & Fulfillment</h2>
-          <p className="text-sm text-charcoal/50 mb-6">Define the base warehouse coordinates used to calculate customer delivery distances.</p>
-          
-          <div className="space-y-6">
-            <div className="grid sm:grid-cols-3 gap-6">
-              <div>
-                <p className="font-medium text-charcoal mb-2">Warehouse Pincode</p>
-                <p className="text-xs text-charcoal/50 mb-4">6-digit Indian Postal Code</p>
-                <Input 
-                  type="text" 
-                  value={settings.warehousePincode} 
-                  onChange={(e) => update("warehousePincode", e.target.value)} 
-                  className="bg-white border-gray-200 text-charcoal" 
-                  maxLength={6}
-                />
-              </div>
-              <div>
-                <p className="font-medium text-charcoal mb-2">Fulfillment City</p>
-                <p className="text-xs text-charcoal/50 mb-4">City name for shipping origin label</p>
-                <Input 
-                  type="text" 
-                  value={settings.warehouseCity} 
-                  onChange={(e) => update("warehouseCity", e.target.value)} 
-                  className="bg-white border-gray-200 text-charcoal" 
-                />
-              </div>
-              <div>
-                <p className="font-medium text-charcoal mb-2">Fulfillment State</p>
-                <p className="text-xs text-charcoal/50 mb-4">State name for shipping origin label</p>
-                <Input 
-                  type="text" 
-                  value={settings.warehouseState} 
-                  onChange={(e) => update("warehouseState", e.target.value)} 
-                  className="bg-white border-gray-200 text-charcoal" 
-                />
-              </div>
-            </div>
-            <div>
-              <p className="font-medium text-charcoal mb-2">Full Warehouse Address</p>
-              <Input 
-                type="text" 
-                value={settings.warehouseAddress} 
-                onChange={(e) => update("warehouseAddress", e.target.value)} 
                 className="bg-white border-gray-200 text-charcoal" 
               />
             </div>

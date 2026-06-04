@@ -271,10 +271,6 @@ export default function ProductDetailsClient({ product }: Props) {
                   <span className="font-semibold text-charcoal">{estimate.city}, {estimate.state}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted">Fulfillment Distance:</span>
-                  <span className="font-semibold text-charcoal">~{estimate.distance} km from {estimate.warehouseName} Warehouse</span>
-                </div>
-                <div className="flex justify-between items-center">
                   <span className="text-muted">Cash on Delivery (COD):</span>
                   <span className={`font-semibold ${estimate.isCodAvailable ? 'text-green-600' : 'text-amber-600'}`}>
                     {estimate.isCodAvailable ? "Available" : "Prepaid Only"}
@@ -302,7 +298,7 @@ export default function ProductDetailsClient({ product }: Props) {
                   ) : (
                     <div className="p-3 bg-stone/5 border border-dashed border-charcoal/10 rounded flex flex-col justify-center items-center text-center">
                       <p className="text-[10px] text-muted uppercase font-semibold">Express Delivery</p>
-                      <p className="text-muted text-[10px] mt-1">Unavailable (&gt;2500 km)</p>
+                      <p className="text-muted text-[10px] mt-1">Unavailable for this region</p>
                     </div>
                   )}
                 </div>
