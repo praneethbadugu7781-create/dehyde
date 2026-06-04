@@ -62,7 +62,7 @@ function LoginForm() {
     script.onload = () => {
       if (window.google) {
         window.google.accounts.id.initialize({
-          client_id: "334679991270-evok08t3aptaoqsqb8aaogk5pa6ucv23.apps.googleusercontent.com",
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "25622336753-mflvqi8mbdvdh0g9tjnfeihr6h88u4lq.apps.googleusercontent.com",
           callback: handleGoogleCredentialResponse,
         });
         window.google.accounts.id.renderButton(
