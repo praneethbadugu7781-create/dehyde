@@ -50,6 +50,18 @@ const FALLBACK_BANNERS: BannerData[] = [
   }
 ];
 
+const parsePrice = (priceStr?: string) => {
+  if (!priceStr) return { main: "", suffix: "" };
+  const slashIdx = priceStr.indexOf('/') !== -1 ? priceStr.indexOf('/') : priceStr.indexOf('\\');
+  if (slashIdx !== -1) {
+    return {
+      main: priceStr.substring(0, slashIdx).trim(),
+      suffix: priceStr.substring(slashIdx).trim()
+    };
+  }
+  return { main: priceStr, suffix: "" };
+};
+
 export function Hero() {
   const [banners, setBanners] = useState<BannerData[]>(FALLBACK_BANNERS);
   const [activeBannerIdx, setActiveBannerIdx] = useState(0);
@@ -138,107 +150,47 @@ export function Hero() {
 
             {/* Content Wrapper */}
             <div className="relative z-10 mx-auto w-full max-w-[1400px] px-6 md:px-10 pb-24 md:pb-28">
-              {banner.layout === "campaign" ? (
-                // Banner 1 Content (Classic Campaign Format)
-                <div className="max-w-2xl flex flex-col items-start text-white">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.7, delay: 0.1 }}
-                    className="inline-flex items-center gap-3 backdrop-blur-md bg-white/15 border border-white/20 rounded-full p-1 pr-4 mb-6"
-                  >
-                    <span className="bg-white text-black text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
-                      Soft
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-white/90">
-                      {banner.subtitle}
-                    </span>
-                  </motion.div>
-
-                  <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.7, delay: 0.2 }}
-                    className="font-display text-4xl md:text-6xl font-bold tracking-[-0.035em] leading-[1.05]"
-                  >
+              <div className="max-w-2xl flex flex-col items-start text-white">
+                <motion.div
+                  initial={{ opacity: 0, y: 25 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex flex-col items-start"
+                >
+                  {/* Title (Jost Bold Uppercase) */}
+                  <h2 className="font-display text-5xl md:text-8xl font-black tracking-wide leading-[0.95] uppercase">
                     {banner.title}
-                  </motion.h1>
-
-                  <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.7, delay: 0.3 }}
-                    className="mt-4 text-xs md:text-sm text-white/70 max-w-lg leading-relaxed font-light font-sans"
-                  >
-                    Upgrade your everyday wardrobe with minimal silhouettes, comfortable geometry, and timeless layers crafted for modern living.
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.7, delay: 0.4 }}
-                    className="mt-8 flex flex-wrap gap-4"
-                  >
-                    <Link
-                      href={banner.link}
-                      className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-white text-black px-6 py-3.5 hover:bg-neutral-200 transition-colors"
-                    >
-                      {banner.cta}
-                    </Link>
-                    <Link
-                      href="/contact"
-                      className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full border border-white/30 bg-transparent text-white px-6 py-3.5 hover:bg-white hover:text-black transition-all duration-300"
-                    >
-                      Contact us
-                    </Link>
-                  </motion.div>
-                </div>
-              ) : (
-                // Banners 2 & 3 Content (Style Union Vibe Bottom-Left)
-                <div className="max-w-2xl flex flex-col items-start text-white">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.3 }}
-                    transition={{ duration: 0.7 }}
-                    className="flex flex-col items-start"
-                  >
-                    {/* Category Title in heavy uppercase */}
-                    <h2 className="font-display text-5xl md:text-8xl font-black tracking-[-0.04em] leading-[0.95] uppercase">
-                      {banner.title}
-                    </h2>
-                    
-                    {/* Subtitle description */}
-                    <p className="mt-2 text-base md:text-xl font-light text-white/85 font-sans tracking-wide">
-                      {banner.subtitle}
-                    </p>
-                    
-                    {/* Price tag onwards format */}
-                    {banner.price && (
-                      <div className="mt-4 flex items-baseline gap-1 font-display">
-                        <span className="text-3xl md:text-5xl font-extrabold tracking-tight">
-                          {banner.price.split(" ")[0]}
+                  </h2>
+                  
+                  {/* Subtitle (Instrument Serif Italic) */}
+                  <p className="mt-2.5 font-serif italic text-2xl md:text-3.5xl font-normal text-white/90 tracking-wide leading-tight">
+                    {banner.subtitle}
+                  </p>
+                  
+                  {/* Price Tag (Jost Bold with Suffix) */}
+                  {banner.price && (
+                    <div className="mt-5 flex items-baseline gap-2 font-display">
+                      <span className="text-3xl md:text-5xl font-extrabold tracking-tight">
+                        {parsePrice(banner.price).main}
+                      </span>
+                      {parsePrice(banner.price).suffix && (
+                        <span className="text-xs md:text-sm uppercase tracking-[0.25em] text-white/75 font-semibold font-sans ml-1">
+                          {parsePrice(banner.price).suffix}
                         </span>
-                        <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/70 ml-1 font-semibold">
-                          {banner.price.substring(banner.price.indexOf(" ") + 1)}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Action button */}
-                    <Link
-                      href={banner.link}
-                      className="mt-6 inline-flex items-center justify-center text-[10px] uppercase tracking-[0.2em] font-semibold rounded-full bg-white text-black px-6 py-3 hover:bg-neutral-200 transition-colors"
-                    >
-                      Shop Now
-                    </Link>
-                  </motion.div>
-                </div>
-              )}
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* CTA Action button (Clickable pill) */}
+                  <Link
+                    href={banner.link}
+                    className="mt-7 inline-flex items-center justify-center text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-semibold rounded-full bg-white text-black px-6 md:px-7 py-3 md:py-3.5 hover:bg-neutral-200 transition-all duration-300 shadow-sm"
+                  >
+                    {banner.cta || "Shop Now"}
+                  </Link>
+                </motion.div>
+              </div>
             </div>
 
             {/* Scroll Down Animated chevron at bottom center */}
