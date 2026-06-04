@@ -17,7 +17,7 @@ export function BrandStory() {
           className="relative aspect-[4/5] rounded-xl overflow-hidden bg-neutral-100 border border-black/5"
         >
           <Image
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop"
+            src="https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=600&auto=format&fit=crop"
             alt="DEHYDE brand story"
             fill
             className="object-cover hover:scale-102 transition-transform duration-700"

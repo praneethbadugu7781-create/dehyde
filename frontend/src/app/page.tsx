@@ -16,23 +16,23 @@ export default function HomePage() {
       {/* 2. New Arrivals Grid */}
       <NewArrivals />
 
-      {/* 3. Brand Story split block */}
-      <BrandStory />
-
-      {/* 4. Best Sellers (Trending) Grid */}
+      {/* 3. Best Sellers (Trending) Grid */}
       <TrendingProducts />
 
-      {/* 5. Collections categories splits */}
+      {/* 4. Collections categories splits */}
       <CollectionShowcase />
 
-      {/* 6. What defines our wear tags grid */}
+      {/* 5. What defines our wear tags grid */}
       <Features />
 
-      {/* 7. Voice of Quality customer testimonials */}
+      {/* 6. Voice of Quality customer testimonials */}
       <Reviews />
 
-      {/* 8. Stay connected social promo banner */}
+      {/* 7. Stay connected social promo banner */}
       <SocialPromo />
+
+      {/* 8. Brand Story split block */}
+      <BrandStory />
     </>
   );
 }
