@@ -3,159 +3,260 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { apiClient } from "@/lib/api";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-interface Banner {
-  _id: string;
+interface BannerData {
+  id: string;
   title: string;
-  subtitle?: string;
+  subtitle: string;
+  price?: string;
   image: string;
-  mobileImage?: string;
-  link?: string;
-  cta?: string;
+  cta: string;
+  link: string;
 }
 
-const FALLBACK_BANNER: Banner = {
-  _id: "fallback",
-  title: "Premium wear for modern living",
-  subtitle: "Warm Winter Layers",
-  image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=2400&q=90",
-  cta: "See all collections",
-  link: "/shop"
-};
-
-const TICKER_DETAILS = [
-  "Urban", "Latest", "Premium", "Arctic", "Casual", "Iconic", "Unique"
+const BANNERS: BannerData[] = [
+  {
+    id: "banner1",
+    title: "Premium wear for modern living",
+    subtitle: "Warm Winter Layers",
+    image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=2400&q=90",
+    cta: "See all collections",
+    link: "/shop"
+  },
+  {
+    id: "banner2",
+    title: "Dresses",
+    subtitle: "For Every Mood",
+    price: "₹ 599 / ONWARDS",
+    image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=2400&q=90",
+    cta: "Explore Dresses",
+    link: "/shop?category=oversized-tees"
+  },
+  {
+    id: "banner3",
+    title: "Tailored",
+    subtitle: "For Every Moment",
+    price: "₹ 199 / ONWARDS",
+    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=2400&q=90",
+    cta: "Explore Tailored",
+    link: "/shop?category=casual-shirts"
+  }
 ];
 
 export function Hero() {
-  const [banners, setBanners] = useState<Banner[]>([FALLBACK_BANNER]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeBannerIdx, setActiveBannerIdx] = useState(0);
+  const [showDots, setShowDots] = useState(true);
 
   useEffect(() => {
-    async function loadBanners() {
-      try {
-        const res = await apiClient.get<{ success: boolean; data: Banner[] }>("/banners?placement=hero");
-        if (res.success && res.data.length > 0) {
-          setBanners(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to load banners", err);
-      }
-    }
-    loadBanners();
+    const handleScroll = () => {
+      const h = window.innerHeight;
+      const scrollPos = window.scrollY;
+
+      // Calculate active banner index based on scroll position
+      const centerPos = scrollPos + h / 2;
+      const activeIdx = Math.floor(centerPos / h);
+      setActiveBannerIdx(Math.min(Math.max(activeIdx, 0), BANNERS.length - 1));
+
+      // Hide dot indicator when scrolled past the three full-screen banners
+      setShowDots(scrollPos < h * 2.6);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    // Check initial scroll position
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    if (banners.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % banners.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [banners.length]);
-
-  const activeBanner = banners[currentIndex];
-
   return (
-    <section className="relative w-full overflow-hidden bg-black flex flex-col pt-16">
-      {/* Main Campaign Slide View */}
-      <div className="relative w-full aspect-[4/5] md:aspect-[16/9] min-h-[500px] md:max-h-[750px] overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeBanner._id}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0"
+    <section className="relative w-full overflow-hidden bg-black flex flex-col">
+      {/* 3 Vertically Stacked Full-Screen Banners */}
+      {BANNERS.map((banner, idx) => {
+        const isFirst = idx === 0;
+        
+        return (
+          <div
+            key={banner.id}
+            id={`hero-banner-${idx}`}
+            className="relative w-full h-[100vh] overflow-hidden bg-black flex flex-col justify-end"
           >
-            <Image
-              src={activeBanner.image}
-              alt={activeBanner.title || "DEHYDE Campaign"}
-              fill
-              priority
-              className="object-cover object-center"
-              sizes="100vw"
-            />
-            {/* Soft dark overlay to make text highly legible */}
-            <div className="absolute inset-0 bg-black/35" />
-          </motion.div>
-        </AnimatePresence>
+            {/* Background Image */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={banner.image}
+                alt={banner.title}
+                fill
+                priority={isFirst}
+                className="object-cover object-center"
+                sizes="100vw"
+              />
+              {/* Soft dark overlay for text readability */}
+              <div className="absolute inset-0 bg-black/35" />
+            </div>
 
-        {/* Content Wrapper */}
-        <div className="absolute inset-0 z-10 flex flex-col justify-end p-6 md:p-16 text-white max-w-[1400px] mx-auto w-full">
-          <div className="max-w-2xl flex flex-col items-start">
-            {/* Pill Badge Container */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-3 backdrop-blur-md bg-white/15 border border-white/20 rounded-full p-1 pr-4 mb-6"
+            {/* Content Wrapper */}
+            <div className="relative z-10 mx-auto w-full max-w-[1400px] px-6 md:px-10 pb-24 md:pb-28">
+              {isFirst ? (
+                // Banner 1 Content Layout (Classic Center-Left Campaign)
+                <div className="max-w-2xl flex flex-col items-start text-white">
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-3 backdrop-blur-md bg-white/15 border border-white/20 rounded-full p-1 pr-4 mb-6"
+                  >
+                    <span className="bg-white text-black text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
+                      Soft
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-white/90">
+                      {banner.subtitle}
+                    </span>
+                  </motion.div>
+
+                  <motion.h1
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="font-display text-4xl md:text-6xl font-bold tracking-[-0.035em] leading-[1.05]"
+                  >
+                    {banner.title}
+                  </motion.h1>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-4 text-xs md:text-sm text-white/70 max-w-lg leading-relaxed font-light font-sans"
+                  >
+                    Upgrade your everyday wardrobe with minimal silhouettes, comfortable geometry, and timeless layers crafted for modern living.
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
+                    className="mt-8 flex flex-wrap gap-4"
+                  >
+                    <Link
+                      href={banner.link}
+                      className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-white text-black px-6 py-3.5 hover:bg-neutral-200 transition-colors"
+                    >
+                      {banner.cta}
+                    </Link>
+                    <Link
+                      href="/contact"
+                      className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full border border-white/30 bg-transparent text-white px-6 py-3.5 hover:bg-white hover:text-black transition-all duration-300"
+                    >
+                      Contact us
+                    </Link>
+                  </motion.div>
+                </div>
+              ) : (
+                // Banners 2 & 3 Content Layout (Style Union bottom-left format)
+                <div className="max-w-2xl flex flex-col items-start text-white">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="flex flex-col items-start"
+                  >
+                    {/* Category Title in heavy uppercase */}
+                    <h2 className="font-display text-5xl md:text-8xl font-black tracking-[-0.04em] leading-[0.95] uppercase">
+                      {banner.title}
+                    </h2>
+                    
+                    {/* Subtitle description */}
+                    <p className="mt-2 text-base md:text-xl font-light text-white/85 font-sans tracking-wide">
+                      {banner.subtitle}
+                    </p>
+                    
+                    {/* Price tag onwards format */}
+                    {banner.price && (
+                      <div className="mt-4 flex items-baseline gap-1 font-display">
+                        <span className="text-3xl md:text-5xl font-extrabold tracking-tight">
+                          {banner.price.split(" ")[0]}
+                        </span>
+                        <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-white/70 ml-1 font-semibold">
+                          {banner.price.substring(banner.price.indexOf(" ") + 1)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Action button */}
+                    <Link
+                      href={banner.link}
+                      className="mt-6 inline-flex items-center justify-center text-[10px] uppercase tracking-[0.2em] font-semibold rounded-full bg-white text-black px-6 py-3 hover:bg-neutral-200 transition-colors"
+                    >
+                      Shop Now
+                    </Link>
+                  </motion.div>
+                </div>
+              )}
+            </div>
+
+            {/* Scroll Down Animated chevron at bottom of each banner */}
+            <div
+              onClick={() => {
+                const nextIdx = idx + 1;
+                if (nextIdx < BANNERS.length) {
+                  const targetEl = document.getElementById(`hero-banner-${nextIdx}`);
+                  targetEl?.scrollIntoView({ behavior: "smooth" });
+                } else {
+                  // Scroll past Hero completely to stats
+                  const scrollH = window.innerHeight * BANNERS.length;
+                  window.scrollTo({ top: scrollH, behavior: "smooth" });
+                }
+              }}
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 cursor-pointer group text-white/60 hover:text-white transition-colors select-none"
             >
-              <span className="bg-white text-black text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
-                Soft
+              <span className="text-[9px] uppercase tracking-[0.25em] font-bold">
+                Scroll Down
               </span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-white/90">
-                {activeBanner.subtitle || "Warm Winter Layers"}
-              </span>
-            </motion.div>
-
-            {/* Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="font-display text-4xl md:text-6xl font-bold tracking-[-0.035em] leading-[1.05] whitespace-pre-line"
-            >
-              {activeBanner.title}
-            </motion.h1>
-
-            {/* Description Subtext */}
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-4 text-xs md:text-sm text-white/70 max-w-lg leading-relaxed font-light"
-            >
-              Upgrade your everyday wardrobe with minimal silhouettes, comfortable geometry, and timeless layers crafted for modern living.
-            </motion.p>
-
-            {/* Call to Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-8 flex flex-wrap gap-4"
-            >
-              <Link
-                href={activeBanner.link || "/shop"}
-                className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-white text-black px-6 py-3.5 hover:bg-neutral-200 transition-colors"
-              >
-                {activeBanner.cta || "See all collections"}
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full border border-white/30 bg-transparent text-white px-6 py-3.5 hover:bg-white hover:text-black transition-all duration-300"
-              >
-                Contact us
-              </Link>
-            </motion.div>
+              <div className="flex flex-col items-center">
+                <motion.div
+                  animate={{ y: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  className="w-1.5 h-1.5 border-b-2 border-r-2 border-white rotate-45"
+                />
+                <motion.div
+                  animate={{ y: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", delay: 0.2 }}
+                  className="w-1.5 h-1.5 border-b-2 border-r-2 border-white rotate-45 -mt-0.5"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })}
 
-      {/* Under-Hero Horizontal auto-scroll Category Ticker */}
-      <div className="w-full bg-[#f8f8f8] py-4 border-y border-black/5 overflow-hidden">
-        <div className="flex animate-marquee whitespace-nowrap text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium text-neutral-400">
-          {Array(8).fill(TICKER_DETAILS).flat().map((item, idx) => (
-            <span key={idx} className="mx-6 flex items-center gap-10">
-              <span className="text-black/85 font-semibold">{item}</span>
-              <span className="h-4 w-px bg-black/10 select-none"></span>
-            </span>
-          ))}
+      {/* Floating Side Dot Navigation Indicator */}
+      {showDots && (
+        <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-4">
+          {BANNERS.map((_, idx) => {
+            const isActive = activeBannerIdx === idx;
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  const targetEl = document.getElementById(`hero-banner-${idx}`);
+                  targetEl?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={cn(
+                  "rounded-full transition-all duration-300 cursor-pointer border-none outline-none focus:outline-none",
+                  isActive
+                    ? "w-[4px] h-[24px] bg-white"
+                    : "w-[4px] h-[4px] bg-white/35 hover:bg-white/70"
+                )}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            );
+          })}
         </div>
-      </div>
+      )}
     </section>
   );
 }
