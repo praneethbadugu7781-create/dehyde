@@ -116,53 +116,46 @@ export function CollectionShowcase() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.6 }}
-                className="group flex flex-col bg-white border border-black/5 rounded-xl overflow-hidden hover:shadow-lg hover:border-black/15 transition-all duration-300"
+                className="group flex flex-col bg-transparent overflow-hidden transition-all duration-300"
               >
-                {/* Image Section */}
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100 border-b border-black/5">
-                  <Image
-                    src={meta.image}
-                    alt={col.name}
-                    fill
-                    className="object-cover transition-transform duration-1000 ease-luxury group-hover:scale-103"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  <div className="absolute left-4 top-4 bg-white/90 backdrop-blur-sm border border-black/5 rounded-full px-3 py-1 z-10 flex items-center">
-                    <span className="text-[9px] uppercase tracking-widest font-bold text-neutral-800">
-                      {meta.tag}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Info Content Section */}
-                <div className="p-6 flex flex-col justify-between flex-1 bg-white">
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-black tracking-tight leading-snug">
-                      {meta.subtitle}
-                    </h3>
-                    <p className="mt-3 text-xs text-neutral-500 leading-relaxed font-light">
-                      {meta.desc}
-                    </p>
+                <Link href={`/shop?category=${col.slug}`} className="flex flex-col h-full">
+                  {/* Image Section */}
+                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
+                    <Image
+                      src={meta.image}
+                      alt={col.name}
+                      fill
+                      className="object-cover transition-transform duration-1000 ease-luxury group-hover:scale-103"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                    <div className="absolute left-4 top-4 bg-white/95 backdrop-blur-sm border border-black/5 px-3 py-1 z-10 flex items-center shadow-sm">
+                      <span className="text-[9px] uppercase tracking-widest font-bold text-neutral-800">
+                        {meta.tag}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="mt-6 pt-5 border-t border-black/5 flex flex-col gap-4">
-                    <div className="flex items-center justify-between text-xs font-semibold text-black">
-                      <span className="text-neutral-400 font-normal">Pricing starts from:</span>
-                      <div className="flex items-center gap-1.5">
+                  {/* Info Content Section */}
+                  <div className="pt-3 flex flex-col justify-between flex-1 bg-transparent px-0">
+                    <div>
+                      <h3 className="font-campton font-medium text-[16px] leading-[1.2] text-black uppercase tracking-wide">
+                        {meta.subtitle}
+                      </h3>
+                      <p className="mt-2 text-xs text-neutral-500 leading-relaxed font-light font-sans">
+                        {meta.desc}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between text-xs font-semibold text-black">
+                      <span className="text-neutral-400 font-normal uppercase tracking-wider text-[10px]">Pricing starts from:</span>
+                      <div className="flex items-center gap-1.5 font-sans font-bold text-sm md:text-[16px]">
                         <span>{meta.minPrice}</span>
                         <span className="text-neutral-300 font-light">—</span>
                         <span className="text-neutral-400 line-through text-[10px] font-normal">{meta.maxPrice}</span>
                       </div>
                     </div>
-
-                    <Link
-                      href={`/shop?category=${col.slug}`}
-                      className="w-full text-center text-[10px] uppercase tracking-wider font-semibold rounded-full border border-black/10 py-3 hover:bg-black hover:text-white transition-colors"
-                    >
-                      All collections
-                    </Link>
                   </div>
-                </div>
+                </Link>
               </motion.article>
             );
           })}
