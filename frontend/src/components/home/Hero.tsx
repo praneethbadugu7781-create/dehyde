@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiClient } from "@/lib/api";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Banner {
   _id: string;
@@ -19,12 +18,16 @@ interface Banner {
 
 const FALLBACK_BANNER: Banner = {
   _id: "fallback",
-  title: "Defined by silence.\nBuilt for the street.",
-  subtitle: "Premium menswear streetwear from India. Architectural silhouettes, editorial craft.",
+  title: "Premium wear for modern living",
+  subtitle: "Warm Winter Layers",
   image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?w=2400&q=90",
-  cta: "Explore Collection",
+  cta: "See all collections",
   link: "/shop"
 };
+
+const TICKER_DETAILS = [
+  "Urban", "Latest", "Premium", "Arctic", "Casual", "Iconic", "Unique"
+];
 
 export function Hero() {
   const [banners, setBanners] = useState<Banner[]>([FALLBACK_BANNER]);
@@ -48,115 +51,111 @@ export function Hero() {
     if (banners.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % banners.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [banners.length]);
 
   const activeBanner = banners[currentIndex];
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % banners.length);
-  };
-
   return (
-    <section className="relative h-screen min-h-[700px] w-full overflow-hidden bg-charcoal">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeBanner._id}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
-        >
-          <Image
-            src={activeBanner.image}
-            alt={activeBanner.title || "DEHYDE Editorial Campaign"}
-            fill
-            priority
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/30 to-charcoal/10" />
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="relative z-10 flex h-full flex-col justify-end luxury-container pb-24 md:pb-32">
+    <section className="relative w-full overflow-hidden bg-black flex flex-col pt-16">
+      {/* Main Campaign Slide View */}
+      <div className="relative w-full aspect-[4/5] md:aspect-[16/9] min-h-[500px] md:max-h-[750px] overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
-            key={`content-${activeBanner._id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.8 }}
+            key={activeBanner._id}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0"
           >
-            {activeBanner.subtitle && (
-              <div className="text-[10px] uppercase tracking-[0.35em] text-offwhite/70 mb-6">
-                {activeBanner.subtitle}
-              </div>
-            )}
-            
-            <div className="editorial-heading max-w-3xl text-5xl leading-[1.05] text-offwhite md:text-7xl lg:text-8xl whitespace-pre-line">
-              {activeBanner.title}
-            </div>
-
-            <div className="mt-12 flex flex-wrap gap-4">
-              <Link
-                href={activeBanner.link || "/shop"}
-                className="inline-flex bg-offwhite px-8 py-4 text-xs uppercase tracking-editorial text-charcoal transition-colors hover:bg-cream"
-              >
-                {activeBanner.cta || "Explore Collection"}
-              </Link>
-              <Link
-                href="/about"
-                className="inline-flex border border-offwhite/40 px-8 py-4 text-xs uppercase tracking-editorial text-offwhite transition-colors hover:bg-offwhite hover:text-charcoal"
-              >
-                Our Story
-              </Link>
-            </div>
+            <Image
+              src={activeBanner.image}
+              alt={activeBanner.title || "DEHYDE Campaign"}
+              fill
+              priority
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+            {/* Soft dark overlay to make text highly legible */}
+            <div className="absolute inset-0 bg-black/35" />
           </motion.div>
         </AnimatePresence>
+
+        {/* Content Wrapper */}
+        <div className="absolute inset-0 z-10 flex flex-col justify-end p-6 md:p-16 text-white max-w-[1400px] mx-auto w-full">
+          <div className="max-w-2xl flex flex-col items-start">
+            {/* Pill Badge Container */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-3 backdrop-blur-md bg-white/15 border border-white/20 rounded-full p-1 pr-4 mb-6"
+            >
+              <span className="bg-white text-black text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full">
+                Soft
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-white/90">
+                {activeBanner.subtitle || "Warm Winter Layers"}
+              </span>
+            </motion.div>
+
+            {/* Title */}
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="font-display text-4xl md:text-6xl font-bold tracking-[-0.035em] leading-[1.05] whitespace-pre-line"
+            >
+              {activeBanner.title}
+            </motion.h1>
+
+            {/* Description Subtext */}
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-4 text-xs md:text-sm text-white/70 max-w-lg leading-relaxed font-light"
+            >
+              Upgrade your everyday wardrobe with minimal silhouettes, comfortable geometry, and timeless layers crafted for modern living.
+            </motion.p>
+
+            {/* Call to Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 flex flex-wrap gap-4"
+            >
+              <Link
+                href={activeBanner.link || "/shop"}
+                className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-white text-black px-6 py-3.5 hover:bg-neutral-200 transition-colors"
+              >
+                {activeBanner.cta || "See all collections"}
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full border border-white/30 bg-transparent text-white px-6 py-3.5 hover:bg-white hover:text-black transition-all duration-300"
+              >
+                Contact us
+              </Link>
+            </motion.div>
+          </div>
+        </div>
       </div>
 
-      {/* Manual Sliding Left/Right Controls */}
-      {banners.length > 1 && (
-        <>
-          <button
-            onClick={handlePrev}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-black/10 hover:bg-black/30 text-offwhite border border-offwhite/10 transition-all rounded-sm flex items-center justify-center hover:scale-105"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={handleNext}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 p-2.5 bg-black/10 hover:bg-black/30 text-offwhite border border-offwhite/10 transition-all rounded-sm flex items-center justify-center hover:scale-105"
-            aria-label="Next slide"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </>
-      )}
-
-      {/* Slide Indicators */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 gap-3 z-20">
-          {banners.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`h-1 transition-all duration-500 ${
-                idx === currentIndex ? "w-8 bg-offwhite" : "w-4 bg-offwhite/30 hover:bg-offwhite/50"
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
+      {/* Under-Hero Horizontal auto-scroll Category Ticker */}
+      <div className="w-full bg-[#f8f8f8] py-4 border-y border-black/5 overflow-hidden">
+        <div className="flex animate-marquee whitespace-nowrap text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium text-neutral-400">
+          {Array(8).fill(TICKER_DETAILS).flat().map((item, idx) => (
+            <span key={idx} className="mx-6 flex items-center gap-10">
+              <span className="text-black/85 font-semibold">{item}</span>
+              <span className="h-4 w-px bg-black/10 select-none"></span>
+            </span>
           ))}
         </div>
-      )}
+      </div>
     </section>
   );
 }

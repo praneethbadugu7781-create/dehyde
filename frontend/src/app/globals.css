@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @font-face {
   font-family: 'Campton';
   src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonThin.otf?v=1754908283") format("opentype");
@@ -71,11 +73,12 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 6%;
+    --background: 0 0% 97%;
+    --foreground: 0 0% 0%;
     --border: 0 0% 90%;
-    --font-sans: 'Campton', 'Avenir Next', 'Montserrat', sans-serif;
-    --font-serif: 'Campton', 'Cormorant Garamond', 'Didot', serif;
+    --font-sans: 'Inter', sans-serif;
+    --font-serif: 'Campton', sans-serif;
+    --font-display: 'Campton', sans-serif;
   }
 
   * {
@@ -111,4 +114,19 @@
   .link-underline {
     @apply relative inline-block after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-charcoal after:transition-all after:duration-500 after:ease-luxury hover:after:w-full;
   }
+}
+
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

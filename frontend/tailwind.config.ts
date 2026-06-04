@@ -6,15 +6,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        charcoal: "#1a1a1a",
-        stone: "#2a2a2a",
-        muted: "#8a8a8a",
-        cream: "#f5f3ef",
-        offwhite: "#faf9f7",
+        charcoal: "#000000",
+        stone: "#1f1f1f",
+        muted: "#787878",
+        cream: "#ffffff",
+        offwhite: "#f8f8f8",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Avenir Next", "Montserrat", "sans-serif"],
-        serif: ["var(--font-serif)", "Cormorant Garamond", "Didot", "serif"],
+        sans: ["var(--font-sans)", "sans-serif"],
+        serif: ["var(--font-serif)", "serif"],
+        display: ["var(--font-display)", "sans-serif"],
       },
       spacing: {
         section: "clamp(5rem, 12vw, 7.5rem)",

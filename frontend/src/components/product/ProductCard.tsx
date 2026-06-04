@@ -4,10 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
-import type { Product } from "@/types";
+import { Heart, ShoppingCart } from "lucide-react";
+import type { Product, CartItem } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useWishlistStore } from "@/store/wishlistStore";
+import { useCartStore } from "@/store/cartStore";
 import { cn } from "@/lib/utils";
 import { productImage } from "@/lib/products";
 
@@ -16,34 +17,104 @@ interface Props {
   index?: number;
 }
 
+// Simple color helper mapping text color names to hex codes
+const getColorHex = (name: string, hex?: string) => {
+  if (hex) return hex;
+  const colors: Record<string, string> = {
+    black: "#000000",
+    white: "#ffffff",
+    charcoal: "#242424",
+    grey: "#808080",
+    gray: "#808080",
+    beige: "#f5f5dc",
+    navy: "#000080",
+    blue: "#0000ff",
+    red: "#ff0000",
+    green: "#008000",
+    olive: "#808000",
+    sand: "#c2b280",
+    stone: "#877f7d",
+    cream: "#fffdd0",
+    brown: "#a52a2a",
+    khaki: "#f0e68c",
+  };
+  return colors[name.toLowerCase()] || "#cccccc";
+};
+
 export function ProductCard({ product, index = 0 }: Props) {
   const [hovered, setHovered] = useState(false);
   const { has, toggle } = useWishlistStore();
+  const addItem = useCartStore((s) => s.addItem);
+  
   const inWishlist = has(product._id);
   const primaryImage = productImage(product);
-  const secondaryImage = product.images?.[1] || primaryImage;
+  
+  // Track selected color variant index
+  const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
+  const [added, setAdded] = useState(false);
+
+  // Determine which image to show
+  let currentImage = primaryImage;
+  if (selectedVariantIdx !== null && product.variants?.[selectedVariantIdx]?.images?.length > 0) {
+    currentImage = product.variants[selectedVariantIdx].images[0];
+  }
+
+  // Determine secondary image for hover transition
+  let secondaryImage = product.images?.[1] || primaryImage;
+  if (selectedVariantIdx !== null && product.variants?.[selectedVariantIdx]?.images?.length > 1) {
+    secondaryImage = product.variants[selectedVariantIdx].images[1];
+  }
+
+  // Handle Quick Add Action
+  const handleQuickAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Default values
+    const selectedSize = product.sizes?.[0] || "M";
+    const variantColor = selectedVariantIdx !== null && product.variants?.[selectedVariantIdx]
+      ? product.variants[selectedVariantIdx].color
+      : (product.variants?.[0]?.color || "Default");
+
+    const cartItem: CartItem = {
+      productId: product._id,
+      slug: product.slug,
+      title: product.title,
+      image: currentImage || "",
+      price: product.price,
+      size: selectedSize,
+      color: variantColor,
+      quantity: 1,
+      rewardCoins: product.rewardCoins || 0
+    };
+
+    addItem(cartItem);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.06, duration: 0.6 }}
-      className="group"
+      transition={{ delay: index * 0.05, duration: 0.5 }}
+      className="group relative flex flex-col bg-white border border-black/5 rounded-lg overflow-hidden hover:shadow-lg hover:border-black/15 transition-all duration-300"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="relative aspect-[3/4] overflow-hidden bg-stone/5">
-        <Link href={`/product/${product.slug}`}>
-          {primaryImage ? (
+      {/* Product Image Frame */}
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#f8f8f8] border-b border-black/5">
+        <Link href={`/product/${product.slug}`} className="absolute inset-0">
+          {currentImage ? (
             <>
               <Image
-                src={primaryImage}
+                src={currentImage}
                 alt={product.title}
                 fill
                 className={cn(
                   "object-cover transition-all duration-700 ease-luxury",
-                  hovered ? "opacity-0 scale-105" : "opacity-100"
+                  hovered ? "opacity-0 scale-102" : "opacity-100"
                 )}
                 sizes="(max-width: 768px) 50vw, 25vw"
               />
@@ -53,40 +124,110 @@ export function ProductCard({ product, index = 0 }: Props) {
                 fill
                 className={cn(
                   "object-cover transition-all duration-700 ease-luxury",
-                  hovered ? "opacity-100 scale-105" : "opacity-0"
+                  hovered ? "opacity-100 scale-102" : "opacity-0"
                 )}
                 sizes="(max-width: 768px) 50vw, 25vw"
               />
             </>
           ) : (
-            <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-editorial text-muted">
+            <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-widest text-neutral-400">
               DEHYDE
             </div>
           )}
         </Link>
+
+        {/* Floating Action Badge (Top Left) */}
+        {product.trending && (
+          <span className="absolute left-3 top-3 bg-black text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
+            Best seller
+          </span>
+        )}
+        {!product.trending && product.featured && (
+          <span className="absolute left-3 top-3 bg-neutral-200 text-black text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
+            New
+          </span>
+        )}
+
+        {/* Floating Wishlist Button (Top Right) */}
         <button
           type="button"
           onClick={() => toggle(product._id)}
-          className="absolute right-4 top-4 z-10 p-2 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute right-3 top-3 z-10 p-2 bg-white rounded-full opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 border border-black/5 shadow-sm"
           aria-label="Add to wishlist"
         >
-          <Heart className={cn("h-4 w-4", inWishlist && "fill-charcoal")} strokeWidth={1} />
+          <Heart className={cn("h-3.5 w-3.5 text-black transition-colors", inWishlist && "fill-black")} strokeWidth={1.5} />
         </button>
-        {product.rewardCoins > 0 && (
-          <span className="absolute bottom-4 left-4 bg-charcoal/90 px-2 py-1 text-[9px] uppercase tracking-editorial text-offwhite">
-            +{product.rewardCoins} coins
-          </span>
+
+        {/* Quick Add Pill Overlay Button */}
+        <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className={cn(
+              "w-full text-[10px] uppercase tracking-[0.15em] font-semibold py-3 px-4 rounded-full border shadow-sm transition-all duration-300 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 flex items-center justify-center gap-2",
+              added
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "bg-white text-black border-black/5 hover:bg-black hover:text-white"
+            )}
+          >
+            {added ? (
+              "Added to cart!"
+            ) : (
+              <>
+                <ShoppingCart className="h-3 w-3" />
+                Quick Add
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Info Blocks (Title, Price, Swatches) */}
+      <div className="p-4 flex flex-col flex-1 bg-white justify-between">
+        <Link href={`/product/${product.slug}`} className="block">
+          <h3 className="text-xs md:text-sm font-semibold tracking-tight text-black line-clamp-1">
+            {product.title}
+          </h3>
+          <div className="mt-2 flex items-center gap-2 font-medium text-xs text-neutral-900">
+            <span>{formatPrice(product.price)}</span>
+            {product.compareAtPrice && (
+              <span className="text-[10px] text-neutral-400 line-through">
+                {formatPrice(product.compareAtPrice)}
+              </span>
+            )}
+          </div>
+        </Link>
+
+        {/* Swatches Section (Bottom row inside Info frame) */}
+        {product.variants && product.variants.length > 1 && (
+          <div className="mt-4 pt-3 border-t border-black/5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            {product.variants.map((v, idx) => {
+              const isActive = selectedVariantIdx === idx;
+              return (
+                <button
+                  key={v.color}
+                  type="button"
+                  onClick={() => setSelectedVariantIdx(isActive ? null : idx)}
+                  onMouseEnter={() => setSelectedVariantIdx(idx)}
+                  className={cn(
+                    "relative h-5 w-5 rounded-full flex items-center justify-center transition-all duration-300 border",
+                    isActive ? "border-black scale-105" : "border-black/10 hover:border-black/30"
+                  )}
+                  title={v.color}
+                >
+                  <span
+                    className="h-3.5 w-3.5 rounded-full shadow-inner"
+                    style={{ backgroundColor: getColorHex(v.color, v.colorHex) }}
+                  />
+                  {isActive && (
+                    <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5 rounded-full bg-black" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
-      <Link href={`/product/${product.slug}`} className="mt-5 block">
-        <h3 className="text-sm font-normal tracking-wide">{product.title}</h3>
-        <div className="mt-2 flex items-center gap-3">
-          <span className="text-sm">{formatPrice(product.price)}</span>
-          {product.compareAtPrice && (
-            <span className="text-xs text-muted line-through">{formatPrice(product.compareAtPrice)}</span>
-          )}
-        </div>
-      </Link>
     </motion.article>
   );
 }
