@@ -13,8 +13,8 @@ const config: Config = {
         offwhite: "#faf9f7",
       },
       fontFamily: {
-        sans: ["Avenir Next", "Montserrat", "Helvetica Neue", "Arial", "sans-serif"],
-        serif: ["Cormorant Garamond", "Didot", "Bodoni 72", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Avenir Next", "Montserrat", "sans-serif"],
+        serif: ["var(--font-serif)", "Cormorant Garamond", "Didot", "serif"],
       },
       spacing: {
         section: "clamp(5rem, 12vw, 7.5rem)",
