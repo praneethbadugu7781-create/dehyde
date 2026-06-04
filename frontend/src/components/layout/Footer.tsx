@@ -159,9 +159,9 @@ export function Footer() {
                 Get in touch
               </h5>
               <ul className="space-y-3 text-xs text-white/60">
-                <li className="break-all">info@dehyde.in</li>
-                <li>+91 99999 99999</li>
-                <li>Bengaluru, India</li>
+                <li className="break-all">support@dehyde.in</li>
+                <li>+91 62818 11294</li>
+                <li>Eluru, Andhra Pradesh, India</li>
               </ul>
             </div>
           </div>
