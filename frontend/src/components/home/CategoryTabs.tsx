@@ -80,52 +80,83 @@ export function CategoryTabs() {
   }, [activeTab]);
 
   return (
-    <section className="pt-24 pb-20 bg-white border-t border-black/5 font-sans relative">
+    <section className="py-20 bg-white border-t border-black/5 font-sans relative">
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10">
         
-        {/* Section Header */}
-        <div className="flex flex-col items-center justify-center mb-12 text-center">
-          <h2 className="font-display text-[#c80a0a] text-3xl md:text-4xl font-black tracking-[0.15em] uppercase leading-tight">
-            Most Loved Styles
-          </h2>
-          <div className="w-12 h-[2px] bg-[#c80a0a] mt-4 mb-8" />
-        </div>
+        {/* Style Union Flanking Header Selector Layout */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 lg:gap-16 mb-16 w-full max-w-4xl mx-auto">
+          
+          {/* Left Block (T-Shirts Category Tab) */}
+          <div className="flex items-center justify-center">
+            <button
+              onClick={() => setActiveTab("t-shirts")}
+              className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+                activeTab === "t-shirts" ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+              }`}
+            >
+              {/* SVG Outline Icon */}
+              <div className={`transform transition-all duration-300 group-hover:scale-105 ${
+                activeTab === "t-shirts" ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+              }`}>
+                {tabs[0].icon}
+              </div>
+              {/* Label */}
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
+                {tabs[0].name}
+              </span>
+              {/* Slide Line Indicator */}
+              {activeTab === "t-shirts" && (
+                <motion.div
+                  layoutId="activeTabIndicator"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
+            </button>
+          </div>
 
-        {/* Spaced Row of Categories */}
-        <div className="flex justify-center items-center gap-8 sm:gap-12 md:gap-16 mb-16 max-w-xl mx-auto border-b border-neutral-100 pb-6">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.slug;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.slug)}
-                className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
-                  isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
-                }`}
-              >
-                {/* SVG Outline Icon */}
-                <div className={`transform transition-all duration-300 group-hover:scale-105 ${
-                  isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
-                }`}>
-                  {tab.icon}
-                </div>
-                
-                {/* Label */}
-                <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
-                  {tab.name}
-                </span>
+          {/* Central Card (white background with thin border) */}
+          <div className="w-[160px] h-[160px] md:w-[190px] md:h-[190px] bg-white border border-black/5 flex flex-col items-center justify-center shadow-sm rounded-lg px-4 pointer-events-none select-none">
+            <h3 className="font-display text-[#c80a0a] text-2xl md:text-3xl font-black tracking-widest text-center leading-[1.1] uppercase">
+              MOST<br />LOVED<br />STYLES
+            </h3>
+          </div>
 
-                {/* Underline Indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </button>
-            );
-          })}
+          {/* Right Block (Shirts & Pants side-by-side Tabs) */}
+          <div className="flex gap-8 sm:gap-12 items-center justify-center">
+            {tabs.slice(1).map((tab) => {
+              const isActive = activeTab === tab.slug;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.slug)}
+                  className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+                    isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+                  }`}
+                >
+                  {/* SVG Outline Icon */}
+                  <div className={`transform transition-all duration-300 group-hover:scale-105 ${
+                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+                  }`}>
+                    {tab.icon}
+                  </div>
+                  {/* Label */}
+                  <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
+                    {tab.name}
+                  </span>
+                  {/* Slide Line Indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
         </div>
 
         {/* Products Grid Section */}
