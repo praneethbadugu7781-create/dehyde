@@ -8,6 +8,7 @@ import { Wallet } from "../models/Wallet.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { AuthRequest } from "../middleware/auth.js";
 import bcrypt from "bcryptjs";
+import { sendOrderStatusEmail } from "../services/mailService.js";
 
 
 export const getDashboard = asyncHandler(async (_req, res) => {
@@ -67,11 +68,24 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 
 export const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status, trackingNumber } = req.body;
-  const order = await Order.findByIdAndUpdate(
-    req.params.id,
-    { status, trackingNumber },
-    { new: true }
-  );
+  const order = await Order.findById(req.params.id).populate("user", "name email");
+  if (!order) {
+    res.status(404).json({ success: false, message: "Order not found" });
+    return;
+  }
+
+  order.status = status;
+  if (trackingNumber !== undefined) {
+    order.trackingNumber = trackingNumber;
+  }
+  await order.save();
+
+  // Send email update to customer asynchronously
+  const user = order.user as any;
+  if (user && user.email) {
+    sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+  }
+
   res.json({ success: true, data: order });
 });
 

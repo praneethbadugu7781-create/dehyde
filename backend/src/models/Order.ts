@@ -14,6 +14,8 @@ export interface IOrderItem {
 export type OrderStatus =
   | "pending"
   | "paid"
+  | "confirmed"
+  | "packed"
   | "processing"
   | "shipped"
   | "delivered"
@@ -71,7 +73,7 @@ const orderSchema = new Schema<IOrder>(
     coinsEarned: { type: Number, default: 0 },
     status: {
       type: String,
-      enum: ["pending", "paid", "processing", "shipped", "delivered", "cancelled", "refunded"],
+      enum: ["pending", "paid", "confirmed", "packed", "processing", "shipped", "delivered", "cancelled", "refunded"],
       default: "pending",
     },
     paymentMethod: { type: String, default: "razorpay" },
