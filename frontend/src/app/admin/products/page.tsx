@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/utils";
 import { productImage } from "@/lib/products";
 import { useAuthStore } from "@/store/authStore";
 import type { Category, Product } from "@/types";
-import { Plus, Upload, Folder, Layers, Palette, DollarSign } from "lucide-react";
+import { Plus, Upload, Folder, Layers, Palette, DollarSign, Trash2, X } from "lucide-react";
 
 const ALL_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
@@ -97,6 +97,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState(emptyForm);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L", "XL"]);
   const [imageUrls, setImageUrls] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -131,6 +132,53 @@ export default function AdminProductsPage() {
     setSelectedSizes((prev) =>
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
+  };
+
+  const startEdit = (product: Product) => {
+    setEditingProduct(product);
+    const firstVariant = product.variants?.[0] || {};
+    setForm({
+      title: product.title,
+      description: product.description,
+      category: typeof product.category === "string" ? product.category : product.category?._id || "",
+      price: String(product.price),
+      compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : "",
+      color: firstVariant.color || "Off-Black",
+      colorHex: firstVariant.colorHex || "#1a1a1a",
+      stock: String(product.stock),
+      rewardCoins: String(product.rewardCoins || 0),
+      tags: (product.tags || []).join(", "),
+      featured: product.featured || false,
+      trending: product.trending || false,
+    });
+    setSelectedSizes(product.sizes || []);
+    setImageUrls((product.images || []).join("\n"));
+    setMessage("");
+  };
+
+  const cancelEdit = () => {
+    setEditingProduct(null);
+    setForm({ ...emptyForm, category: categories[0]?._id || "" });
+    setSelectedSizes(["S", "M", "L", "XL"]);
+    setImageUrls("");
+    setMessage("");
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Avoid triggering edit
+    if (!accessToken) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await apiClient.delete(`/products/${id}`, accessToken);
+      setMessage("Product deleted successfully!");
+      refresh();
+      if (editingProduct?._id === id) {
+        cancelEdit();
+      }
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Product deletion failed");
+    }
   };
 
   const handleUpload = async (files: FileList | null) => {
@@ -168,30 +216,34 @@ export default function AdminProductsPage() {
       .filter(Boolean);
     const stock = Number(form.stock || 0);
 
+    const payload = {
+      title: form.title,
+      description: form.description,
+      category: form.category,
+      price: Number(form.price),
+      compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
+      sizes: selectedSizes,
+      variants: [{ color: form.color, colorHex: form.colorHex, images, stock }],
+      images,
+      stock,
+      rewardCoins: Number(form.rewardCoins || 0),
+      featured: form.featured,
+      trending: form.trending,
+      tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
+    };
+
     try {
-      await apiClient.post(
-        "/admin/products",
-        {
-          title: form.title,
-          description: form.description,
-          category: form.category,
-          price: Number(form.price),
-          compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
-          sizes: selectedSizes,
-          variants: [{ color: form.color, colorHex: form.colorHex, images, stock }],
-          images,
-          stock,
-          rewardCoins: Number(form.rewardCoins || 0),
-          featured: form.featured,
-          trending: form.trending,
-          tags: form.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
-        },
-        accessToken
-      );
+      if (editingProduct) {
+        await apiClient.patch(`/admin/products/${editingProduct._id}`, payload, accessToken);
+        setMessage("Product updated successfully!");
+        setEditingProduct(null);
+      } else {
+        await apiClient.post("/admin/products", payload, accessToken);
+        setMessage("Product added successfully!");
+      }
       setForm({ ...emptyForm, category: categories[0]?._id || "" });
       setSelectedSizes(["S", "M", "L", "XL"]);
       setImageUrls("");
-      setMessage("Product added successfully!");
       refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Product save failed");
@@ -219,9 +271,23 @@ export default function AdminProductsPage() {
         >
           {/* Section 1: General Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-              <Folder size={16} className="text-charcoal/50" />
-              <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">General Information</h2>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Folder size={16} className="text-charcoal/50" />
+                <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">
+                  {editingProduct ? "Edit Product Details" : "General Information"}
+                </h2>
+              </div>
+              {editingProduct && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="text-[10px] uppercase tracking-wider text-red-600 hover:text-red-700 font-bold flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-all"
+                >
+                  <X size={10} strokeWidth={3} />
+                  Cancel Edit
+                </button>
+              )}
             </div>
             
             <div className="space-y-1">
@@ -529,13 +595,24 @@ export default function AdminProductsPage() {
 
           <Button
             type="submit"
-            className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
+            className={`w-full text-white h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all ${
+              editingProduct ? "bg-amber-600 hover:bg-amber-700" : "bg-charcoal hover:bg-black"
+            }`}
             disabled={saving || uploading || categories.length === 0}
           >
             {saving ? "Saving..." : uploading ? "Uploading Images..." : (
               <>
-                <Plus size={14} strokeWidth={2.5} />
-                Create Product Listing
+                {editingProduct ? (
+                  <>
+                    <Layers size={14} />
+                    Update Product Listing
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} strokeWidth={2.5} />
+                    Create Product Listing
+                  </>
+                )}
               </>
             )}
           </Button>
@@ -555,7 +632,15 @@ export default function AdminProductsPage() {
 
           <div className="space-y-1 divide-y divide-gray-100 max-h-[75vh] overflow-y-auto pr-1">
             {products.map((product) => (
-              <div key={product._id} className="flex items-center justify-between py-4 text-sm last:border-0 hover:bg-gray-50/50 px-2.5 -mx-2.5 transition-colors rounded-xl group">
+              <div 
+                key={product._id} 
+                onClick={() => startEdit(product)}
+                className={`flex items-center justify-between py-4 text-sm last:border-0 px-2.5 -mx-2.5 transition-all rounded-xl group cursor-pointer ${
+                  editingProduct?._id === product._id 
+                    ? "bg-stone-100 ring-1 ring-charcoal/10" 
+                    : "hover:bg-gray-50/50"
+                }`}
+              >
                 <div className="flex gap-4 items-center min-w-0">
                   <div className="w-11 h-11 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200/50">
                     {productImage(product) ? (
@@ -574,8 +659,17 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0 ml-4">
-                  <span className="block font-semibold text-charcoal">{formatPrice(product.price)}</span>
+                <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                  <div className="text-right">
+                    <span className="block font-semibold text-charcoal">{formatPrice(product.price)}</span>
+                  </div>
+                  <button
+                    onClick={(e) => handleDelete(product._id, e)}
+                    className="p-2 text-charcoal/30 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    title="Delete product"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               </div>
             ))}
