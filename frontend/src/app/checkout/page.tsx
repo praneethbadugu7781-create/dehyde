@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { apiClient } from "@/lib/api";
 
 declare global {
   interface Window {
@@ -47,15 +48,10 @@ export default function CheckoutPage() {
   const fetchEstimation = async (pin: string, currentAddress = address) => {
     setLoadingEstimate(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/settings/estimate`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ pincode: pin, subtotal: total - coinsToRedeem }),
-        }
-      );
-      const res = await response.json();
+      const res = await apiClient.post<any>("/settings/estimate", {
+        pincode: pin,
+        subtotal: total - coinsToRedeem,
+      });
       if (res.success && res.data) {
         setShippingDetails(res.data);
         setAddress({
@@ -98,34 +94,27 @@ export default function CheckoutPage() {
     }
     setLoading(true);
     try {
-      const orderRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/orders`,
+      const res = await apiClient.post<any>(
+        "/orders",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            items: items.map((i) => ({
-              productId: i.productId,
-              size: i.size,
-              color: i.color,
-              quantity: i.quantity,
-              image: i.image,
-            })),
-            shippingAddress: address,
-            couponCode,
-            coinsToRedeem,
-            shippingMethod,
-          }),
-        }
+          items: items.map((i) => ({
+            productId: i.productId,
+            size: i.size,
+            color: i.color,
+            quantity: i.quantity,
+            image: i.image,
+          })),
+          shippingAddress: address,
+          couponCode,
+          coinsToRedeem,
+          shippingMethod,
+        },
+        accessToken
       );
-      const data = await orderRes.json();
-      if (!data.success) throw new Error(data.message);
 
-      const { razorpayOrderId, amount, key, order } = data.data;
+      if (!res.success) throw new Error(res.message);
+
+      const { razorpayOrderId, amount, key, order } = res.data;
       if (amount === 0) {
         clearCart();
         window.location.href = `/account/orders/${order._id}?success=1`;
@@ -147,33 +136,32 @@ export default function CheckoutPage() {
             razorpay_payment_id: string;
             razorpay_signature: string;
           }) => {
-            await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/orders/verify-payment`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
+            try {
+              await apiClient.post(
+                "/orders/verify-payment",
+                {
                   orderId: order._id,
                   razorpayOrderId: response.razorpay_order_id,
                   razorpayPaymentId: response.razorpay_payment_id,
                   razorpaySignature: response.razorpay_signature,
-                }),
-              }
-            );
-            clearCart();
-            window.location.href = `/account/orders?success=1`;
+                },
+                accessToken
+              );
+              clearCart();
+              window.location.href = `/account/orders?success=1`;
+            } catch (verifyErr) {
+              console.error("Payment verification error:", verifyErr);
+              alert("Payment verification failed. Please contact support.");
+            }
           },
           theme: { color: "#1a1a1a" },
         });
         rzp.open();
       };
       document.body.appendChild(script);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Payment could not be initiated. Please try again.");
+      alert(e.message || "Payment could not be initiated. Please try again.");
     } finally {
       setLoading(false);
     }
