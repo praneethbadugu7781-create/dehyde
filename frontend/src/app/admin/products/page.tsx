@@ -99,7 +99,17 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState(emptyForm);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L", "XL"]);
-  const [imageUrls, setImageUrls] = useState("");
+  
+  // Multiple variants state
+  const [variants, setVariants] = useState<any[]>([]);
+  const [currentVariant, setCurrentVariant] = useState({
+    id: "",
+    color: "Off-Black",
+    colorHex: "#1a1a1a",
+    stock: "50",
+    imageUrls: "",
+  });
+
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -136,23 +146,39 @@ export default function AdminProductsPage() {
 
   const startEdit = (product: Product) => {
     setEditingProduct(product);
-    const firstVariant = product.variants?.[0] || {};
     setForm({
       title: product.title,
       description: product.description,
       category: typeof product.category === "string" ? product.category : product.category?._id || "",
       price: String(product.price),
       compareAtPrice: product.compareAtPrice ? String(product.compareAtPrice) : "",
-      color: firstVariant.color || "Off-Black",
-      colorHex: firstVariant.colorHex || "#1a1a1a",
-      stock: String(product.stock),
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "",
       rewardCoins: String(product.rewardCoins || 0),
       tags: (product.tags || []).join(", "),
       featured: product.featured || false,
       trending: product.trending || false,
     });
     setSelectedSizes(product.sizes || []);
-    setImageUrls((product.images || []).join("\n"));
+    
+    // Load variants
+    const loadedVariants = (product.variants || []).map((v, index) => ({
+      id: (v as any)._id || String(index),
+      color: v.color,
+      colorHex: v.colorHex || "#1a1a1a",
+      stock: v.stock,
+      images: v.images || [],
+    }));
+    setVariants(loadedVariants);
+
+    setCurrentVariant({
+      id: "",
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "50",
+      imageUrls: "",
+    });
     setMessage("");
   };
 
@@ -160,7 +186,14 @@ export default function AdminProductsPage() {
     setEditingProduct(null);
     setForm({ ...emptyForm, category: categories[0]?._id || "" });
     setSelectedSizes(["S", "M", "L", "XL"]);
-    setImageUrls("");
+    setVariants([]);
+    setCurrentVariant({
+      id: "",
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "50",
+      imageUrls: "",
+    });
     setMessage("");
   };
 
@@ -181,7 +214,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleUpload = async (files: FileList | null) => {
+  const handleVariantImageUpload = async (files: FileList | null) => {
     if (!files?.length || !accessToken) return;
     setUploading(true);
     setMessage("");
@@ -193,12 +226,84 @@ export default function AdminProductsPage() {
         const res = await apiClient.upload<{ success: boolean; data: { url: string } }>("/upload", data, accessToken);
         urls.push(res.data.url);
       }
-      setImageUrls((current) => [current, ...urls].filter(Boolean).join("\n"));
+      setCurrentVariant((curr) => ({
+        ...curr,
+        imageUrls: [curr.imageUrls, ...urls].filter(Boolean).join("\n"),
+      }));
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Image upload failed");
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSaveVariant = () => {
+    if (!currentVariant.color.trim()) {
+      alert("Please enter a color name.");
+      return;
+    }
+    const images = currentVariant.imageUrls
+      .split(/\r?\n|,/)
+      .map((url) => url.trim())
+      .filter(Boolean);
+    const stock = Number(currentVariant.stock || 0);
+
+    if (currentVariant.id) {
+      // Edit mode
+      setVariants((prev) =>
+        prev.map((v) =>
+          v.id === currentVariant.id
+            ? { ...v, color: currentVariant.color, colorHex: currentVariant.colorHex, stock, images }
+            : v
+        )
+      );
+    } else {
+      // Add mode
+      const newVar = {
+        id: String(Date.now()),
+        color: currentVariant.color,
+        colorHex: currentVariant.colorHex,
+        stock,
+        images,
+      };
+      setVariants((prev) => [...prev, newVar]);
+    }
+
+    // Reset current variant inputs
+    setCurrentVariant({
+      id: "",
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "50",
+      imageUrls: "",
+    });
+  };
+
+  const handleEditVariant = (v: any) => {
+    setCurrentVariant({
+      id: v.id,
+      color: v.color,
+      colorHex: v.colorHex || "#1a1a1a",
+      stock: String(v.stock),
+      imageUrls: (v.images || []).join("\n"),
+    });
+  };
+
+  const handleDeleteVariant = (id: string) => {
+    setVariants((prev) => prev.filter((v) => v.id !== id));
+    if (currentVariant.id === id) {
+      cancelEditVariant();
+    }
+  };
+
+  const cancelEditVariant = () => {
+    setCurrentVariant({
+      id: "",
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "50",
+      imageUrls: "",
+    });
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -208,13 +313,15 @@ export default function AdminProductsPage() {
       setMessage("Please select at least one size.");
       return;
     }
+    if (variants.length === 0) {
+      setMessage("Please add at least one color variant.");
+      return;
+    }
     setSaving(true);
     setMessage("");
-    const images = imageUrls
-      .split(/\r?\n|,/)
-      .map((url) => url.trim())
-      .filter(Boolean);
-    const stock = Number(form.stock || 0);
+
+    const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
+    const allImages = Array.from(new Set(variants.flatMap((v) => v.images)));
 
     const payload = {
       title: form.title,
@@ -223,9 +330,14 @@ export default function AdminProductsPage() {
       price: Number(form.price),
       compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
       sizes: selectedSizes,
-      variants: [{ color: form.color, colorHex: form.colorHex, images, stock }],
-      images,
-      stock,
+      variants: variants.map((v) => ({
+        color: v.color,
+        colorHex: v.colorHex,
+        images: v.images,
+        stock: v.stock,
+      })),
+      images: allImages,
+      stock: totalStock,
       rewardCoins: Number(form.rewardCoins || 0),
       featured: form.featured,
       trending: form.trending,
@@ -243,7 +355,7 @@ export default function AdminProductsPage() {
       }
       setForm({ ...emptyForm, category: categories[0]?._id || "" });
       setSelectedSizes(["S", "M", "L", "XL"]);
-      setImageUrls("");
+      setVariants([]);
       refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Product save failed");
@@ -372,19 +484,7 @@ export default function AdminProductsPage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Stock Level</label>
-                <input
-                  type="number"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
-                  placeholder="100"
-                  value={form.stock}
-                  onChange={(e) => update("stock", e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
+              <div className="space-y-1 col-span-2 sm:col-span-2">
                 <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Reward Coins</label>
                 <input
                   type="number"
@@ -397,17 +497,17 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          {/* Section 3: Sizes & Colors */}
+          {/* Section 3: Sizes */}
           <div className="space-y-5">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-              <Palette size={16} className="text-charcoal/50" />
-              <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">Sizes & Color Options</h2>
+              <Layers size={16} className="text-charcoal/50" />
+              <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">Available Sizes</h2>
             </div>
 
             {/* Premium Multi-select Sizes Selector */}
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
-                Available Sizes (Select multiple)
+                Select Available Sizes
               </label>
               <div className="flex flex-wrap gap-2">
                 {ALL_SIZES.map((size) => {
@@ -429,91 +529,162 @@ export default function AdminProductsPage() {
                 })}
               </div>
             </div>
+          </div>
 
-            {/* Colors Preset Swatches + Hex picker */}
-            <div className="space-y-4 pt-2">
+          {/* Section 4: Color Variants */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
+              <Palette size={16} className="text-charcoal/50" />
+              <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">Color Variants & Inventory ({variants.length})</h2>
+            </div>
+
+            {/* List of Added Variants */}
+            {variants.length > 0 ? (
+              <div className="grid gap-3">
+                {variants.map((v, idx) => (
+                  <div 
+                    key={v.id || idx} 
+                    className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-100 rounded-xl"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span
+                        className="w-6 h-6 rounded-full border border-black/10 flex-shrink-0"
+                        style={{ backgroundColor: v.colorHex }}
+                      />
+                      <div className="min-w-0 text-xs">
+                        <p className="font-semibold text-charcoal">{v.color}</p>
+                        <p className="text-[10px] text-charcoal/40 font-mono mt-0.5">
+                          Stock: {v.stock} · {v.images.length} images
+                        </p>
+                        {v.images.length > 0 && (
+                          <div className="flex gap-1.5 mt-2 overflow-x-auto">
+                            {v.images.slice(0, 5).map((imgUrl: string, imgIdx: number) => (
+                              <img
+                                key={imgIdx}
+                                src={imgUrl}
+                                alt=""
+                                className="w-7 h-7 object-cover rounded border border-gray-200"
+                              />
+                            ))}
+                            {v.images.length > 5 && (
+                              <div className="w-7 h-7 bg-gray-200 border border-gray-300 flex items-center justify-center text-[8px] font-bold text-charcoal/60 rounded">
+                                +{v.images.length - 5}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEditVariant(v)}
+                        className="text-[10px] uppercase font-bold tracking-wider text-charcoal/70 hover:text-charcoal bg-white border border-gray-200 px-2.5 py-1 rounded-lg shadow-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteVariant(v.id)}
+                        className="text-[10px] uppercase font-bold tracking-wider text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 border border-dashed border-gray-200 rounded-xl bg-gray-50/30 text-charcoal/40 text-xs">
+                <Palette size={20} className="mx-auto text-charcoal/20 mb-2" />
+                <p>No color variants added yet.</p>
+                <p className="text-[9px] uppercase tracking-wider mt-1 text-charcoal/30">Add at least one color variant below</p>
+              </div>
+            )}
+
+            {/* Variant Editor Subform */}
+            <div className="border border-charcoal/10 rounded-2xl p-5 bg-stone-50/50 space-y-4">
+              <p className="text-[10px] uppercase tracking-wider text-charcoal font-bold">
+                {currentVariant.id ? "Edit Color Variant" : "Add New Color Variant"}
+              </p>
+
+              {/* Swatches & Color Input */}
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
-                  Color Preset Swatches
+                  Color Presets
                 </label>
-                <div className="flex flex-wrap gap-3">
-                  {PRESET_COLORS.map((color) => {
-                    const isSelected = form.colorHex.toLowerCase() === color.hex.toLowerCase();
-                    return (
-                      <button
-                        key={color.name}
-                        type="button"
-                        onClick={() => {
-                          setForm((current) => ({
-                            ...current,
-                            color: color.name,
-                            colorHex: color.hex,
-                          }));
-                        }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs transition-all font-medium ${
-                          isSelected
-                            ? "border-charcoal bg-gray-50 text-charcoal"
-                            : "border-gray-200 bg-white text-charcoal/70 hover:border-gray-300"
-                        }`}
-                      >
-                        <span
-                          className="w-3.5 h-3.5 rounded-full border border-black/10 flex-shrink-0"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        {color.name}
-                      </button>
-                    );
-                  })}
+                <div className="flex flex-wrap gap-2.5">
+                  {PRESET_COLORS.map((color) => (
+                    <button
+                      key={color.name}
+                      type="button"
+                      onClick={() => {
+                        setCurrentVariant((curr) => ({
+                          ...curr,
+                          color: color.name,
+                          colorHex: color.hex,
+                        }));
+                      }}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.2 rounded-lg border text-xs transition-all ${
+                        currentVariant.colorHex.toLowerCase() === color.hex.toLowerCase()
+                          ? "border-charcoal bg-white font-semibold"
+                          : "border-gray-200 bg-white text-charcoal/60 hover:border-gray-300"
+                      }`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full border border-black/10 flex-shrink-0"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      {color.name}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Custom Color Config */}
-              <div className="grid sm:grid-cols-2 gap-4 pt-1">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Color Name</label>
                   <input
                     type="text"
                     className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
                     placeholder="e.g. Sage Green"
-                    value={form.color}
-                    onChange={(e) => update("color", e.target.value)}
-                    required
+                    value={currentVariant.color}
+                    onChange={(e) => setCurrentVariant((curr) => ({ ...curr, color: e.target.value }))}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Color Code (Hex)</label>
+                  <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Color Hex</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <input
                         type="text"
                         className="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm font-mono"
                         placeholder="#7d8471"
-                        value={form.colorHex}
+                        value={currentVariant.colorHex}
                         onChange={(e) => {
                           const hex = e.target.value;
-                          setForm((current) => ({
-                            ...current,
+                          setCurrentVariant((curr) => ({
+                            ...curr,
                             colorHex: hex,
-                            color: hex.startsWith("#") && (hex.length === 4 || hex.length === 7) ? getClosestColorName(hex) : current.color,
+                            color: hex.startsWith("#") && (hex.length === 4 || hex.length === 7) ? getClosestColorName(hex) : curr.color,
                           }));
                         }}
-                        required
                       />
                       <span
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-black/10 shadow-sm"
-                        style={{ backgroundColor: form.colorHex }}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-black/10"
+                        style={{ backgroundColor: currentVariant.colorHex }}
                       />
                     </div>
-                    {/* Visual Color Picker */}
                     <div className="w-11 h-11 border border-gray-200 rounded-xl flex items-center justify-center bg-white overflow-hidden relative group hover:border-gray-300 cursor-pointer">
                       <input
                         type="color"
-                        value={form.colorHex}
+                        value={currentVariant.colorHex}
                         onChange={(e) => {
                           const hex = e.target.value;
-                          setForm((current) => ({
-                            ...current,
+                          setCurrentVariant((curr) => ({
+                            ...curr,
                             colorHex: hex,
                             color: getClosestColorName(hex),
                           }));
@@ -525,38 +696,66 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Section 4: Images */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-              <Upload size={16} className="text-charcoal/50" />
-              <h2 className="text-xs uppercase tracking-editorial font-bold text-charcoal/80">Product Images</h2>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-charcoal/30 transition-all bg-gray-50/50 cursor-pointer relative group">
+              {/* Variant Stock level */}
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Variant Stock Level</label>
                 <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => handleUpload(e.target.files)}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  type="number"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
+                  placeholder="50"
+                  value={currentVariant.stock}
+                  onChange={(e) => setCurrentVariant((curr) => ({ ...curr, stock: e.target.value }))}
                 />
-                <Upload size={24} className="mx-auto text-charcoal/30 group-hover:text-charcoal/60 mb-2 transition-colors" />
-                <p className="text-xs font-semibold text-charcoal/70">Click to Upload Files</p>
-                <p className="text-[10px] text-charcoal/40 mt-1 uppercase tracking-wider">Supports high-res PNG, JPG, WebP</p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Image URLs (one per line or comma separated)</label>
-                <textarea
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm font-mono resize-none"
-                  placeholder="https://images.unsplash.com/photo-..."
-                  value={imageUrls}
-                  onChange={(e) => setImageUrls(e.target.value)}
-                />
+              {/* Variant Images Upload area */}
+              <div className="space-y-3">
+                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
+                  Variant Images
+                </label>
+                
+                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center hover:border-charcoal/30 transition-all bg-gray-50/50 cursor-pointer relative group">
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => handleVariantImageUpload(e.target.files)}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  />
+                  <Upload size={20} className="mx-auto text-charcoal/30 group-hover:text-charcoal/60 mb-2 transition-colors" />
+                  <p className="text-[11px] font-semibold text-charcoal/70">Click to Upload Variant Images</p>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Variant Image URLs (one per line)</label>
+                  <textarea
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
+                    placeholder="https://images.unsplash.com/photo-..."
+                    value={currentVariant.imageUrls}
+                    onChange={(e) => setCurrentVariant((curr) => ({ ...curr, imageUrls: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              {/* Save/Add Variant action button */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleSaveVariant}
+                  className="flex-1 bg-charcoal text-offwhite hover:bg-black h-10 text-[10px] uppercase tracking-widest rounded-xl font-bold transition-all shadow-sm"
+                >
+                  {currentVariant.id ? "Update Variant" : "Add Variant"}
+                </button>
+                {currentVariant.id && (
+                  <button
+                    type="button"
+                    onClick={cancelEditVariant}
+                    className="bg-gray-100 hover:bg-gray-200 text-charcoal h-10 px-4 text-[10px] uppercase tracking-widest rounded-xl font-bold transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
               </div>
             </div>
           </div>
