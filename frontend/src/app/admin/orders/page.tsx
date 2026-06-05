@@ -54,6 +54,21 @@ export default function AdminOrdersPage() {
   const [statusInput, setStatusInput] = useState("");
   const [savingChanges, setSavingChanges] = useState(false);
 
+  const getPaymentStatus = (orderStatus: string) => {
+    switch (orderStatus) {
+      case "pending":
+        return { text: "Pending / Unpaid", color: "text-amber-600" };
+      case "cancelled":
+        return { text: "Cancelled Payment", color: "text-red-500 font-semibold" };
+      case "refunded":
+        return { text: "Refunded", color: "text-rose-500 font-semibold" };
+      case "failed":
+        return { text: "Failed Payment", color: "text-red-600 font-bold" };
+      default:
+        return { text: "Paid", color: "text-green-600 font-semibold" };
+    }
+  };
+
   const fetchOrders = () => {
     if (!accessToken) return;
     setLoading(true);
@@ -294,7 +309,12 @@ export default function AdminOrdersPage() {
                     </p>
                     <div className="text-sm space-y-1 text-charcoal/80">
                       <p className="font-medium uppercase tracking-wide">{selectedOrder.paymentMethod || "razorpay"}</p>
-                      <p className="text-xs text-charcoal/40">Status: PAID</p>
+                      <p className="text-xs text-charcoal/50">
+                        Status:{" "}
+                        <span className={getPaymentStatus(selectedOrder.status).color}>
+                          {getPaymentStatus(selectedOrder.status).text}
+                        </span>
+                      </p>
                     </div>
                   </div>
 
