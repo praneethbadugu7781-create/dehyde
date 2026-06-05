@@ -47,16 +47,86 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const googleAuth = asyncHandler(async (req, res) => {
-  const { email, name, googleId, avatar } = req.body;
-  let user = await User.findOne({ $or: [{ googleId }, { email }] });
-  if (!user) {
-    user = await User.create({ email, name, googleId, avatar, role: "user" });
-    await getOrCreateWallet(user._id);
-  } else if (!user.googleId) {
-    user.googleId = googleId;
-    if (avatar) user.avatar = avatar;
-    await user.save();
+  const { email, name, googleId, avatar, otp } = req.body;
+  if (!email) {
+    res.status(400).json({ success: false, message: "Email is required" });
+    return;
   }
+
+  // 1. If OTP is not provided, send OTP
+  if (!otp) {
+    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hash = await bcrypt.hash(generatedOtp, 10);
+    
+    // Check if user exists to determine isNewUser
+    const existingUser = await User.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
+    const isNewUser = !existingUser;
+
+    // Upsert user to store OTP
+    await User.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { otpHash: hash, otpExpires: new Date(Date.now() + 10 * 60 * 1000) },
+      { upsert: true }
+    );
+
+    // Send email asynchronously
+    sendOtpEmail(email, generatedOtp).catch(console.error);
+
+    res.json({
+      success: true,
+      otpRequired: true,
+      isNewUser,
+      message: "OTP sent to your Google email",
+      ...(process.env.NODE_ENV !== "production" && { devOtp: generatedOtp }),
+    });
+    return;
+  }
+
+  // 2. If OTP is provided, verify OTP first
+  const userForOtp = await User.findOne({ email: email.toLowerCase() });
+  if (!userForOtp || !userForOtp.otpHash || !userForOtp.otpExpires) {
+    res.status(400).json({ success: false, message: "Invalid request or OTP expired" });
+    return;
+  }
+  if (userForOtp.otpExpires.getTime() < Date.now()) {
+    res.status(400).json({ success: false, message: "OTP expired" });
+    return;
+  }
+  const valid = await bcrypt.compare(otp, userForOtp.otpHash);
+  if (!valid) {
+    res.status(400).json({ success: false, message: "Invalid OTP" });
+    return;
+  }
+
+  // Clear OTP fields
+  userForOtp.otpHash = undefined;
+  userForOtp.otpExpires = undefined;
+  await userForOtp.save();
+
+  // 3. Complete Google sign-in/registration
+  let user = await User.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
+  if (!user) {
+    user = await User.create({ email: email.toLowerCase(), name, googleId, avatar, role: "user" });
+    await getOrCreateWallet(user._id);
+  } else {
+    let changed = false;
+    if (!user.googleId) {
+      user.googleId = googleId;
+      changed = true;
+    }
+    if (avatar && !user.avatar) {
+      user.avatar = avatar;
+      changed = true;
+    }
+    if (name && !user.name) {
+      user.name = name;
+      changed = true;
+    }
+    if (changed) {
+      await user.save();
+    }
+  }
+
   sendTokens(res, user);
 });
 

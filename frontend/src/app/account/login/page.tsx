@@ -44,6 +44,12 @@ function LoginForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [devOtp, setDevOtp] = useState("");
+  const [googlePayload, setGooglePayload] = useState<{
+    email: string;
+    name: string;
+    googleId: string;
+    avatar?: string;
+  } | null>(null);
   
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -84,51 +90,42 @@ function LoginForm() {
       const payload = decodeJwt(response.credential);
       if (!payload) throw new Error("Could not parse Google credentials");
 
-      const res = await apiClient.post<{
-        success: boolean;
-        data: { accessToken: string; user: { id: string; role: string } };
-      }>("/auth/google", {
+      const payloadData = {
         email: payload.email,
-        name: payload.name,
+        name: payload.name || "",
         googleId: payload.sub,
         avatar: payload.picture,
-      });
+      };
 
-      const me = await apiClient.get<{ success: boolean; data: unknown }>(
-        "/auth/me",
-        res.data.accessToken
-      );
-      setAuth(res.data.accessToken, me.data as Parameters<typeof setAuth>[1]);
-      router.push(redirect);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMockGoogleLogin = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const mockId = `mock-${Math.floor(100000 + Math.random() * 900000)}`;
       const res = await apiClient.post<{
         success: boolean;
-        data: { accessToken: string; user: { id: string; role: string } };
-      }>("/auth/google", {
-        email: `${mockId}@dehyde.in`,
-        name: "Google Mock User",
-        googleId: mockId,
-      });
+        otpRequired?: boolean;
+        isNewUser: boolean;
+        devOtp?: string;
+        message: string;
+        data?: { accessToken: string; user: { id: string; role: string } };
+      }>("/auth/google", payloadData);
 
-      const me = await apiClient.get<{ success: boolean; data: unknown }>(
-        "/auth/me",
-        res.data.accessToken
-      );
-      setAuth(res.data.accessToken, me.data as Parameters<typeof setAuth>[1]);
-      router.push(redirect);
+      if (res.otpRequired) {
+        setGooglePayload(payloadData);
+        setEmail(payloadData.email);
+        setName(payloadData.name);
+        setIsNewUser(res.isNewUser);
+        setOtpSent(true);
+        if (res.devOtp) {
+          setDevOtp(res.devOtp);
+        }
+        setSuccessMsg("Verification code sent to your Google email.");
+      } else if (res.data?.accessToken) {
+        const me = await apiClient.get<{ success: boolean; data: unknown }>(
+          "/auth/me",
+          res.data.accessToken
+        );
+        setAuth(res.data.accessToken, me.data as Parameters<typeof setAuth>[1]);
+        router.push(redirect);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Mock login failed");
+      setError(err instanceof Error ? err.message : "Google login failed");
     } finally {
       setLoading(false);
     }
@@ -173,16 +170,30 @@ function LoginForm() {
     setLoading(true);
     setError("");
     try {
-      const res = await apiClient.post<{
-        success: boolean;
-        data: { accessToken: string; user: { id: string; role: string } };
-      }>("/auth/otp/verify-email", { email, otp, name });
+      let accessToken = "";
+      if (googlePayload) {
+        const res = await apiClient.post<{
+          success: boolean;
+          data: { accessToken: string; user: { id: string; role: string } };
+        }>("/auth/google", {
+          ...googlePayload,
+          otp,
+          name: isNewUser ? name : googlePayload.name,
+        });
+        accessToken = res.data.accessToken;
+      } else {
+        const res = await apiClient.post<{
+          success: boolean;
+          data: { accessToken: string; user: { id: string; role: string } };
+        }>("/auth/otp/verify-email", { email, otp, name });
+        accessToken = res.data.accessToken;
+      }
 
       const me = await apiClient.get<{ success: boolean; data: unknown }>(
         "/auth/me",
-        res.data.accessToken
+        accessToken
       );
-      setAuth(res.data.accessToken, me.data as Parameters<typeof setAuth>[1]);
+      setAuth(accessToken, me.data as Parameters<typeof setAuth>[1]);
       router.push(redirect);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
@@ -243,6 +254,7 @@ function LoginForm() {
                     setOtpSent(false);
                     setError("");
                     setDevOtp("");
+                    setGooglePayload(null);
                   }}
                   className="text-charcoal uppercase tracking-widest text-[9px] hover:underline whitespace-nowrap"
                 >
@@ -310,14 +322,6 @@ function LoginForm() {
         {/* Google Buttons Section */}
         <div className="space-y-4">
           <div id="google-signin-btn" className="w-full overflow-hidden" />
-          
-          <Button
-            onClick={handleMockGoogleLogin}
-            variant="outline"
-            className="w-full flex items-center justify-center gap-2 border-gray-200 text-charcoal hover:bg-gray-50 h-10 px-4 text-[10px] uppercase tracking-widest bg-white"
-          >
-            Mock Google Sign-In (Dev Dev)
-          </Button>
         </div>
       </motion.div>
     </div>
