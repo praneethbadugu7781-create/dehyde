@@ -13,6 +13,7 @@ interface Banner {
   title: string;
   subtitle?: string;
   price?: string;
+  layout?: string;
   image: string;
   link?: string;
   cta?: string;
@@ -25,6 +26,7 @@ const emptyForm = {
   title: "",
   subtitle: "",
   price: "",
+  layout: "bottom-left",
   image: "",
   link: "/shop",
   cta: "Explore Collection",
@@ -35,11 +37,12 @@ const emptyForm = {
 export default function AdminBannersPage() {
   const { accessToken } = useAuthStore();
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState({ ...emptyForm, placement: "hero" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<"hero" | "collection" | "promo">("hero");
 
   const refresh = () => {
     if (!accessToken) return;
@@ -53,6 +56,17 @@ export default function AdminBannersPage() {
 
   const update = (key: string, value: any) => {
     setForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleTabChange = (tab: "hero" | "collection" | "promo") => {
+    setActiveTab(tab);
+    setForm((current) => ({
+      ...emptyForm,
+      placement: tab,
+      cta: tab === "promo" ? "" : tab === "collection" ? "Explore" : "Explore Collection",
+    }));
+    setEditingId(null);
+    setMessage("");
   };
 
   const handleUpload = async (file: File | null) => {
@@ -85,7 +99,11 @@ export default function AdminBannersPage() {
         await apiClient.post("/admin/banners", form, accessToken);
         setMessage("Banner added successfully.");
       }
-      setForm(emptyForm);
+      setForm({
+        ...emptyForm,
+        placement: activeTab,
+        cta: activeTab === "promo" ? "" : activeTab === "collection" ? "Explore" : "Explore Collection",
+      });
       setEditingId(null);
       refresh();
     } catch (err) {
@@ -101,12 +119,16 @@ export default function AdminBannersPage() {
       title: banner.title || "",
       subtitle: banner.subtitle || "",
       price: banner.price || "",
+      layout: banner.layout || "bottom-left",
       image: banner.image || "",
       link: banner.link || "/shop",
-      cta: banner.cta || "Explore Collection",
+      cta: banner.cta || "",
       placement: banner.placement || "hero",
       order: banner.order || 0,
     });
+    if (banner.placement === "hero" || banner.placement === "collection" || banner.placement === "promo") {
+      setActiveTab(banner.placement);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -115,7 +137,7 @@ export default function AdminBannersPage() {
     try {
       await apiClient.delete(`/admin/banners/${id}`, accessToken);
       if (editingId === id) {
-        setForm(emptyForm);
+        setForm({ ...emptyForm, placement: activeTab });
         setEditingId(null);
       }
       refresh();
@@ -134,17 +156,50 @@ export default function AdminBannersPage() {
     }
   };
 
+  const filteredBanners = banners.filter((b) => b.placement === activeTab);
+
   return (
     <div className="animate-in fade-in duration-500 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      {/* Page Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-serif text-3xl text-charcoal">Homepage Banners</h1>
-          <p className="text-xs text-charcoal/50 mt-1">Configure active images and text for the homepage hero carousel.</p>
+          <h1 className="font-serif text-3xl text-charcoal">
+            {activeTab === "hero"
+              ? "Hero Slideshow Banners"
+              : activeTab === "collection"
+              ? "Featured Collection Banners"
+              : "Promo & Announcement Banners"}
+          </h1>
+          <p className="text-xs text-charcoal/50 mt-1">
+            {activeTab === "hero"
+              ? "Configure active images, styles, and text overlays for the homepage full-screen hero slideshow."
+              : activeTab === "collection"
+              ? "Configure collection categories, cover layouts, and shop category quick-links."
+              : "Configure homepage announcement bars, promotional strips, or announcement overlays."}
+          </p>
         </div>
       </div>
 
+      {/* Tabs Navigator */}
+      <div className="flex border-b border-gray-100 mb-8 gap-4">
+        {(["hero", "collection", "promo"] as const).map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => handleTabChange(tab)}
+            className={`pb-3 text-[10px] uppercase tracking-widest px-1.5 font-bold border-b-2 transition-all cursor-pointer ${
+              activeTab === tab
+                ? "border-charcoal text-charcoal"
+                : "border-transparent text-charcoal/30 hover:text-charcoal/60"
+            }`}
+          >
+            {tab === "hero" ? "Hero Slides" : tab === "collection" ? "Collection Cards" : "Promo Strips"}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        {/* Form */}
+        {/* Form Container */}
         <motion.form
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 16 }}
@@ -153,14 +208,14 @@ export default function AdminBannersPage() {
         >
           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
             <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 font-bold">
-              {editingId ? "Edit Banner Slide" : "Create New Banner"}
+              {editingId ? "Edit Banner Slide" : `Add ${activeTab === "hero" ? "Hero Slide" : activeTab === "collection" ? "Collection Card" : "Promo Strip"}`}
             </p>
             {editingId && (
               <button
                 type="button"
                 onClick={() => {
                   setEditingId(null);
-                  setForm(emptyForm);
+                  setForm({ ...emptyForm, placement: activeTab });
                 }}
                 className="text-[10px] uppercase tracking-editorial text-red-500 hover:underline font-bold"
               >
@@ -168,53 +223,140 @@ export default function AdminBannersPage() {
               </button>
             )}
           </div>
-          
+
           <div className="space-y-4">
+            {/* Title / Primary Text */}
             <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Main Title</label>
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. Defined by silence." value={form.title} onChange={(e) => update("title", e.target.value)} required />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Subtitle / Lead Text</label>
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. Premium streetwear from India" value={form.subtitle} onChange={(e) => update("subtitle", e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Price Label (e.g. ₹ 599 / ONWARDS)</label>
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. ₹ 599 / ONWARDS" value={form.price} onChange={(e) => update("price", e.target.value)} />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Button Label (CTA)</label>
-                <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="Explore Collection" value={form.cta} onChange={(e) => update("cta", e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Button Link (URL)</label>
-                <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="/shop" value={form.link} onChange={(e) => update("link", e.target.value)} />
-              </div>
+              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
+                {activeTab === "hero" ? "Main Title" : activeTab === "collection" ? "Collection Title" : "Promo Message"}
+              </label>
+              <Input
+                className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                placeholder={activeTab === "hero" ? "e.g. Defined by silence." : activeTab === "collection" ? "e.g. Cargo Pants" : "e.g. Black Friday Sale: 50% Off"}
+                value={form.title}
+                onChange={(e) => update("title", e.target.value)}
+                required
+              />
             </div>
 
+            {/* Subtitle / Description (Hidden for Promo) */}
+            {activeTab !== "promo" && (
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
+                  {activeTab === "hero" ? "Subtitle / Lead Text" : "Description / Subtitle"}
+                </label>
+                <Input
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder={activeTab === "hero" ? "e.g. Premium streetwear from India" : "e.g. Urban Utility Cargo Pants"}
+                  value={form.subtitle}
+                  onChange={(e) => update("subtitle", e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* Price Tag (Only for Hero Section) */}
+            {activeTab === "hero" && (
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Price Label (e.g. ₹ 599 / ONWARDS)</label>
+                <Input
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder="e.g. ₹ 599 / ONWARDS"
+                  value={form.price}
+                  onChange={(e) => update("price", e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* CTA and URL configuration */}
+            {activeTab !== "promo" ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Button Label (CTA)</label>
+                  <Input
+                    className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                    placeholder={activeTab === "hero" ? "Explore Collection" : "Explore"}
+                    value={form.cta}
+                    onChange={(e) => update("cta", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Button Link (URL)</label>
+                  <Input
+                    className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                    placeholder="/shop"
+                    value={form.link}
+                    onChange={(e) => update("link", e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Promo Link (URL)</label>
+                <Input
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder="/shop"
+                  value={form.link}
+                  onChange={(e) => update("link", e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* Sorting Order & Optional Layout Picker */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Display Order Index</label>
-                <Input type="number" className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="0" value={form.order} onChange={(e) => update("order", Number(e.target.value))} />
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Order Index</label>
+                <Input
+                  type="number"
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder="0"
+                  value={form.order}
+                  onChange={(e) => update("order", Number(e.target.value))}
+                />
               </div>
-              <div className="space-y-1">
-                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Placement</label>
-                <select className="w-full border border-gray-200 rounded-xl px-3 py-2 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm cursor-pointer" value={form.placement} onChange={(e) => update("placement", e.target.value)}>
-                  <option value="hero">Hero Section</option>
-                  <option value="collection">Collection Section</option>
-                  <option value="promo">Promo Banner</option>
-                </select>
-              </div>
+              {activeTab === "hero" ? (
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Layout Style</label>
+                  <select
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm cursor-pointer"
+                    value={form.layout}
+                    onChange={(e) => update("layout", e.target.value)}
+                  >
+                    <option value="bottom-left">Style Union (Left)</option>
+                    <option value="campaign">Campaign (Center)</option>
+                  </select>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Type</label>
+                  <Input
+                    className="border-gray-200 text-charcoal/50 bg-gray-50 uppercase text-[10px] tracking-wider"
+                    value={activeTab === "collection" ? "Collection Card" : "Promo Strip"}
+                    disabled
+                  />
+                </div>
+              )}
             </div>
 
+            {/* Image Upload Block */}
             <div className="space-y-3 pt-4 border-t border-gray-100">
-              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Banner Slide Image</label>
-              <input type="file" accept="image/*" onChange={(e) => handleUpload(e.target.files?.[0] || null)} className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer" />
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="Or paste image URL" value={form.image} onChange={(e) => update("image", e.target.value)} required />
+              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
+                {activeTab === "hero" ? "Hero Image" : activeTab === "collection" ? "Card Image" : "Banner Image"}
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleUpload(e.target.files?.[0] || null)}
+                className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
+              />
+              <Input
+                className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                placeholder="Or paste image URL"
+                value={form.image}
+                onChange={(e) => update("image", e.target.value)}
+                required
+              />
             </div>
-            
+
             {form.image && (
               <div className="relative h-32 w-full mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
                 <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
@@ -222,23 +364,44 @@ export default function AdminBannersPage() {
             )}
           </div>
 
-          {message && <p className={`text-xs p-3.5 rounded-xl font-semibold border ${message.toLowerCase().includes("success") ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"}`}>{message}</p>}
-          <Button type="submit" className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all" disabled={saving || uploading || !form.image}>
+          {message && (
+            <p
+              className={`text-xs p-3.5 rounded-xl font-semibold border ${
+                message.toLowerCase().includes("success")
+                  ? "bg-green-50 text-green-700 border-green-200"
+                  : "bg-amber-50 text-amber-700 border-amber-200"
+              }`}
+            >
+              {message}
+            </p>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
+            disabled={saving || uploading || !form.image}
+          >
             {saving ? "Saving..." : uploading ? "Uploading..." : (
               <>
                 {editingId ? <Edit2 size={14} /> : <Plus size={14} />}
-                {editingId ? "Update Banner Slide" : "Add Banner Slide"}
+                {editingId ? "Update Banner" : "Add Banner"}
               </>
             )}
           </Button>
         </motion.form>
 
-        {/* List */}
+        {/* List Container */}
         <div className="bg-white border border-gray-100 p-6 md:p-8 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] h-fit">
-          <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 border-b border-gray-100 pb-4 font-bold">Configure Banners List</p>
+          <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 border-b border-gray-100 pb-4 font-bold">
+            Active {activeTab === "hero" ? "Hero Slides" : activeTab === "collection" ? "Collections" : "Promo Banners"} List
+          </p>
+
           <div className="mt-6 space-y-4">
-            {banners.map((banner) => (
-              <div key={banner._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-100 p-4 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors relative overflow-hidden">
+            {filteredBanners.map((banner) => (
+              <div
+                key={banner._id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-100 p-4 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors relative overflow-hidden"
+              >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-20 h-14 bg-black flex-shrink-0 relative rounded-lg overflow-hidden border border-gray-200/50">
                     <img src={banner.image} alt={banner.title} className="w-full h-full object-cover opacity-80" />
@@ -251,7 +414,11 @@ export default function AdminBannersPage() {
                       </span>
                     </div>
                     <p className="text-[10px] text-charcoal/50 mt-1 uppercase tracking-wider font-mono truncate">
-                      {banner.placement} · {banner.cta} → {banner.link} {banner.price ? `· Price: ${banner.price}` : ""}
+                      {banner.placement}
+                      {banner.placement === "hero" && ` (${banner.layout || "bottom-left"})`}
+                      {banner.cta && ` · ${banner.cta}`}
+                      {banner.link && ` → ${banner.link}`}
+                      {banner.price && ` · Price: ${banner.price}`}
                     </p>
                   </div>
                 </div>
@@ -293,10 +460,11 @@ export default function AdminBannersPage() {
                 </div>
               </div>
             ))}
-            {banners.length === 0 && (
-              <div className="text-center py-12 text-charcoal/30 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30">
-                <p className="text-sm font-medium">No banners uploaded yet</p>
-                <p className="text-[10px] uppercase tracking-widest mt-2">The default fallback will be shown</p>
+
+            {filteredBanners.length === 0 && (
+              <div className="text-center py-12 text-charcoal/30 border border-dashed border-gray-200 rounded-2xl bg-gray-50/30 animate-pulse">
+                <p className="text-sm font-medium">No banners in this section</p>
+                <p className="text-[10px] uppercase tracking-widest mt-2">The default fallbacks will be displayed</p>
               </div>
             )}
           </div>

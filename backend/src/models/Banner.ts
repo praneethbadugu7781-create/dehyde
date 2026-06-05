@@ -4,6 +4,7 @@ export interface IBanner extends Document {
   title: string;
   subtitle?: string;
   price?: string;
+  layout?: "campaign" | "bottom-left";
   image: string;
   mobileImage?: string;
   link?: string;
@@ -18,6 +19,7 @@ const bannerSchema = new Schema<IBanner>(
     title: String,
     subtitle: String,
     price: String,
+    layout: { type: String, enum: ["campaign", "bottom-left"], default: "bottom-left" },
     image: { type: String, required: true },
     mobileImage: String,
     link: String,

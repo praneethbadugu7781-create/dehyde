@@ -84,8 +84,8 @@ export function Hero() {
               image: b.image,
               cta: b.cta || "Shop Now",
               link: b.link || "/shop",
-              // Layout fallback: Banner 1 is campaign format, others bottom-left format
-              layout: idx === 0 ? "campaign" : "bottom-left"
+              // Layout fallback: Use database layout if present, otherwise default first banner to campaign, others bottom-left
+              layout: b.layout || (idx === 0 ? "campaign" : "bottom-left")
             }));
 
           if (dbBanners.length > 0) {
@@ -148,47 +148,112 @@ export function Hero() {
                   sizes="100vw"
                 />
               </motion.div>
-              {/* Subtle bottom-left gradient overlay for high contrast text readability while keeping the image bright */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent z-1" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-1" />
+              {/* Conditional overlay based on banner layout */}
+              {banner.layout === "campaign" ? (
+                <div className="absolute inset-0 bg-black/25 backdrop-brightness-[0.9] z-1" />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent z-1" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent z-1" />
+                </>
+              )}
             </Link>
 
             {/* Content Wrapper */}
-            <div className="relative z-10 mx-auto w-full max-w-[1400px] px-8 md:px-24 pb-20 md:pb-24 pointer-events-none select-none">
-              <Link href={banner.link} className="inline-flex flex-col items-start text-white pointer-events-auto">
-                <motion.div
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.3 }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col items-start text-left"
-                >
-                  {/* Title (Jost Bold Uppercase) */}
-                  <h2 className="font-display text-4xl md:text-6xl font-black tracking-wide leading-none uppercase">
-                    {banner.title}
-                  </h2>
-                  
-                  {/* Subtitle (Instrument Serif Italic) */}
-                  <p className="mt-2 font-serif italic text-2xl md:text-3xl font-normal text-white/95 tracking-wide leading-tight">
-                    {banner.subtitle}
-                  </p>
-                  
-                  {/* Price Tag (Jost Bold with Suffix) */}
-                  {banner.price && (
-                    <div className="mt-4 flex items-baseline font-display">
-                      <span className="text-3xl md:text-4.5xl font-extrabold tracking-tight">
-                        {parsePrice(banner.price).main}
-                      </span>
-                      {parsePrice(banner.price).suffix && (
-                        <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-white/70 font-semibold font-sans ml-2.5">
-                          {parsePrice(banner.price).suffix}
+            {banner.layout === "campaign" ? (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 md:px-24 pointer-events-none select-none">
+                <div className="max-w-2xl flex flex-col items-center pointer-events-auto">
+                  <motion.div
+                    initial={{ opacity: 0, y: 25 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex flex-col items-center"
+                  >
+                    {/* Centered Campaign Badge */}
+                    <span className="text-[9px] md:text-[10px] uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-1.5 rounded-full font-bold mb-5 shadow-sm">
+                      DEHYDE Campaign
+                    </span>
+
+                    {/* Title (Jost Bold Centered Uppercase) */}
+                    <h2 className="font-display text-4xl md:text-7xl font-black tracking-wide leading-none uppercase text-white drop-shadow-sm">
+                      {banner.title}
+                    </h2>
+
+                    {/* Subtitle (Instrument Serif Italic Centered) */}
+                    <p className="mt-4 font-serif italic text-2xl md:text-3.5xl font-normal text-white/95 tracking-wide leading-tight max-w-xl">
+                      {banner.subtitle}
+                    </p>
+
+                    {/* Price Tag (Jost Bold Centered with Suffix) */}
+                    {banner.price && (
+                      <div className="mt-5 flex items-baseline justify-center font-display text-white">
+                        <span className="text-3xl md:text-4.5xl font-extrabold tracking-tight">
+                          {parsePrice(banner.price).main}
                         </span>
-                      )}
+                        {parsePrice(banner.price).suffix && (
+                          <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-white/70 font-semibold font-sans ml-2.5">
+                            {parsePrice(banner.price).suffix}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Dual Action Call to Actions */}
+                    <div className="mt-8 flex flex-wrap justify-center gap-4">
+                      <Link
+                        href={banner.link}
+                        className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-white text-black px-8 py-3.5 hover:bg-black hover:text-white border border-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                      >
+                        {banner.cta}
+                      </Link>
+                      <Link
+                        href="/shop"
+                        className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-transparent text-white px-8 py-3.5 hover:bg-white hover:text-black border border-white/30 hover:border-white transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                      >
+                        Explore Collection
+                      </Link>
                     </div>
-                  )}
-                </motion.div>
-              </Link>
-            </div>
+                  </motion.div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative z-10 mx-auto w-full max-w-[1400px] px-8 md:px-24 pb-20 md:pb-24 pointer-events-none select-none">
+                <Link href={banner.link} className="inline-flex flex-col items-start text-white pointer-events-auto">
+                  <motion.div
+                    initial={{ opacity: 0, y: 25 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="flex flex-col items-start text-left"
+                  >
+                    {/* Title (Jost Bold Uppercase) */}
+                    <h2 className="font-display text-4xl md:text-6xl font-black tracking-wide leading-none uppercase">
+                      {banner.title}
+                    </h2>
+                    
+                    {/* Subtitle (Instrument Serif Italic) */}
+                    <p className="mt-2 font-serif italic text-2xl md:text-3xl font-normal text-white/95 tracking-wide leading-tight">
+                      {banner.subtitle}
+                    </p>
+                    
+                    {/* Price Tag (Jost Bold with Suffix) */}
+                    {banner.price && (
+                      <div className="mt-4 flex items-baseline font-display">
+                        <span className="text-3xl md:text-4.5xl font-extrabold tracking-tight">
+                          {parsePrice(banner.price).main}
+                        </span>
+                        {parsePrice(banner.price).suffix && (
+                          <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-white/70 font-semibold font-sans ml-2.5">
+                            {parsePrice(banner.price).suffix}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </motion.div>
+                </Link>
+              </div>
+            )}
 
             {/* Scroll Down Animated Nested Chevrons */}
             <div
