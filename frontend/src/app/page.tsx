@@ -1,8 +1,8 @@
 import { Hero } from "@/components/home/Hero";
+import { CategoryTabs } from "@/components/home/CategoryTabs";
 import { NewArrivals } from "@/components/home/NewArrivals";
 import { BrandStory } from "@/components/home/BrandStory";
 import { TrendingProducts } from "@/components/home/TrendingProducts";
-import { Features } from "@/components/home/Features";
 import { Reviews } from "@/components/home/Reviews";
 import { SocialPromo } from "@/components/home/SocialPromo";
 
@@ -14,14 +14,14 @@ export default function HomePage() {
 
       {/* 2. Existing Dehyde Website Content begins here */}
       <div className="snap-start w-full relative">
+        {/* Category Switcher Tabs */}
+        <CategoryTabs />
+
         {/* New Arrivals Grid */}
         <NewArrivals />
 
         {/* Best Sellers (Trending) Grid */}
         <TrendingProducts />
-
-        {/* What defines our wear tags grid */}
-        <Features />
 
         {/* Voice of Quality customer testimonials */}
         <Reviews />
