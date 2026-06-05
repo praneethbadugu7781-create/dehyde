@@ -31,22 +31,22 @@ const FALLBACK_BANNERS: BannerData[] = [
   },
   {
     id: "banner2",
-    title: "Oversized Tees",
+    title: "T-Shirts",
     subtitle: "For Every Mood",
     price: "₹ 599 / ONWARDS",
     image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=2400&q=90",
-    cta: "Explore Oversized Tees",
-    link: "/shop?category=oversized-tees",
+    cta: "Explore T-Shirts",
+    link: "/shop?category=t-shirts",
     layout: "bottom-left"
   },
   {
     id: "banner3",
-    title: "Tailored Essentials",
+    title: "Shirts",
     subtitle: "For Every Moment",
     price: "₹ 1,199 / ONWARDS",
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=2400&q=90",
-    cta: "Explore Tailored",
-    link: "/shop?category=casual-shirts",
+    cta: "Explore Shirts",
+    link: "/shop?category=shirts",
     layout: "bottom-left"
   }
 ];

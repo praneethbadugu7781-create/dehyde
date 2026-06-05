@@ -6,11 +6,9 @@ import { Category } from "../models/Category.js";
 import { Settings } from "../models/Settings.js";
 
 const CATEGORIES = [
-  { name: "Oversized Tees", slug: "oversized-tees", order: 1 },
-  { name: "Cargo Pants", slug: "cargo-pants", order: 2 },
-  { name: "Streetwear", slug: "streetwear", order: 3 },
-  { name: "Essentials", slug: "essentials", order: 4 },
-  { name: "Casual Shirts", slug: "casual-shirts", order: 5 },
+  { name: "Shirts", slug: "shirts", order: 1 },
+  { name: "T-Shirts", slug: "t-shirts", order: 2 },
+  { name: "Pants", slug: "pants", order: 3 },
 ];
 
 async function seed() {
@@ -36,6 +34,9 @@ async function seed() {
     },
     { upsert: true }
   );
+
+  // Clean up any old categories that are not in the new list
+  await Category.deleteMany({ slug: { $nin: CATEGORIES.map(c => c.slug) } });
 
   for (const cat of CATEGORIES) {
     await Category.findOneAndUpdate({ slug: cat.slug }, { ...cat, isActive: true }, { upsert: true });

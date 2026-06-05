@@ -17,45 +17,29 @@ interface CategoryMeta {
 }
 
 const CATEGORY_MAP: Record<string, CategoryMeta> = {
-  "oversized-tees": {
-    tag: "Oversized Tees",
-    subtitle: "Heavyweight Oversized Tees",
-    desc: "Crafted from premium heavyweight cotton with dropped shoulders for maximum street comfort and relaxed styling.",
+  "shirts": {
+    tag: "Shirts",
+    subtitle: "Premium Shirts Collection",
+    desc: "Organic cotton and soft linen shirts designed for effortless style and breathable comfort.",
+    minPrice: "₹999",
+    maxPrice: "₹1,999",
+    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=600&auto=format&fit=crop"
+  },
+  "t-shirts": {
+    tag: "T-Shirts",
+    subtitle: "Heavyweight T-Shirts",
+    desc: "Premium structural drop-shoulder crewneck tees crafted from high-density organic cotton.",
     minPrice: "₹599",
     maxPrice: "₹1,299",
     image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=600&auto=format&fit=crop"
   },
-  "cargo-pants": {
-    tag: "Cargo Pants",
-    subtitle: "Urban Utility Cargo Pants",
-    desc: "Durable multi-pocket tactical utility cargos with clean geometric panels and modern tapered cuffs.",
+  "pants": {
+    tag: "Pants",
+    subtitle: "Urban Pants & Cargos",
+    desc: "Utility trousers and tapered cargos styled with multi-pocket storage and custom hems.",
     minPrice: "₹1,499",
     maxPrice: "₹2,999",
     image: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=600&auto=format&fit=crop"
-  },
-  "streetwear": {
-    tag: "Streetwear Collection",
-    subtitle: "Premium Street Essentials",
-    desc: "Premium structural pieces designed to stand out. Tonal textures, raw hems, and premium silhouettes for modern city style.",
-    minPrice: "₹999",
-    maxPrice: "₹3,999",
-    image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?q=80&w=600&auto=format&fit=crop"
-  },
-  "essentials": {
-    tag: "Essentials",
-    subtitle: "Everyday Foundations",
-    desc: "High-quality basics built for daily comfort. Premium blend crewnecks, sweatpants, and luxury basics.",
-    minPrice: "₹499",
-    maxPrice: "₹1,999",
-    image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=600&auto=format&fit=crop"
-  },
-  "casual-shirts": {
-    tag: "Casual Shirts",
-    subtitle: "Relaxed Linen & Cotton Shirts",
-    desc: "Breathable structural casual shirts in organic tones, perfect for seamless transitions between formal and casual moments.",
-    minPrice: "₹1,199",
-    maxPrice: "₹2,499",
-    image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=600&auto=format&fit=crop"
   }
 };
 
@@ -71,9 +55,9 @@ export function CollectionShowcase() {
 
   // Ensure we display at least our default collections if backend has none
   const displayCategories = categories.length > 0 ? categories : [
-    { _id: "1", name: "Oversized Tees", slug: "oversized-tees", description: "" },
-    { _id: "2", name: "Cargo Pants", slug: "cargo-pants", description: "" },
-    { _id: "3", name: "Streetwear", slug: "streetwear", description: "" }
+    { _id: "1", name: "Shirts", slug: "shirts", description: "" },
+    { _id: "2", name: "T-Shirts", slug: "t-shirts", description: "" },
+    { _id: "3", name: "Pants", slug: "pants", description: "" }
   ];
 
   return (

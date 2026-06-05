@@ -14,23 +14,23 @@ const DEFAULT_BANNERS = [
     placement: "hero"
   },
   {
-    title: "Oversized Tees",
+    title: "T-Shirts",
     subtitle: "For Every Mood",
     price: "₹ 599 / ONWARDS",
     image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=2400&q=90",
-    cta: "Explore Oversized Tees",
-    link: "/shop?category=oversized-tees",
+    cta: "Explore T-Shirts",
+    link: "/shop?category=t-shirts",
     order: 1,
     isActive: true,
     placement: "hero"
   },
   {
-    title: "Streetwear",
+    title: "Shirts",
     subtitle: "For Every Moment",
     price: "₹ 1,199 / ONWARDS",
     image: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=2400&q=90",
-    cta: "Explore Streetwear",
-    link: "/shop?category=streetwear",
+    cta: "Explore Shirts",
+    link: "/shop?category=shirts",
     order: 2,
     isActive: true,
     placement: "hero"
