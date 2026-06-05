@@ -284,7 +284,7 @@ export default function AdminProductsPage() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Price (₹)</label>
+                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Discounted Price (₹)</label>
                 <input
                   type="number"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
@@ -296,7 +296,7 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Compare Price (₹)</label>
+                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Original Price (₹)</label>
                 <input
                   type="number"
                   className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
