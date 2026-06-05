@@ -45,6 +45,14 @@ export default function CheckoutPage() {
 
   const grandTotal = Math.max(0, total - coinsToRedeem + shipping);
 
+  const isAddressComplete =
+    address.fullName.trim() !== "" &&
+    address.phone.trim() !== "" &&
+    address.line1.trim() !== "" &&
+    address.pincode.trim() !== "" &&
+    address.city.trim() !== "" &&
+    address.state.trim() !== "";
+
   const fetchEstimation = async (pin: string, currentAddress = address) => {
     setLoadingEstimate(true);
     try {
@@ -90,6 +98,10 @@ export default function CheckoutPage() {
   const handlePayment = async () => {
     if (!accessToken) {
       window.location.href = "/account/login?redirect=/checkout";
+      return;
+    }
+    if (!isAddressComplete) {
+      alert("Please fill in all shipping address fields.");
       return;
     }
     setLoading(true);
@@ -270,8 +282,16 @@ export default function CheckoutPage() {
             <p className="mt-2 text-xs text-muted">
               {items.length} item(s) · Coins applied: {coinsToRedeem}
             </p>
-            <Button className="mt-8 w-full" onClick={handlePayment} disabled={loading}>
-              {loading ? "Processing..." : "Pay with Razorpay"}
+            <Button 
+              className="mt-8 w-full" 
+              onClick={handlePayment} 
+              disabled={loading || !isAddressComplete}
+            >
+              {loading 
+                ? "Processing..." 
+                : !isAddressComplete 
+                  ? "Enter shipping details" 
+                  : "Pay with Razorpay"}
             </Button>
           </aside>
         </div>
