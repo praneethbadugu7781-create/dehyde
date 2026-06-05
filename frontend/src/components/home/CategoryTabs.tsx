@@ -26,7 +26,7 @@ export function CategoryTabs() {
       name: "T-Shirts",
       slug: "t-shirts",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-all duration-300">
           <path d="M26 10 C26 14, 38 14, 38 10" />
           <path d="M26 10 L14 13 L8 23 L16 27 L19 25 L19 60 L45 60 L45 25 L48 27 L56 23 L50 13 L38 10" />
           <path d="M19 54 L45 54" />
@@ -38,7 +38,7 @@ export function CategoryTabs() {
       name: "Shirts",
       slug: "shirts",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-all duration-300">
           <path d="M20 12 L32 22 L44 12" />
           <path d="M16 12 L32 26 L48 12" />
           <path d="M16 12 L8 19 L13 27 L19 25 L19 60 L45 60 L45 25 L51 27 L56 19 L48 12" />
@@ -54,7 +54,7 @@ export function CategoryTabs() {
       name: "Pants",
       slug: "pants",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-all duration-300">
           <path d="M18 10 H46 V15 H18 Z" />
           <path d="M18 15 L14 60 H25 L29 30 L32 30 L35 30 L39 60 H50 L46 15" />
           <path d="M32 15 V25" />
@@ -81,16 +81,16 @@ export function CategoryTabs() {
 
   return (
     <section className="py-20 bg-white border-t border-black/5 font-sans relative">
-      <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10">
+      <div className="mx-auto w-full max-w-[1400px] px-4 md:px-10">
         
         {/* Style Union Flanking Header Selector Layout */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 lg:gap-16 mb-16 w-full max-w-4xl mx-auto">
+        <div className="flex flex-row items-center justify-center gap-2 sm:gap-8 md:gap-12 lg:gap-16 mb-16 w-full max-w-4xl mx-auto px-1 sm:px-4">
           
           {/* Left Block (T-Shirts Category Tab) */}
           <div className="flex items-center justify-center">
             <button
               onClick={() => setActiveTab("t-shirts")}
-              className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+              className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
                 activeTab === "t-shirts" ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
               }`}
             >
@@ -101,7 +101,7 @@ export function CategoryTabs() {
                 {tabs[0].icon}
               </div>
               {/* Label */}
-              <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
+              <span className="text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.15em] sm:tracking-[0.25em] font-extrabold transition-colors duration-300">
                 {tabs[0].name}
               </span>
               {/* Slide Line Indicator */}
@@ -116,21 +116,21 @@ export function CategoryTabs() {
           </div>
 
           {/* Central Card (white background with thin border) */}
-          <div className="w-[160px] h-[160px] md:w-[190px] md:h-[190px] bg-white border border-black/5 flex flex-col items-center justify-center shadow-sm rounded-lg px-4 pointer-events-none select-none">
-            <h3 className="font-display text-[#c80a0a] text-2xl md:text-3xl font-black tracking-widest text-center leading-[1.1] uppercase">
+          <div className="w-[85px] h-[85px] sm:w-[130px] sm:h-[130px] md:w-[190px] md:h-[190px] bg-white border border-black/5 flex flex-col items-center justify-center shadow-sm rounded-lg px-1 sm:px-4 pointer-events-none select-none shrink-0">
+            <h3 className="font-display text-[#c80a0a] text-[8px] sm:text-base md:text-3xl font-black tracking-widest text-center leading-[1.1] uppercase">
               MOST<br />LOVED<br />STYLES
             </h3>
           </div>
 
           {/* Right Block (Shirts & Pants side-by-side Tabs) */}
-          <div className="flex gap-8 sm:gap-12 items-center justify-center">
+          <div className="flex gap-2.5 sm:gap-8 md:gap-12 items-center justify-center">
             {tabs.slice(1).map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.slug)}
-                  className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+                  className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
                     isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
                   }`}
                 >
@@ -141,7 +141,7 @@ export function CategoryTabs() {
                     {tab.icon}
                   </div>
                   {/* Label */}
-                  <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
+                  <span className="text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.15em] sm:tracking-[0.25em] font-extrabold transition-colors duration-300">
                     {tab.name}
                   </span>
                   {/* Slide Line Indicator */}
