@@ -2,7 +2,6 @@ import { Hero } from "@/components/home/Hero";
 import { NewArrivals } from "@/components/home/NewArrivals";
 import { BrandStory } from "@/components/home/BrandStory";
 import { TrendingProducts } from "@/components/home/TrendingProducts";
-import { CollectionShowcase } from "@/components/home/CollectionShowcase";
 import { Features } from "@/components/home/Features";
 import { Reviews } from "@/components/home/Reviews";
 import { SocialPromo } from "@/components/home/SocialPromo";
@@ -20,9 +19,6 @@ export default function HomePage() {
 
         {/* Best Sellers (Trending) Grid */}
         <TrendingProducts />
-
-        {/* Collections categories showcase */}
-        <CollectionShowcase />
 
         {/* What defines our wear tags grid */}
         <Features />

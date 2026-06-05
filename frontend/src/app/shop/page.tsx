@@ -63,7 +63,7 @@ function ShopContent() {
               ))}
             </div>
             {products.length === 0 && (
-              <p className="text-sm text-muted">No products yet. Admin-added products will appear here.</p>
+              <p className="text-sm text-muted">No products</p>
             )}
           </div>
         </div>
