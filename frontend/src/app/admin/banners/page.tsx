@@ -321,8 +321,8 @@ export default function AdminBannersPage() {
                     value={form.layout}
                     onChange={(e) => update("layout", e.target.value)}
                   >
-                    <option value="bottom-left">Style Union (Left)</option>
-                    <option value="campaign">Campaign (Center)</option>
+                    <option value="bottom-left">Left Aligned (Default)</option>
+                    <option value="campaign">Centered Campaign</option>
                   </select>
                 </div>
               ) : (

@@ -84,8 +84,8 @@ export function Hero() {
               image: b.image,
               cta: b.cta || "Shop Now",
               link: b.link || "/shop",
-              // Layout fallback: Use database layout if present, otherwise default first banner to campaign, others bottom-left
-              layout: b.layout || (idx === 0 ? "campaign" : "bottom-left")
+              // Layout fallback: Use database layout if present, otherwise default to bottom-left (left-aligned)
+              layout: b.layout || "bottom-left"
             }));
 
           if (dbBanners.length > 0) {
