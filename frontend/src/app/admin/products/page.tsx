@@ -101,8 +101,10 @@ export default function AdminProductsPage() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L", "XL"]);
   const [imageUrls, setImageUrls] = useState("");
 
-  // Variant-only mode state (for adding additional colors later)
-  const [variantOnlyProduct, setVariantOnlyProduct] = useState<Product | null>(null);
+  // Local color variants list managed in the form
+  const [variantsList, setVariantsList] = useState<any[]>([]);
+  const [hasAdditionalColors, setHasAdditionalColors] = useState(false);
+
   const [newVariant, setNewVariant] = useState({
     color: "Off-Black",
     colorHex: "#1a1a1a",
@@ -146,7 +148,6 @@ export default function AdminProductsPage() {
 
   const startEdit = (product: Product) => {
     setEditingProduct(product);
-    setVariantOnlyProduct(null); // Close variant manager if open
     const firstVariant = product.variants?.[0] || {};
     setForm({
       title: product.title,
@@ -164,6 +165,11 @@ export default function AdminProductsPage() {
     });
     setSelectedSizes(product.sizes || []);
     setImageUrls((firstVariant.images || []).join("\n"));
+    
+    // Load other variants into local state
+    const restVariants = product.variants ? product.variants.slice(1) : [];
+    setVariantsList(restVariants);
+    setHasAdditionalColors(restVariants.length > 0);
     setMessage("");
   };
 
@@ -172,6 +178,8 @@ export default function AdminProductsPage() {
     setForm({ ...emptyForm, category: categories[0]?._id || "" });
     setSelectedSizes(["S", "M", "L", "XL"]);
     setImageUrls("");
+    setVariantsList([]);
+    setHasAdditionalColors(false);
     setMessage("");
   };
 
@@ -186,9 +194,6 @@ export default function AdminProductsPage() {
       refresh();
       if (editingProduct?._id === id) {
         cancelEdit();
-      }
-      if (variantOnlyProduct?._id === id) {
-        setVariantOnlyProduct(null);
       }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Product deletion failed");
@@ -215,7 +220,6 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Variant manager image upload
   const handleNewVariantImageUpload = async (files: FileList | null) => {
     if (!files?.length || !accessToken) return;
     setUploading(true);
@@ -239,9 +243,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Add new variant directly to the product in DB
-  const handleAddNewVariant = async () => {
-    if (!variantOnlyProduct || !accessToken) return;
+  const addLocalVariant = () => {
     if (!newVariant.color.trim()) {
       alert("Please enter a color name.");
       return;
@@ -259,66 +261,17 @@ export default function AdminProductsPage() {
       images,
     };
 
-    const updatedVariants = [...(variantOnlyProduct.variants || []), added];
-    const totalStock = updatedVariants.reduce((sum, v) => sum + v.stock, 0);
-    const allImages = Array.from(new Set(updatedVariants.flatMap((v) => v.images)));
-
-    setSaving(true);
-    try {
-      const res = await apiClient.patch<{ success: boolean; data: Product }>(
-        `/admin/products/${variantOnlyProduct._id}`,
-        {
-          variants: updatedVariants,
-          stock: totalStock,
-          images: allImages,
-        },
-        accessToken
-      );
-      setVariantOnlyProduct(res.data);
-      setNewVariant({
-        color: "Off-Black",
-        colorHex: "#1a1a1a",
-        stock: "50",
-        imageUrls: "",
-      });
-      setMessage("New color variant added successfully!");
-      refresh();
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to add variant");
-    } finally {
-      setSaving(false);
-    }
+    setVariantsList((prev) => [...prev, added]);
+    setNewVariant({
+      color: "Off-Black",
+      colorHex: "#1a1a1a",
+      stock: "50",
+      imageUrls: "",
+    });
   };
 
-  // Delete variant directly from the product in DB
-  const handleDeleteVariantOnly = async (variantIndex: number) => {
-    if (!variantOnlyProduct || !accessToken) return;
-    if (variantOnlyProduct.variants.length <= 1) {
-      alert("A product must have at least one color variant.");
-      return;
-    }
-    if (!confirm("Are you sure you want to delete this color variant?")) return;
-
-    const updatedVariants = variantOnlyProduct.variants.filter((_, idx) => idx !== variantIndex);
-    const totalStock = updatedVariants.reduce((sum, v) => sum + v.stock, 0);
-    const allImages = Array.from(new Set(updatedVariants.flatMap((v) => v.images)));
-
-    try {
-      const res = await apiClient.patch<{ success: boolean; data: Product }>(
-        `/admin/products/${variantOnlyProduct._id}`,
-        {
-          variants: updatedVariants,
-          stock: totalStock,
-          images: allImages,
-        },
-        accessToken
-      );
-      setVariantOnlyProduct(res.data);
-      refresh();
-      setMessage("Color variant deleted successfully!");
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to delete variant");
-    }
+  const removeLocalVariant = (index: number) => {
+    setVariantsList((prev) => prev.filter((_, idx) => idx !== index));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -337,25 +290,19 @@ export default function AdminProductsPage() {
       .filter(Boolean);
     const stock = Number(form.stock || 0);
 
-    let updatedVariants = [];
-    if (editingProduct) {
-      // Keep existing variants, but update the first one
-      const existingVariants = editingProduct.variants || [];
-      const restVariants = existingVariants.slice(1);
-      const primaryVariant = {
-        color: form.color,
-        colorHex: form.colorHex,
-        images,
-        stock,
-      };
-      updatedVariants = [primaryVariant, ...restVariants];
-    } else {
-      // Creating a new product
-      updatedVariants = [{ color: form.color, colorHex: form.colorHex, images, stock }];
-    }
+    const primaryVariant = {
+      color: form.color,
+      colorHex: form.colorHex,
+      images,
+      stock,
+    };
 
-    const totalStock = updatedVariants.reduce((sum, v) => sum + v.stock, 0);
-    const allImages = Array.from(new Set(updatedVariants.flatMap((v) => v.images)));
+    const finalVariants = hasAdditionalColors 
+      ? [primaryVariant, ...variantsList] 
+      : [primaryVariant];
+
+    const totalStock = finalVariants.reduce((sum, v) => sum + v.stock, 0);
+    const allImages = Array.from(new Set(finalVariants.flatMap((v) => v.images)));
 
     const payload = {
       title: form.title,
@@ -364,7 +311,7 @@ export default function AdminProductsPage() {
       price: Number(form.price),
       compareAtPrice: form.compareAtPrice ? Number(form.compareAtPrice) : undefined,
       sizes: selectedSizes,
-      variants: updatedVariants,
+      variants: finalVariants,
       images: allImages,
       stock: totalStock,
       rewardCoins: Number(form.rewardCoins || 0),
@@ -385,6 +332,8 @@ export default function AdminProductsPage() {
       setForm({ ...emptyForm, category: categories[0]?._id || "" });
       setSelectedSizes(["S", "M", "L", "XL"]);
       setImageUrls("");
+      setVariantsList([]);
+      setHasAdditionalColors(false);
       refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Product save failed");
@@ -403,256 +352,7 @@ export default function AdminProductsPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,0.9fr)]">
-        {variantOnlyProduct ? (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8 bg-white border border-gray-100 p-6 md:p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
-          >
-            {/* Variants Manager Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div>
-                <h2 className="text-sm uppercase tracking-editorial font-bold text-charcoal/80 flex items-center gap-2">
-                  <Palette size={16} />
-                  Manage Variants
-                </h2>
-                <p className="text-[11px] text-charcoal/50 mt-1 font-semibold">
-                  Product: {variantOnlyProduct.title}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setVariantOnlyProduct(null);
-                  setMessage("");
-                }}
-                className="text-[10px] uppercase tracking-wider text-charcoal hover:text-black font-bold flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl transition-all"
-              >
-                Back to Product Form
-              </button>
-            </div>
 
-            {/* Existing Color Variants for this product */}
-            <div className="space-y-4">
-              <h3 className="text-[10px] uppercase tracking-wider text-charcoal/50 font-bold">
-                Existing Colors
-              </h3>
-              <div className="grid gap-3">
-                {variantOnlyProduct.variants?.map((v: any, idx: number) => (
-                  <div
-                    key={v._id || idx}
-                    className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span
-                        className="w-6 h-6 rounded-full border border-black/10 flex-shrink-0"
-                        style={{ backgroundColor: v.colorHex || "#ccc" }}
-                      />
-                      <div className="min-w-0 text-xs">
-                        <p className="font-semibold text-charcoal">{v.color}</p>
-                        <p className="text-[10px] text-charcoal/40 font-mono mt-0.5">
-                          Stock: {v.stock} · {v.images?.length || 0} images
-                        </p>
-                        {v.images && v.images.length > 0 && (
-                          <div className="flex gap-1.5 mt-2 overflow-x-auto">
-                            {v.images.slice(0, 5).map((imgUrl: string, imgIdx: number) => (
-                              <img
-                                key={imgIdx}
-                                src={imgUrl}
-                                alt=""
-                                className="w-7 h-7 object-cover rounded border border-gray-200"
-                              />
-                            ))}
-                            {v.images.length > 5 && (
-                              <div className="w-7 h-7 bg-gray-200 border border-gray-300 flex items-center justify-center text-[8px] font-bold text-charcoal/60 rounded">
-                                +{v.images.length - 5}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteVariantOnly(idx)}
-                      disabled={saving}
-                      className="text-[10px] uppercase font-bold tracking-wider text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition-all"
-                    >
-                      Delete Color
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Add New Color Variant Form */}
-            <div className="border border-charcoal/10 rounded-2xl p-5 bg-stone-50/50 space-y-4">
-              <p className="text-[10px] uppercase tracking-wider text-charcoal font-bold">
-                Add New Color Variant
-              </p>
-
-              {/* Preset Color Swatches */}
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
-                  Color Presets
-                </label>
-                <div className="flex flex-wrap gap-2.5">
-                  {PRESET_COLORS.map((color) => (
-                    <button
-                      key={color.name}
-                      type="button"
-                      onClick={() => {
-                        setNewVariant((curr) => ({
-                          ...curr,
-                          color: color.name,
-                          colorHex: color.hex,
-                        }));
-                      }}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.2 rounded-lg border text-xs transition-all ${
-                        newVariant.colorHex.toLowerCase() === color.hex.toLowerCase()
-                          ? "border-charcoal bg-white font-semibold"
-                          : "border-gray-200 bg-white text-charcoal/60 hover:border-gray-300"
-                      }`}
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full border border-black/10 flex-shrink-0"
-                        style={{ backgroundColor: color.hex }}
-                      />
-                      {color.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Color Name and Color Hex */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Color Name</label>
-                  <input
-                    type="text"
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
-                    placeholder="e.g. Sage Green"
-                    value={newVariant.color}
-                    onChange={(e) => setNewVariant((curr) => ({ ...curr, color: e.target.value }))}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Color Hex</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        className="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm font-mono"
-                        placeholder="#7d8471"
-                        value={newVariant.colorHex}
-                        onChange={(e) => {
-                          const hex = e.target.value;
-                          setNewVariant((curr) => ({
-                            ...curr,
-                            colorHex: hex,
-                            color: hex.startsWith("#") && (hex.length === 4 || hex.length === 7) ? getClosestColorName(hex) : curr.color,
-                          }));
-                        }}
-                      />
-                      <span
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-black/10"
-                        style={{ backgroundColor: newVariant.colorHex }}
-                      />
-                    </div>
-                    <div className="w-11 h-11 border border-gray-200 rounded-xl flex items-center justify-center bg-white overflow-hidden relative group hover:border-gray-300 cursor-pointer">
-                      <input
-                        type="color"
-                        value={newVariant.colorHex}
-                        onChange={(e) => {
-                          const hex = e.target.value;
-                          setNewVariant((curr) => ({
-                            ...curr,
-                            colorHex: hex,
-                            color: getClosestColorName(hex),
-                          }));
-                        }}
-                        className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                      />
-                      <Palette size={16} className="text-charcoal/60 group-hover:text-charcoal" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Variant Stock level */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Variant Stock Level</label>
-                <input
-                  type="number"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
-                  placeholder="50"
-                  value={newVariant.stock}
-                  onChange={(e) => setNewVariant((curr) => ({ ...curr, stock: e.target.value }))}
-                />
-              </div>
-
-              {/* Variant Images Upload area */}
-              <div className="space-y-3">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
-                  Variant Images
-                </label>
-                
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center hover:border-charcoal/30 transition-all bg-gray-50/50 cursor-pointer relative group">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => handleNewVariantImageUpload(e.target.files)}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  />
-                  <Upload size={20} className="mx-auto text-charcoal/30 group-hover:text-charcoal/60 mb-2 transition-colors" />
-                  <p className="text-[11px] font-semibold text-charcoal/70">
-                    {uploading ? "Uploading Variant Images..." : "Click to Upload Variant Images"}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">
-                    Variant Image URLs (one per line)
-                  </label>
-                  <textarea
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
-                    placeholder="https://images.unsplash.com/photo-..."
-                    value={newVariant.imageUrls}
-                    onChange={(e) => setNewVariant((curr) => ({ ...curr, imageUrls: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <button
-                type="button"
-                onClick={handleAddNewVariant}
-                disabled={saving || uploading}
-                className="w-full bg-charcoal text-offwhite hover:bg-black h-11 text-xs uppercase tracking-widest rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2"
-              >
-                {saving ? "Saving Variant..." : (
-                  <>
-                    <Plus size={14} />
-                    Add Variant
-                  </>
-                )}
-              </button>
-            </div>
-
-            {message && (
-              <p className={`text-xs p-3.5 rounded-xl font-semibold border ${
-                message.toLowerCase().includes("success") 
-                  ? "bg-green-50 text-green-700 border-green-200" 
-                  : "bg-amber-50 text-amber-700 border-amber-200"
-              }`}>
-                {message}
-              </p>
-            )}
-          </motion.div>
-        ) : (
           <motion.form
             onSubmit={handleSubmit}
             initial={{ opacity: 0, y: 16 }}
@@ -946,6 +646,213 @@ export default function AdminProductsPage() {
                   />
                 </div>
               </div>
+
+              {/* Toggle for other color variants */}
+              <div className="pt-4 border-t border-gray-100 space-y-4">
+                <label className="flex items-center gap-2.5 cursor-pointer font-bold text-xs text-charcoal select-none group">
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 rounded border-gray-300 text-charcoal focus:ring-charcoal/30 cursor-pointer"
+                    checked={hasAdditionalColors}
+                    onChange={(e) => setHasAdditionalColors(e.target.checked)}
+                  />
+                  <span className="group-hover:text-charcoal transition-colors">This product has other color variants</span>
+                </label>
+
+                {hasAdditionalColors && (
+                  <div className="space-y-6 animate-in fade-in duration-300 pt-2">
+                    <div className="border-t border-gray-100 pt-4">
+                      <h3 className="text-[10px] uppercase tracking-wider text-charcoal/50 font-bold mb-3">
+                        Additional Color Variants
+                      </h3>
+
+                      {/* List of Added Variants */}
+                      {variantsList.length > 0 ? (
+                        <div className="grid gap-3 mb-4">
+                          {variantsList.map((v, idx) => (
+                            <div 
+                              key={v._id || idx} 
+                              className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-100 rounded-xl"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className="w-5 h-5 rounded-full border border-black/10 flex-shrink-0"
+                                  style={{ backgroundColor: v.colorHex || "#ccc" }}
+                                />
+                                <div className="min-w-0 text-xs">
+                                  <p className="font-semibold text-charcoal">{v.color}</p>
+                                  <p className="text-[10px] text-charcoal/40 font-mono mt-0.5">
+                                    Stock: {v.stock} · {v.images?.length || 0} images
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <button
+                                type="button"
+                                onClick={() => removeLocalVariant(idx)}
+                                className="text-[10px] uppercase font-bold tracking-wider text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-charcoal/40 italic mb-4">No additional color variants added yet.</p>
+                      )}
+
+                      {/* Subform to add variant */}
+                      <div className="border border-charcoal/10 rounded-2xl p-4 bg-stone-50/50 space-y-4">
+                        <p className="text-[10px] uppercase tracking-wider text-charcoal font-bold">
+                          Add New Color Variant
+                        </p>
+
+                        {/* Swatches & Color Input */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
+                            Color Presets
+                          </label>
+                          <div className="flex flex-wrap gap-2.5">
+                            {PRESET_COLORS.map((color) => (
+                              <button
+                                key={color.name}
+                                type="button"
+                                onClick={() => {
+                                  setNewVariant((curr) => ({
+                                    ...curr,
+                                    color: color.name,
+                                    colorHex: color.hex,
+                                  }));
+                                }}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.2 rounded-lg border text-xs transition-all ${
+                                  newVariant.colorHex.toLowerCase() === color.hex.toLowerCase()
+                                    ? "border-charcoal bg-white font-semibold"
+                                    : "border-gray-200 bg-white text-charcoal/60 hover:border-gray-300"
+                                }`}
+                              >
+                                <span
+                                  className="w-3 h-3 rounded-full border border-black/10 flex-shrink-0"
+                                  style={{ backgroundColor: color.hex }}
+                                />
+                                {color.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Color Name</label>
+                            <input
+                              type="text"
+                              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
+                              placeholder="e.g. Sage Green"
+                              value={newVariant.color}
+                              onChange={(e) => setNewVariant((curr) => ({ ...curr, color: e.target.value }))}
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Color Hex</label>
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <input
+                                  type="text"
+                                  className="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm font-mono"
+                                  placeholder="#7d8471"
+                                  value={newVariant.colorHex}
+                                  onChange={(e) => {
+                                    const hex = e.target.value;
+                                    setNewVariant((curr) => ({
+                                      ...curr,
+                                      colorHex: hex,
+                                      color: hex.startsWith("#") && (hex.length === 4 || hex.length === 7) ? getClosestColorName(hex) : curr.color,
+                                    }));
+                                  }}
+                                />
+                                <span
+                                  className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border border-black/10"
+                                  style={{ backgroundColor: newVariant.colorHex }}
+                                />
+                              </div>
+                              <div className="w-11 h-11 border border-gray-200 rounded-xl flex items-center justify-center bg-white overflow-hidden relative group hover:border-gray-300 cursor-pointer">
+                                <input
+                                  type="color"
+                                  value={newVariant.colorHex}
+                                  onChange={(e) => {
+                                    const hex = e.target.value;
+                                    setNewVariant((curr) => ({
+                                      ...curr,
+                                      colorHex: hex,
+                                      color: getClosestColorName(hex),
+                                    }));
+                                  }}
+                                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                                />
+                                <Palette size={16} className="text-charcoal/60 group-hover:text-charcoal" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Variant Stock level */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Variant Stock Level</label>
+                          <input
+                            type="number"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
+                            placeholder="50"
+                            value={newVariant.stock}
+                            onChange={(e) => setNewVariant((curr) => ({ ...curr, stock: e.target.value }))}
+                          />
+                        </div>
+
+                        {/* Variant Images Upload area */}
+                        <div className="space-y-3">
+                          <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">
+                            Variant Images
+                          </label>
+                          
+                          <div className="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center hover:border-charcoal/30 transition-all bg-gray-50/50 cursor-pointer relative group">
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => handleNewVariantImageUpload(e.target.files)}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            />
+                            <Upload size={20} className="mx-auto text-charcoal/30 group-hover:text-charcoal/60 mb-2 transition-colors" />
+                            <p className="text-[11px] font-semibold text-charcoal/70">
+                              {uploading ? "Uploading Variant Images..." : "Click to Upload Variant Images"}
+                            </p>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Variant Image URLs (one per line)</label>
+                            <textarea
+                              className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
+                              placeholder="https://images.unsplash.com/photo-..."
+                              value={newVariant.imageUrls}
+                              onChange={(e) => setNewVariant((curr) => ({ ...curr, imageUrls: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Add Variant locally */}
+                        <button
+                          type="button"
+                          onClick={addLocalVariant}
+                          disabled={uploading}
+                          className="w-full bg-charcoal text-offwhite hover:bg-black h-10 text-[10px] uppercase tracking-widest rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                          <Plus size={12} />
+                          Add Color Option
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Section 5: Status Features */}
@@ -1004,7 +911,6 @@ export default function AdminProductsPage() {
               )}
             </Button>
           </motion.form>
-        )}
 
         {/* Catalog List */}
         <div className="bg-white border border-gray-100 p-6 md:p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] h-fit">
@@ -1052,26 +958,7 @@ export default function AdminProductsPage() {
                     <span className="block font-semibold text-charcoal">{formatPrice(product.price)}</span>
                   </div>
                   
-                  {/* Add Color Variant button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Avoid triggering startEdit
-                      setVariantOnlyProduct(product);
-                      setEditingProduct(null); // Close main form edit if open
-                      setNewVariant({
-                        color: "Off-Black",
-                        colorHex: "#1a1a1a",
-                        stock: "50",
-                        imageUrls: "",
-                      });
-                      setMessage("");
-                    }}
-                    className="h-8 px-2.5 rounded-lg text-[9px] font-bold uppercase tracking-wider bg-charcoal text-white hover:bg-black transition-all flex items-center gap-1 shadow-sm"
-                  >
-                    <Plus size={10} strokeWidth={2.5} />
-                    Add Color
-                  </button>
+
 
                   <button
                     onClick={(e) => handleDelete(product._id, e)}
