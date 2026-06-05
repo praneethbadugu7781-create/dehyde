@@ -19,19 +19,16 @@ export function CategoryTabs() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Outline icons corresponding to Shirts, T-Shirts, and Pants
+  // Custom outline SVG icons for T-Shirts, Shirts, and Pants
   const tabs: TabItem[] = [
     {
       id: "t-shirts",
       name: "T-Shirts",
       slug: "t-shirts",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 md:w-16 md:h-16 transition-all duration-300">
-          {/* Crew Neck collar */}
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
           <path d="M26 10 C26 14, 38 14, 38 10" />
-          {/* Body Outline */}
           <path d="M26 10 L14 13 L8 23 L16 27 L19 25 L19 60 L45 60 L45 25 L48 27 L56 23 L50 13 L38 10" />
-          {/* Hem line */}
           <path d="M19 54 L45 54" />
         </svg>
       )
@@ -41,13 +38,10 @@ export function CategoryTabs() {
       name: "Shirts",
       slug: "shirts",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 md:w-16 md:h-16 transition-all duration-300">
-          {/* Collar */}
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
           <path d="M20 12 L32 22 L44 12" />
           <path d="M16 12 L32 26 L48 12" />
-          {/* Body Outline */}
           <path d="M16 12 L8 19 L13 27 L19 25 L19 60 L45 60 L45 25 L51 27 L56 19 L48 12" />
-          {/* Placket/Buttons */}
           <path d="M32 26 L32 60" />
           <circle cx="32" cy="34" r="1.2" fill="currentColor" />
           <circle cx="32" cy="42" r="1.2" fill="currentColor" />
@@ -60,12 +54,9 @@ export function CategoryTabs() {
       name: "Pants",
       slug: "pants",
       icon: (
-        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 md:w-16 md:h-16 transition-all duration-300">
-          {/* Waistband */}
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-14 h-14 md:w-16 md:h-16 transition-all duration-300">
           <path d="M18 10 H46 V15 H18 Z" />
-          {/* Legs */}
           <path d="M18 15 L14 60 H25 L29 30 L32 30 L35 30 L39 60 H50 L46 15" />
-          {/* Fly detail */}
           <path d="M32 15 V25" />
           <path d="M18 19 C21 19, 23 15, 23 15" />
           <path d="M46 19 C43 19, 41 15, 41 15" />
@@ -89,63 +80,56 @@ export function CategoryTabs() {
   }, [activeTab]);
 
   return (
-    <section className="py-20 bg-white border-t border-black/5 font-sans">
+    <section className="pt-24 pb-20 bg-white border-t border-black/5 font-sans relative">
       <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10">
         
-        {/* Category Switcher Header Concept */}
-        <div className="flex flex-col items-center justify-center mb-16 text-center">
-          <div className="flex items-center justify-center gap-10 md:gap-16 w-full max-w-2xl">
-            
-            {/* Left Category: T-Shirts */}
-            <button
-              onClick={() => setActiveTab("t-shirts")}
-              className={`flex flex-col items-center gap-2 group focus:outline-none transition-all duration-300 ${
-                activeTab === "t-shirts" ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
-              }`}
-            >
-              <div className="transform transition-transform duration-300 group-hover:scale-105">
-                {tabs[0].icon}
-              </div>
-              <span className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-extrabold transition-colors duration-300`}>
-                {tabs[0].name}
-              </span>
-            </button>
+        {/* Section Header */}
+        <div className="flex flex-col items-center justify-center mb-12 text-center">
+          <h2 className="font-display text-[#c80a0a] text-3xl md:text-4xl font-black tracking-[0.15em] uppercase leading-tight">
+            Most Loved Styles
+          </h2>
+          <div className="w-12 h-[2px] bg-[#c80a0a] mt-4 mb-8" />
+        </div>
 
-            {/* Central Typography Heading */}
-            <div className="px-4 py-2 border-x border-black/5 flex flex-col justify-center min-w-[150px] md:min-w-[240px]">
-              <h2 className="font-display text-[#c80a0a] text-xl md:text-3xl font-black tracking-widest uppercase leading-tight">
-                Most Loved<br />Styles
-              </h2>
-            </div>
+        {/* Spaced Row of Categories */}
+        <div className="flex justify-center items-center gap-8 sm:gap-12 md:gap-16 mb-16 max-w-xl mx-auto border-b border-neutral-100 pb-6">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.slug;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.slug)}
+                className={`flex flex-col items-center gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+                  isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+                }`}
+              >
+                {/* SVG Outline Icon */}
+                <div className={`transform transition-all duration-300 group-hover:scale-105 ${
+                  isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+                }`}>
+                  {tab.icon}
+                </div>
+                
+                {/* Label */}
+                <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-extrabold transition-colors duration-300">
+                  {tab.name}
+                </span>
 
-            {/* Right Categories Column */}
-            <div className="flex gap-8 md:gap-12 items-center">
-              {tabs.slice(1).map((tab) => {
-                const isActive = activeTab === tab.slug;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.slug)}
-                    className={`flex flex-col items-center gap-2 group focus:outline-none transition-all duration-300 ${
-                      isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
-                    }`}
-                  >
-                    <div className="transform transition-transform duration-300 group-hover:scale-105">
-                      {tab.icon}
-                    </div>
-                    <span className={`text-[10px] md:text-xs uppercase tracking-[0.2em] font-extrabold transition-colors duration-300`}>
-                      {tab.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-          </div>
+                {/* Underline Indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Products Grid Section */}
-        <div className="relative min-h-[350px]">
+        <div className="relative min-h-[300px]">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-xs uppercase tracking-widest text-neutral-400 animate-pulse">
