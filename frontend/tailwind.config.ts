@@ -11,6 +11,7 @@ const config: Config = {
         muted: "#787878",
         cream: "#ffffff",
         offwhite: "#f8f8f8",
+        royal: "#1d4ed8",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "sans-serif"],

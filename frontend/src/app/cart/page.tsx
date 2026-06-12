@@ -22,7 +22,7 @@ export default function CartPage() {
         <p className="mt-4 text-sm text-muted">Discover our latest collection</p>
         <Link
           href="/shop"
-          className="mt-8 inline-flex bg-charcoal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite items-center gap-2 hover:opacity-90 transition-opacity"
+          className="mt-8 inline-flex bg-royal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite items-center gap-2 hover:opacity-90 transition-opacity"
         >
           <span>←</span> Continue shopping
         </Link>
@@ -140,7 +140,7 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-8 flex w-full items-center justify-center bg-charcoal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite"
+              className="mt-8 flex w-full items-center justify-center bg-royal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite hover:bg-blue-800 transition-colors"
             >
               Proceed to checkout
             </Link>

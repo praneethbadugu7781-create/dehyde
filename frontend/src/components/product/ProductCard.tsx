@@ -138,7 +138,7 @@ export function ProductCard({ product, index = 0 }: Props) {
 
         {/* Floating Action Badge (Top Left) */}
         {product.trending && (
-          <span className="absolute left-3 top-3 bg-black text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
+          <span className="absolute left-3 top-3 bg-royal text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
             Best seller
           </span>
         )}
@@ -167,7 +167,7 @@ export function ProductCard({ product, index = 0 }: Props) {
               "w-full text-[10px] uppercase tracking-[0.15em] font-semibold py-3 px-4 rounded-full border shadow-sm transition-all duration-300 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 flex items-center justify-center gap-2",
               added
                 ? "bg-emerald-600 text-white border-emerald-600"
-                : "bg-white text-black border-black/5 hover:bg-black hover:text-white"
+                : "bg-white text-black border-black/5 hover:bg-royal hover:text-white"
             )}
           >
             {added ? (

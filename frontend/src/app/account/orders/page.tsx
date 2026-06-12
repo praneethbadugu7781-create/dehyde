@@ -77,7 +77,7 @@ export default function OrdersPage() {
             <p className="text-sm text-muted">You haven't placed any orders yet.</p>
             <Link
               href="/shop"
-              className="inline-block mt-4 text-[10px] uppercase tracking-widest bg-charcoal text-offwhite px-6 py-3 hover:opacity-90 transition-opacity"
+              className="inline-block mt-4 text-[10px] uppercase tracking-widest bg-royal text-offwhite px-6 py-3 hover:opacity-90 transition-opacity"
             >
               Start Shopping
             </Link>
@@ -145,7 +145,7 @@ export default function OrdersPage() {
                             {/* Connecting Progress Line */}
                             <div className="absolute left-0 right-0 top-1/2 h-[2px] bg-gray-100 -translate-y-1/2 z-0" />
                             <div
-                              className="absolute left-0 top-1/2 h-[2px] bg-charcoal -translate-y-1/2 z-0 transition-all duration-500"
+                              className="absolute left-0 top-1/2 h-[2px] bg-royal -translate-y-1/2 z-0 transition-all duration-500"
                               style={{
                                 width: `${currentStepIndex >= 0 ? (currentStepIndex / 3) * 100 : 0}%`,
                               }}
@@ -161,15 +161,15 @@ export default function OrdersPage() {
                                   <div
                                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] transition-all duration-300 ${
                                       isCompleted
-                                        ? "bg-charcoal border-charcoal text-offwhite scale-110"
+                                        ? "bg-royal border-royal text-offwhite scale-110"
                                         : "bg-white border-gray-200 text-gray-300"
-                                    } ${isActive ? "ring-4 ring-charcoal/10" : ""}`}
+                                    } ${isActive ? "ring-4 ring-royal/10" : ""}`}
                                   >
                                     {isCompleted ? "✓" : index + 1}
                                   </div>
                                   <span
                                     className={`text-[9px] uppercase tracking-widest mt-2 font-medium ${
-                                      isCompleted ? "text-charcoal" : "text-gray-400"
+                                      isCompleted ? "text-royal" : "text-gray-400"
                                     }`}
                                   >
                                     {label}

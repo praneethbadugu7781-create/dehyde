@@ -47,7 +47,7 @@ export default function AccountPage() {
           </p>
           <Link
             href="/account/login"
-            className="inline-block bg-charcoal text-offwhite text-xs uppercase tracking-widest px-8 py-4 hover:opacity-90 transition-opacity"
+            className="inline-block bg-royal text-offwhite text-xs uppercase tracking-widest px-8 py-4 hover:opacity-90 transition-opacity"
           >
             Sign In
           </Link>
@@ -97,7 +97,7 @@ export default function AccountPage() {
         {/* Profile Card Header */}
         <div className="bg-white border border-gray-100 p-8 md:p-12 rounded-3xl shadow-[0_4px_30px_rgba(0,0,0,0.015)] flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex items-center gap-6">
-            <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-charcoal text-offwhite flex items-center justify-center font-serif text-2xl md:text-3xl font-light shadow-inner">
+            <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-royal text-offwhite flex items-center justify-center font-serif text-2xl md:text-3xl font-light shadow-inner">
               {userInitial}
             </div>
             <div>
@@ -160,7 +160,7 @@ export default function AccountPage() {
                     <div className="p-3 bg-gray-50 rounded-2xl group-hover:bg-cream/40 transition-colors duration-300">
                       <Icon className="h-5 w-5 text-charcoal" strokeWidth={1.2} />
                     </div>
-                    <span className="text-[9px] uppercase tracking-widest bg-gray-50 border border-gray-100 group-hover:bg-charcoal group-hover:text-offwhite group-hover:border-charcoal transition-all px-2.5 py-0.5 rounded-full font-medium text-charcoal/60">
+                    <span className="text-[9px] uppercase tracking-widest bg-gray-50 border border-gray-100 group-hover:bg-royal group-hover:text-offwhite group-hover:border-royal transition-all px-2.5 py-0.5 rounded-full font-medium text-charcoal/60">
                       {card.stat}
                     </span>
                   </div>

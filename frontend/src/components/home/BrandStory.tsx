@@ -57,13 +57,13 @@ export function BrandStory() {
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href="/about"
-              className="inline-flex items-center justify-center text-[10px] uppercase tracking-wider font-semibold rounded-full bg-black text-white px-5 py-3 hover:bg-neutral-800 transition-colors"
+              className="inline-flex items-center justify-center text-[10px] uppercase tracking-wider font-semibold rounded-full bg-royal text-white px-5 py-3 hover:bg-blue-800 transition-colors"
             >
               More about us
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center text-[10px] uppercase tracking-wider font-semibold rounded-full border border-black/10 bg-transparent text-black px-5 py-3 hover:bg-black hover:text-white transition-all duration-300"
+              className="inline-flex items-center justify-center text-[10px] uppercase tracking-wider font-semibold rounded-full border border-royal/20 bg-transparent text-black px-5 py-3 hover:bg-royal hover:text-white transition-all duration-300"
             >
               Contact us
             </Link>
