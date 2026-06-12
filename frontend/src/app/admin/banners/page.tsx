@@ -14,7 +14,7 @@ interface Banner {
   subtitle?: string;
   price?: string;
   layout?: string;
-  image: string;
+  image?: string;
   link?: string;
   cta?: string;
   isActive: boolean;
@@ -338,26 +338,28 @@ export default function AdminBannersPage() {
             </div>
 
             {/* Image Upload Block */}
-            <div className="space-y-3 pt-4 border-t border-gray-100">
-              <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
-                {activeTab === "hero" ? "Hero Image" : activeTab === "collection" ? "Card Image" : "Banner Image"}
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleUpload(e.target.files?.[0] || null)}
-                className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
-              />
-              <Input
-                className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
-                placeholder="Or paste image URL"
-                value={form.image}
-                onChange={(e) => update("image", e.target.value)}
-                required
-              />
-            </div>
+            {activeTab !== "promo" && (
+              <div className="space-y-3 pt-4 border-t border-gray-100">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
+                  {activeTab === "hero" ? "Hero Image" : activeTab === "collection" ? "Card Image" : "Banner Image"}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleUpload(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
+                />
+                <Input
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder="Or paste image URL"
+                  value={form.image}
+                  onChange={(e) => update("image", e.target.value)}
+                  required
+                />
+              </div>
+            )}
 
-            {form.image && (
+            {activeTab !== "promo" && form.image && (
               <div className="relative h-32 w-full mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
                 <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
               </div>
@@ -379,7 +381,7 @@ export default function AdminBannersPage() {
           <Button
             type="submit"
             className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
-            disabled={saving || uploading || !form.image}
+            disabled={saving || uploading || (activeTab !== "promo" && !form.image)}
           >
             {saving ? "Saving..." : uploading ? "Uploading..." : (
               <>
@@ -403,9 +405,16 @@ export default function AdminBannersPage() {
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-100 p-4 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors relative overflow-hidden"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-20 h-14 bg-black flex-shrink-0 relative rounded-lg overflow-hidden border border-gray-200/50">
-                    <img src={banner.image} alt={banner.title} className="w-full h-full object-cover opacity-80" />
-                  </div>
+                  {banner.placement !== "promo" && banner.image && (
+                    <div className="w-20 h-14 bg-black flex-shrink-0 relative rounded-lg overflow-hidden border border-gray-200/50">
+                      <img src={banner.image} alt={banner.title} className="w-full h-full object-cover opacity-80" />
+                    </div>
+                  )}
+                  {banner.placement === "promo" && (
+                    <div className="w-20 h-14 bg-royal/10 text-royal flex-shrink-0 relative rounded-lg overflow-hidden border border-royal/20 flex items-center justify-center font-bold text-[10px] tracking-wider uppercase font-mono">
+                      Promo
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-charcoal text-sm truncate">{banner.title}</p>
