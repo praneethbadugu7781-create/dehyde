@@ -117,7 +117,7 @@ export function CategoryTabs() {
 
           {/* Central Card (white background with thin border) */}
           <div className="w-[85px] h-[85px] sm:w-[130px] sm:h-[130px] md:w-[190px] md:h-[190px] bg-white border border-black/5 flex flex-col items-center justify-center shadow-sm rounded-lg px-1 sm:px-4 pointer-events-none select-none shrink-0">
-            <h3 className="font-display text-[#c80a0a] text-[8px] sm:text-base md:text-3xl font-black tracking-widest text-center leading-[1.1] uppercase">
+            <h3 className="font-display text-[#c80a0a] text-[8px] sm:text-xs md:text-lg font-black tracking-wider text-center leading-[1.2] uppercase">
               PREMIUM.<br />AFFORDABLE
             </h3>
           </div>
