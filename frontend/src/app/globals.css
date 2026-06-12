@@ -1,71 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Instrument+Serif:ital@0;1&display=swap');
-
-@font-face {
-  font-family: 'Campton';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonThin.otf?v=1754908283") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Campton';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonBook_20c8034a-d43a-4d4d-a15b-9b6beeb749ca.otf?v=1756700253") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Campton';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonMedium.otf?v=1754908283") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Campton';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonSemiBold.otf?v=1754908283") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Campton';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonBold.otf?v=1754908283") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Aliases for direct font-family name matches */
-@font-face {
-  font-family: 'Campton-Light';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonThin.otf?v=1754908283") format("opentype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Campton-Regular';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonBook_20c8034a-d43a-4d4d-a15b-9b6beeb749ca.otf?v=1756700253") format("opentype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Campton-Medium';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonMedium.otf?v=1754908283") format("opentype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Campton-SemiBold';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonSemiBold.otf?v=1754908283") format("opentype");
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Campton-Bold';
-  src: url("https://cdn.shopify.com/s/files/1/0623/4754/2777/files/CamptonBold.otf?v=1754908283") format("opentype");
-  font-display: swap;
-}
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -76,9 +9,9 @@
     --background: 0 0% 97%;
     --foreground: 0 0% 0%;
     --border: 0 0% 90%;
-    --font-sans: 'Jost', sans-serif;
-    --font-serif: 'Instrument Serif', serif;
-    --font-display: 'Jost', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-serif: 'Playfair Display', serif;
+    --font-display: 'Plus Jakarta Sans', sans-serif;
   }
 
   * {
@@ -132,7 +65,7 @@
 }
 
 .card-product__title {
-  font-family: 'Campton-Medium', 'Campton', sans-serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 16px;
   line-height: 1.2;
   letter-spacing: 0px;

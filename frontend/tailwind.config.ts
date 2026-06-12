@@ -17,7 +17,7 @@ const config: Config = {
         sans: ["var(--font-sans)", "sans-serif"],
         serif: ["var(--font-serif)", "serif"],
         display: ["var(--font-display)", "sans-serif"],
-        campton: ["Campton", "sans-serif"],
+        campton: ["var(--font-sans)", "sans-serif"],
       },
       spacing: {
         section: "clamp(5rem, 12vw, 7.5rem)",
