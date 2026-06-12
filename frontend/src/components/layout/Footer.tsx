@@ -106,11 +106,7 @@ export function Footer() {
                     Shop
                   </Link>
                 </li>
-                <li>
-                  <Link href="/blog" className="text-white/60 hover:text-white transition-colors">
-                    Blog
-                  </Link>
-                </li>
+
                 <li>
                   <Link href="/contact" className="text-white/60 hover:text-white transition-colors">
                     Contact
