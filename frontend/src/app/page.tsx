@@ -14,7 +14,7 @@ export default function HomePage() {
       <Hero />
 
       {/* 2. Existing Dehyde Website Content begins here */}
-      <div className="snap-start w-full relative">
+      <div className="w-full relative">
         {/* Google Ratings and Store Trust Indicators */}
         <RatingSection />
 

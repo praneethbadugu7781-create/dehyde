@@ -128,7 +128,7 @@ export function Hero() {
           <section
             key={banner.id}
             id={`hero-banner-${idx}`}
-            className="snap-start w-full h-[100vh] relative overflow-hidden bg-black flex flex-col justify-end"
+            className="w-full h-[100vh] relative overflow-hidden bg-black flex flex-col justify-end"
           >
             {/* Clickable Background Link */}
             <Link href={banner.link} className="absolute inset-0 z-0 cursor-pointer">
