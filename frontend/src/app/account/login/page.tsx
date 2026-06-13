@@ -401,190 +401,248 @@ function LoginForm() {
   }, [status]);
 
   return (
-    <div className="luxury-container flex min-h-[80vh] items-center justify-center py-32">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={showVerifiedText ? 'verified' : 'unverified'}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <h1 className="editorial-heading text-4xl">
-              {showVerifiedText ? 'Verified successfully' : 'Sign in'}
-            </h1>
-            <p className="mt-3 text-xs text-muted">
-              {showVerifiedText ? 'Welcome to DEHYDE!' : 'Cinematic streetwear and custom orders await.'}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Dynamic OTP Forms */}
-        <AnimatePresence mode="wait">
-          {!otpSent ? (
-            <motion.form
-              key="request-form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onSubmit={handleRequestOtp}
-              className="mt-8 space-y-6"
-            >
-              <div>
-                <label className="text-[9px] uppercase tracking-widest text-muted block mb-1">Email Address</label>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              {error && <p className="text-xs text-red-600">{error}</p>}
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 pt-24 pb-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[1000px] bg-white rounded-2xl md:rounded-[2.5rem] shadow-2xl overflow-hidden border border-charcoal/5"
+      >
+        <div className="grid lg:grid-cols-2 gap-0 min-h-[600px]">
+          {/* Left Side - Auth Form */}
+          <div className="flex flex-col items-center justify-center p-8 lg:p-12 bg-white">
+            <div className="w-full max-w-[360px] space-y-6">
               
-              <Button type="submit" className="w-full py-3" disabled={loading}>
-                {loading ? "Sending..." : "Send OTP"}
-              </Button>
-            </motion.form>
-          ) : (
-            <motion.form
-              key="verify-form"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onSubmit={(e) => handleVerifyOtp(e)}
-              className="mt-8 space-y-6"
-            >
-              <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex justify-between items-center text-xs">
-                <span className="text-muted truncate mr-4">OTP sent to: <strong>{email}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtpSent(false);
-                    setError("");
-                    setDevOtp("");
-                    setGooglePayload(null);
-                    setOtpArray(["", "", "", "", "", ""]);
-                    setStatus('idle');
-                  }}
-                  className="text-charcoal uppercase tracking-widest text-[9px] hover:underline whitespace-nowrap"
+              {/* Header section with AnimatePresence */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={showVerifiedText ? "verified" : "unverified"}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  Change
-                </button>
-              </div>
+                  <h1 className="editorial-heading text-[32px] font-normal tracking-tight text-charcoal">
+                    {showVerifiedText ? "Verified successfully" : "Sign in"}
+                  </h1>
+                  <p className="mt-2 text-xs text-muted">
+                    {showVerifiedText ? "Welcome to DEHYDE!" : "Cinematic streetwear and custom orders await."}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
 
-              {isNewUser && (
-                <div>
-                  <label className="text-[9px] uppercase tracking-widest text-muted block mb-1">Full Name (New Customer)</label>
-                  <Input
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-              )}
+              {/* Form and Inputs */}
+              <AnimatePresence mode="wait">
+                {!otpSent ? (
+                  <motion.form
+                    key="request-form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onSubmit={handleRequestOtp}
+                    className="space-y-5"
+                  >
+                    {/* Google Button Section */}
+                    <div className="space-y-4">
+                      <div className="w-full h-[50px] overflow-hidden flex items-center justify-center rounded-xl border border-charcoal/15 bg-stone-50 hover:bg-stone-100 transition-colors">
+                        <div id="google-signin-btn" className="w-full scale-105" />
+                      </div>
+                    </div>
 
-              <div className="space-y-4">
-                <label className="text-[9px] uppercase tracking-widest text-muted block mb-1 text-center font-semibold tracking-editorial">One-Time Code (OTP)</label>
-                <div className="flex justify-center gap-3 relative min-h-[64px] items-center" onPaste={handlePaste}>
-                  {otpArray.map((digit, index) => (
-                    <motion.div
-                      key={index}
-                      className="relative z-10 w-10 h-12 md:w-12 md:h-14 rounded-xl overflow-hidden p-[2px] flex items-center justify-center bg-charcoal/10 focus-within:bg-royal"
-                      custom={{ index, isMobile }}
-                      variants={boxVariants}
-                      initial="idle"
-                      animate={status}
-                    >
-                      {/* Rotating gradient border effect */}
-                      {status === 'success' && (
-                        <motion.div 
-                          className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0%,transparent_55%,rgba(26,86,219,0.15)_70%,#1a56db_92%,#60a5fa_100%)] animate-[spin_1s_linear_infinite]"
-                          variants={gradientVariants}
-                          initial="idle"
-                          animate={status}
-                        />
-                      )}
+                    {/* Separator */}
+                    <div className="relative py-2 flex items-center justify-center">
+                      <div className="absolute inset-x-0 h-[1px] bg-charcoal/10" />
+                      <span className="relative z-10 bg-white px-4 text-[9px] uppercase tracking-widest text-muted">Or</span>
+                    </div>
 
-                      <motion.input
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        ref={inputRefs[index]}
-                        value={digit}
-                        onChange={(e) => handleChange(index, e)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
-                        readOnly={status !== 'idle' || loading}
-                        className="w-full h-full text-center font-mono text-xl font-bold rounded-[10px] focus:outline-none transition-all disabled:opacity-50 text-charcoal shadow-sm z-10"
-                        variants={textVariants}
-                        initial="idle"
-                        animate={status}
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">
+                        Email Address
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        placeholder="name@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        disabled={loading}
+                        className="h-[50px] bg-white border border-charcoal/20 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm px-4 w-full transition-all"
                       />
+                    </div>
 
-                      {index === 0 && (
-                        <motion.svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          className="absolute top-1/2 left-1/2 w-6 h-6 z-20 pointer-events-none"
-                          variants={tickContainerVariants}
-                          initial="idle"
-                          animate={status}
-                        >
-                          <motion.path
-                            d="M5 13l4 4L19 7"
-                            stroke="#ffffff"
-                            strokeWidth="3.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            variants={tickPathVariants}
-                          />
-                        </motion.svg>
-                      )}
-                    </motion.div>
-                  ))}
+                    {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
+                    
+                    <Button type="submit" className="w-full h-[50px] bg-charcoal text-white hover:bg-black font-semibold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm" disabled={loading}>
+                      {loading ? "Sending..." : "Send OTP"}
+                    </Button>
+                  </motion.form>
+                ) : (
+                  <motion.form
+                    key="verify-form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onSubmit={(e) => handleVerifyOtp(e)}
+                    className="space-y-5"
+                  >
+                    <div className="bg-stone-50 p-4 rounded-xl border border-charcoal/5 flex justify-between items-center text-xs">
+                      <span className="text-muted truncate mr-4">OTP sent to: <strong>{email}</strong></span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setError("");
+                          setDevOtp("");
+                          setGooglePayload(null);
+                          setOtpArray(["", "", "", "", "", ""]);
+                          setStatus("idle");
+                        }}
+                        className="text-royal uppercase tracking-widest text-[9px] font-bold hover:underline whitespace-nowrap"
+                      >
+                        Change
+                      </button>
+                    </div>
+
+                    {isNewUser && (
+                      <div className="space-y-2">
+                        <label htmlFor="name" className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">
+                          Full Name (New Customer)
+                        </label>
+                        <input
+                          id="name"
+                          placeholder="Enter your name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                          disabled={loading}
+                          className="h-[50px] bg-white border border-charcoal/20 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm px-4 w-full transition-all"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] uppercase tracking-widest text-muted block mb-1 text-center font-bold">
+                        One-Time Code (OTP)
+                      </label>
+                      <div className="flex justify-center gap-3 relative min-h-[64px] items-center" onPaste={handlePaste}>
+                        {otpArray.map((digit, index) => (
+                          <motion.div
+                            key={index}
+                            className="relative z-10 w-10 h-12 md:w-12 md:h-14 rounded-xl overflow-hidden p-[2px] flex items-center justify-center bg-charcoal/10 focus-within:bg-royal"
+                            custom={{ index, isMobile }}
+                            variants={boxVariants}
+                            initial="idle"
+                            animate={status}
+                          >
+                            {/* Rotating gradient border effect */}
+                            {status === "success" && (
+                              <motion.div 
+                                className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0%,transparent_55%,rgba(26,86,219,0.15)_70%,#1a56db_92%,#60a5fa_100%)] animate-[spin_1s_linear_infinite]"
+                                variants={gradientVariants}
+                                initial="idle"
+                                animate={status}
+                              />
+                            )}
+
+                            <motion.input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={1}
+                              ref={inputRefs[index]}
+                              value={digit}
+                              onChange={(e) => handleChange(index, e)}
+                              onKeyDown={(e) => handleKeyDown(index, e)}
+                              readOnly={status !== "idle" || loading}
+                              className="w-full h-full text-center font-mono text-xl font-bold rounded-[10px] focus:outline-none transition-all disabled:opacity-50 text-charcoal shadow-sm z-10"
+                              variants={textVariants}
+                              initial="idle"
+                              animate={status}
+                            />
+
+                            {index === 0 && (
+                              <motion.svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                className="absolute top-1/2 left-1/2 w-6 h-6 z-20 pointer-events-none"
+                                variants={tickContainerVariants}
+                                initial="idle"
+                                animate={status}
+                              >
+                                <motion.path
+                                  d="M5 13l4 4L19 7"
+                                  stroke="#ffffff"
+                                  strokeWidth="3.5"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  variants={tickPathVariants}
+                                />
+                              </motion.svg>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {devOtp && (
+                      <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-[10px] text-amber-800 font-medium">
+                        Development Mode: Use verification code <strong>{devOtp}</strong>
+                      </div>
+                    )}
+
+                    {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
+                    {successMsg && <p className="text-xs text-green-600 font-semibold">{successMsg}</p>}
+
+                    <div className="space-y-3">
+                      <Button type="submit" className="w-full h-[50px] bg-charcoal text-white hover:bg-black font-semibold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm" disabled={loading || status === "success"}>
+                        {status === "success" ? "Verified" : loading ? "Verifying..." : "Verify & Sign In"}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={handleRequestOtp}
+                        disabled={loading}
+                        className="w-full text-center text-[10px] uppercase tracking-widest font-bold text-muted hover:text-charcoal py-2 transition-colors"
+                      >
+                        Resend Code
+                      </button>
+                    </div>
+                  </motion.form>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Right Side - Campaign Image Section */}
+          <div className="relative lg:rounded-[2rem] m-0 lg:m-4 overflow-hidden min-h-[400px] lg:min-h-auto">
+            
+            {/* Background Image */}
+            <img
+              src="/headphone.jpg"
+              alt="DEHYDE Streetwear Campaign"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+
+            {/* Bottom Caption/Description Card */}
+            <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-5 space-y-3 border border-charcoal/5">
+              <p className="text-[10px] text-charcoal font-bold leading-relaxed uppercase tracking-widest">
+                DEHYDE Streetwear
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed font-sans">
+                Premium streetwear silhouettes and customized fits. Engineered for modern character and cinematic streetwear campaigns.
+              </p>
+              
+              <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-charcoal/5 rounded-lg text-charcoal">
+                  <div className="w-1.5 h-1.5 bg-royal rounded-full animate-pulse"></div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Summer '26</span>
+                </div>
+
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-charcoal/5 rounded-lg text-charcoal">
+                  <span className="text-[9px] font-bold uppercase tracking-wider">Collection 01</span>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {devOtp && (
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-[10px] text-amber-800">
-                  Development Mode: Use verification code <strong>{devOtp}</strong>
-                </div>
-              )}
-
-              {error && <p className="text-xs text-red-600">{error}</p>}
-              {successMsg && <p className="text-xs text-green-600">{successMsg}</p>}
-
-              <div className="space-y-3">
-                <Button type="submit" className="w-full py-3" disabled={loading || status === 'success'}>
-                  {status === 'success' ? "Verified" : loading ? "Verifying..." : "Verify & Sign In"}
-                </Button>
-                <button
-                  type="button"
-                  onClick={handleRequestOtp}
-                  disabled={loading}
-                  className="w-full text-center text-[10px] uppercase tracking-widest text-muted hover:text-charcoal py-2"
-                >
-                  Resend Code
-                </button>
-              </div>
-            </motion.form>
-          )}
-        </AnimatePresence>
-
-        {/* Separator */}
-        <div className="relative my-8 flex items-center justify-center">
-          <div className="absolute inset-x-0 h-[1px] bg-charcoal/10" />
-          <span className="relative z-10 bg-offwhite px-4 text-[9px] uppercase tracking-widest text-muted">Or</span>
-        </div>
-
-        {/* Google Buttons Section */}
-        <div className="space-y-4">
-          <div id="google-signin-btn" className="w-full overflow-hidden" />
         </div>
       </motion.div>
     </div>
