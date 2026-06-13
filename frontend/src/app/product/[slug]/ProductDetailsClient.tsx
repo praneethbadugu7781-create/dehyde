@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cartStore";
@@ -22,6 +22,15 @@ export default function ProductDetailsClient({ product }: Props) {
   const [variantImageOverride, setVariantImageOverride] = useState<string | null>(null);
   const [size, setSize] = useState(product.sizes?.[0] || "");
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
+
+  const [flyingItem, setFlyingItem] = useState<{
+    startX: number;
+    startY: number;
+    width: number;
+    height: number;
+    endX: number;
+    endY: number;
+  } | null>(null);
 
   const [pincode, setPincode] = useState("");
   const [estimate, setEstimate] = useState<any>(null);
@@ -90,6 +99,8 @@ export default function ProductDetailsClient({ product }: Props) {
     }
 
     if (!buyNow) {
+      if (flyingItem) return;
+
       const imgEl = document.getElementById("product-main-image");
       const cartBtn = document.getElementById("nav-cart-btn");
 
@@ -97,43 +108,17 @@ export default function ProductDetailsClient({ product }: Props) {
         const imgRect = imgEl.getBoundingClientRect();
         const cartRect = cartBtn.getBoundingClientRect();
 
-        // Create temporary flyer element
-        const flyer = document.createElement("div");
-        flyer.style.position = "fixed";
-        flyer.style.top = `${imgRect.top}px`;
-        flyer.style.left = `${imgRect.left}px`;
-        flyer.style.width = `${imgRect.width}px`;
-        flyer.style.height = `${imgRect.height}px`;
-        flyer.style.zIndex = "9999";
-        flyer.style.pointerEvents = "none";
-        flyer.style.borderRadius = "8px";
-        flyer.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.15)";
-        flyer.style.transition = "all 0.9s cubic-bezier(0.25, 1, 0.5, 1)";
-        flyer.style.overflow = "hidden";
-
-        const flyerImg = document.createElement("img");
-        flyerImg.src = activeImage;
-        flyerImg.style.width = "100%";
-        flyerImg.style.height = "100%";
-        flyerImg.style.objectFit = "cover";
-        flyer.appendChild(flyerImg);
-
-        document.body.appendChild(flyer);
-
-        // Trigger reflow
-        flyer.offsetWidth;
-
-        // Animate elements to cart position
-        flyer.style.top = `${cartRect.top + cartRect.height / 2 - 15}px`;
-        flyer.style.left = `${cartRect.left + cartRect.width / 2 - 15}px`;
-        flyer.style.width = "30px";
-        flyer.style.height = "30px";
-        flyer.style.opacity = "0.2";
-        flyer.style.transform = "scale(0.1) rotate(15deg)";
-        flyer.style.borderRadius = "50%";
+        setFlyingItem({
+          startX: imgRect.left,
+          startY: imgRect.top,
+          width: imgRect.width,
+          height: imgRect.height,
+          endX: cartRect.left + cartRect.width / 2 - 15,
+          endY: cartRect.top + cartRect.height / 2 - 15,
+        });
 
         setTimeout(() => {
-          flyer.remove();
+          setFlyingItem(null);
 
           // Add bounce effect to cart icon
           cartBtn.classList.add("cart-bounce");
@@ -153,7 +138,7 @@ export default function ProductDetailsClient({ product }: Props) {
             quantity: 1,
             rewardCoins: product.rewardCoins,
           });
-        }, 900);
+        }, 800);
       } else {
         // Fallback
         addItem({
@@ -405,6 +390,40 @@ export default function ProductDetailsClient({ product }: Props) {
           ))}
         </div>
       </section>
+      <AnimatePresence>
+        {flyingItem && (
+          <motion.div
+            key="fly-item"
+            initial={{
+              position: "fixed",
+              left: flyingItem.startX,
+              top: flyingItem.startY,
+              width: flyingItem.width,
+              height: flyingItem.height,
+              opacity: 0.8,
+              borderRadius: "8px",
+              overflow: "hidden",
+              zIndex: 9999,
+              pointerEvents: "none",
+            }}
+            animate={{
+              left: flyingItem.endX,
+              top: flyingItem.endY,
+              width: 30,
+              height: 30,
+              opacity: 0.2,
+              borderRadius: "50%",
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.7,
+              ease: [0.25, 1, 0.5, 1], // easeOutQuart
+            }}
+          >
+            <img src={activeImage} alt="" className="w-full h-full object-cover" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
