@@ -129,7 +129,7 @@ export function Navbar() {
                 <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />
                 {cartCount > 0 && (
                   <span className={cn(
-                    "absolute -right-1.5 -top-1.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[9px] font-bold",
+                    "absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold",
                     isDarkHeader ? "bg-white text-black" : "bg-black text-white"
                   )}>
                     {cartCount}
