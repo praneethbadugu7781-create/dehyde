@@ -440,7 +440,7 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-start justify-center p-4 md:p-6 lg:p-8 pt-44 md:pt-48 pb-20 bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-cover bg-center bg-no-repeat relative"
       style={{
         backgroundImage: "url('/auth_bg.jpeg')",
       }}
