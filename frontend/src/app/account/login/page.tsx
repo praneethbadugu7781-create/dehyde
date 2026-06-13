@@ -440,7 +440,7 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-start justify-center p-4 md:p-6 lg:p-8 pt-36 md:pt-40 pb-20 bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen w-full flex items-start justify-center p-4 md:p-6 lg:p-8 pt-44 md:pt-48 pb-20 bg-cover bg-center bg-no-repeat relative"
       style={{
         backgroundImage: "url('/auth_bg.jpeg')",
       }}
@@ -451,11 +451,11 @@ function LoginForm() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[440px] bg-black/40 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 md:p-8 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
+        className="w-full max-w-[420px] bg-black/40 backdrop-blur-xl border border-white/10 rounded-[28px] p-5 md:p-6 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
       >
         {/* Header with tabs and close button */}
         {!otpSent && (
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex bg-black/35 backdrop-blur-sm rounded-full p-1 border border-white/10">
               <button
                 type="button"
@@ -499,18 +499,18 @@ function LoginForm() {
         )}
 
         {otpSent && (
-          <div className="flex items-center justify-end mb-6">
+          <div className="flex items-center justify-end mb-5">
             <Link 
               href="/"
-              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/40 transition-all duration-200 hover:scale-110 hover:rotate-90"
+              className="w-9 h-9 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/40 transition-all duration-200 hover:scale-110 hover:rotate-90"
             >
-              <X className="w-5 h-5 text-white/80" />
+              <X className="w-4 h-4 text-white/80" />
             </Link>
           </div>
         )}
 
         {/* Title Section */}
-        <div className="mb-6">
+        <div className="mb-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={showVerifiedText ? "verified" : otpSent ? "otp" : activeTab}
@@ -550,7 +550,7 @@ function LoginForm() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onSubmit={handleRequestOtp}
-              className="space-y-5"
+              className="space-y-4"
             >
               {activeTab === "signup" && (
                 <div className="space-y-2">
@@ -567,7 +567,7 @@ function LoginForm() {
                       onChange={(e) => setName(e.target.value)}
                       required
                       disabled={loading}
-                      className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                      className="h-12 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
                     />
                   </div>
                 </div>
@@ -587,7 +587,7 @@ function LoginForm() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                    className="h-12 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
                   />
                 </div>
               </div>
@@ -596,7 +596,7 @@ function LoginForm() {
               
               <Button 
                 type="submit" 
-                className="w-full h-14 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
+                className="w-full h-12 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
                 disabled={loading}
               >
                 {loading ? "Sending..." : "Send OTP"}
@@ -621,7 +621,7 @@ function LoginForm() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onSubmit={(e) => handleVerifyOtp(e)}
-              className="space-y-5"
+              className="space-y-4"
             >
               <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex justify-between items-center text-xs">
                 <span className="text-white/60 truncate mr-4">OTP sent to: <strong>{email}</strong></span>
@@ -655,7 +655,7 @@ function LoginForm() {
                       onChange={(e) => setName(e.target.value)}
                       required
                       disabled={loading}
-                      className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                      className="h-12 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
                     />
                   </div>
                 </div>
@@ -736,7 +736,7 @@ function LoginForm() {
               <div className="space-y-3">
                 <Button 
                   type="submit" 
-                  className="w-full h-14 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
+                  className="w-full h-12 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
                   disabled={loading || status === "success"}
                 >
                   {status === "success" ? "Verified" : loading ? "Verifying..." : "Verify & Sign In"}
