@@ -440,12 +440,8 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-[#09090b] overflow-hidden relative"
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-blue-600 via-violet-500 to-cyan-400 relative"
     >
-      {/* Glowing decorative orbs for premium glassmorphism depth in DEHYDE royal blue */}
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-royal/15 blur-[120px] pointer-events-none z-0" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-950/20 blur-[140px] pointer-events-none z-0" />
-
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
