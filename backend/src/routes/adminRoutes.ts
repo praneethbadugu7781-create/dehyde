@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as admin from "../controllers/adminController.js";
 import * as products from "../controllers/productController.js";
+import * as feedback from "../controllers/feedbackController.js";
 import { authenticate, requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
@@ -24,4 +25,9 @@ router.get("/products", products.getProducts);
 router.post("/products", products.createProduct);
 router.patch("/products/:id", products.updateProduct);
 
+// Suggestions & Feedback
+router.get("/feedback", feedback.getAllFeedback);
+router.delete("/feedback/:id", feedback.deleteFeedback);
+
 export default router;
+

@@ -125,7 +125,7 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
       </div>
 
       <div style="border-top: 1px solid #eee; margin-top: 35px; padding-top: 20px; text-align: center;">
-        <p style="font-size: 12px; color: #777; margin: 0;">If you have any questions, feel free to reply to this email or contact us at <a href="mailto:support@dehyde.in" style="color: #000; text-decoration: underline;">support@dehyde.in</a></p>
+        <p style="font-size: 12px; color: #777; margin: 0;">If you have any questions, feel free to reply to this email or contact us at <a href="mailto:dehyde333@gmail.com" style="color: #000; text-decoration: underline;">dehyde333@gmail.com</a></p>
         <p style="font-size: 10px; color: #aaa; margin-top: 8px;">© ${new Date().getFullYear()} DEHYDE. All rights reserved.</p>
       </div>
     </div>

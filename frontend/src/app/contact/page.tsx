@@ -3,13 +3,34 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiClient } from "@/lib/api";
 
 export default function ContactPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!name || !email || !message) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await apiClient.post("/feedback", {
+        name,
+        email,
+        message,
+        type: "inquiry"
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,7 +54,7 @@ export default function ContactPage() {
               <p className="mt-1 leading-relaxed">
                 DEHYDE RETAIL PRIVATE LIMITED,<br />
                 Door No: 23B-5-16, Ramachandra Rao Pet,<br />
-                Eluru, Andhra Pradesh - 534002, India
+                Gudivada, Andhra Pradesh - 521301, India
               </p>
             </div>
 
@@ -41,7 +62,7 @@ export default function ContactPage() {
               <div>
                 <p className="text-[10px] uppercase tracking-editorial text-muted">Email Support</p>
                 <p className="mt-1 font-medium text-charcoal">
-                  <a href="mailto:support@dehyde.in" className="hover:underline">support@dehyde.in</a>
+                  <a href="mailto:dehyde333@gmail.com" className="hover:underline">dehyde333@gmail.com</a>
                 </p>
               </div>
               <div>
@@ -74,11 +95,24 @@ export default function ContactPage() {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label className="text-[9px] uppercase tracking-widest text-muted block mb-1">Name</label>
-                <Input placeholder="E.g., Ryan Gosling" required />
+                <Input
+                  placeholder="E.g., Ryan Gosling"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={submitting}
+                />
               </div>
               <div>
                 <label className="text-[9px] uppercase tracking-widest text-muted block mb-1">Email Address</label>
-                <Input type="email" placeholder="E.g., ryan@dehyde.in" required />
+                <Input
+                  type="email"
+                  placeholder="E.g., ryan@gmail.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={submitting}
+                />
               </div>
               <div>
                 <label className="text-[9px] uppercase tracking-widest text-muted block mb-1">Message</label>
@@ -86,10 +120,20 @@ export default function ContactPage() {
                   placeholder="How can we assist you today?"
                   rows={5}
                   required
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  disabled={submitting}
                   className="w-full text-sm border-0 border-b border-charcoal/20 bg-transparent py-2 outline-none focus:border-charcoal resize-none transition-colors duration-200"
                 />
               </div>
-              <Button type="submit" className="w-full py-3">Send message</Button>
+
+              {error && (
+                <p className="text-xs text-red-500 mt-2 font-medium">{error}</p>
+              )}
+
+              <Button type="submit" disabled={submitting} className="w-full py-3">
+                {submitting ? "Sending..." : "Send message"}
+              </Button>
             </form>
           )}
         </div>
@@ -97,3 +141,4 @@ export default function ContactPage() {
     </div>
   );
 }
+

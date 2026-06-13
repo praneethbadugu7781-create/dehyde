@@ -6,7 +6,7 @@ export default function PrivacyPage() {
       <p>Last updated: June 02, 2026</p>
       
       <p>
-        At DEHYDE, accessible from <strong>dehyde.in</strong>, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by DEHYDE and how we use it. If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at <strong>privacy@dehyde.in</strong>.
+        At DEHYDE, accessible from <strong>dehyde.in</strong>, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by DEHYDE and how we use it. If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at <strong>dehyde333@gmail.com</strong>.
       </p>
 
       <h3 className="font-serif text-lg text-charcoal mt-8">1. Information We Collect</h3>
@@ -55,9 +55,9 @@ export default function PrivacyPage() {
       <p>
         If you have any questions or concerns regarding this Privacy Policy, please contact us at:
         <br />
-        <strong>Email:</strong> privacy@dehyde.in
+        <strong>Email:</strong> dehyde333@gmail.com
         <br />
-        <strong>Address:</strong> DEHYDE RETAIL PRIVATE LIMITED, Door No: 23B-5-16, Ramachandra Rao Pet, Eluru, Andhra Pradesh - 534002, India
+        <strong>Address:</strong> DEHYDE RETAIL PRIVATE LIMITED, Door No: 23B-5-16, Ramachandra Rao Pet, Gudivada, Andhra Pradesh - 521301, India
       </p>
     </PolicyLayout>
   );

@@ -89,7 +89,15 @@ export default function ProductDetailsClient({ product }: Props) {
       .catch(console.error);
   }, [product.slug]);
 
-  const images = product.images?.length ? product.images : product.variants?.flatMap((v) => v.images || []) || [];
+  useEffect(() => {
+    setSelectedImage(0);
+    setVariantImageOverride(null);
+  }, [color]);
+
+  const activeVariant = product.variants?.find((v) => v.color === color);
+  const images = activeVariant?.images?.length
+    ? activeVariant.images
+    : (product.images?.length ? product.images : []);
   const activeImage = variantImageOverride || images[selectedImage] || productImage(product);
 
   const handleAdd = (buyNow = false, e?: React.MouseEvent<HTMLButtonElement>) => {
@@ -251,9 +259,6 @@ export default function ProductDetailsClient({ product }: Props) {
                     type="button"
                     onClick={() => {
                       setColor(v.color);
-                      if (swatchImage) {
-                        setVariantImageOverride(swatchImage);
-                      }
                     }}
                     className={`h-12 w-12 rounded-full border-2 overflow-hidden relative transition-all ${
                       isSelected ? "border-charcoal scale-105 shadow-sm" : "border-gray-200 hover:border-charcoal/50"

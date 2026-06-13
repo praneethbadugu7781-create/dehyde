@@ -11,7 +11,7 @@ export default function TermsPage() {
 
       <h3 className="font-serif text-lg text-charcoal mt-8">1. Business Profile & Identification</h3>
       <p>
-        The trade name <strong>DEHYDE</strong> and website <strong>dehyde.in</strong> are owned and operated by <strong>DEHYDE RETAIL PRIVATE LIMITED</strong>, with its registered office in Eluru, Andhra Pradesh, India.
+        The trade name <strong>DEHYDE</strong> and website <strong>dehyde.in</strong> are owned and operated by <strong>DEHYDE RETAIL PRIVATE LIMITED</strong>, with its registered office in Gudivada, Andhra Pradesh, India.
       </p>
 
       <h3 className="font-serif text-lg text-charcoal mt-8">2. Registration and Accounts</h3>
@@ -51,18 +51,18 @@ export default function TermsPage() {
 
       <h3 className="font-serif text-lg text-charcoal mt-8">7. Governing Law & Jurisdiction</h3>
       <p>
-        These Terms & Conditions and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or relating to these terms shall be subject to the exclusive jurisdiction of the courts located in <strong>Eluru, Andhra Pradesh, India</strong>.
+        These Terms & Conditions and any separate agreements whereby we provide you services shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or relating to these terms shall be subject to the exclusive jurisdiction of the courts located in <strong>Gudivada, Andhra Pradesh, India</strong>.
       </p>
 
       <h3 className="font-serif text-lg text-charcoal mt-8">8. Contact Information</h3>
       <p>
         For any inquiries regarding our Terms & Conditions, please contact us:
         <br />
-        <strong>Email:</strong> legal@dehyde.in
+        <strong>Email:</strong> dehyde333@gmail.com
         <br />
         <strong>Phone:</strong> +91 62818 11294
         <br />
-        <strong>Address:</strong> DEHYDE RETAIL PRIVATE LIMITED, Door No: 23B-5-16, Ramachandra Rao Pet, Eluru, Andhra Pradesh - 534002, India
+        <strong>Address:</strong> DEHYDE RETAIL PRIVATE LIMITED, Door No: 23B-5-16, Ramachandra Rao Pet, Gudivada, Andhra Pradesh - 521301, India
       </p>
     </PolicyLayout>
   );

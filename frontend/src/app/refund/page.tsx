@@ -32,7 +32,7 @@ export default function RefundPage() {
         To start a return or exchange process, please follow these steps:
       </p>
       <ul className="list-decimal pl-5 space-y-2">
-        <li>Email us at <strong>support@dehyde.in</strong> within 14 days of delivery.</li>
+        <li>Email us at <strong>dehyde333@gmail.com</strong> within 14 days of delivery.</li>
         <li>Include your order number, list of items you wish to return/exchange, and the reason for the return. If an item is damaged or defective, please attach clear photographs.</li>
         <li>Our support team will review your request within 24 hours. Upon approval, we will share reverse pickup coordinates and instructions.</li>
       </ul>
@@ -42,7 +42,7 @@ export default function RefundPage() {
         You can cancel your order free of charge within <strong>2 hours</strong> of placing it, or before it has been handed over to the courier partner for shipment, whichever is earlier.
       </p>
       <p>
-        To request a cancellation, please email us immediately at <strong>support@dehyde.in</strong> with your order number. Once shipped, orders cannot be cancelled but can be returned in accordance with our 14-day return window.
+        To request a cancellation, please email us immediately at <strong>dehyde333@gmail.com</strong> with your order number. Once shipped, orders cannot be cancelled but can be returned in accordance with our 14-day return window.
       </p>
 
       <h3 className="font-serif text-lg text-charcoal mt-8">5. Refund Processing Timeline</h3>
@@ -59,7 +59,7 @@ export default function RefundPage() {
       <p>
         For any questions regarding returns, refunds, or cancellations, please contact us at:
         <br />
-        <strong>Email:</strong> support@dehyde.in
+        <strong>Email:</strong> dehyde333@gmail.com
         <br />
         <strong>Phone:</strong> +91 62818 11294
       </p>

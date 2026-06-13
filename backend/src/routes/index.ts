@@ -11,6 +11,7 @@ import uploadRoutes from "./uploadRoutes.js";
 import bannerRoutes from "./bannerRoutes.js";
 import settingRoutes from "./settingRoutes.js";
 import couponRoutes from "./couponRoutes.js";
+import feedbackRoutes from "./feedbackRoutes.js";
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use("/upload", uploadRoutes);
 router.use("/banners", bannerRoutes);
 router.use("/settings", settingRoutes);
 router.use("/coupons", couponRoutes);
+router.use("/feedback", feedbackRoutes);
 
 router.get("/health", (_req, res) => {
   res.json({
@@ -34,3 +36,4 @@ router.get("/health", (_req, res) => {
 });
 
 export default router;
+

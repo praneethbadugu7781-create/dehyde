@@ -61,7 +61,7 @@ export default function ShippingPage() {
       <p>
         If you have any questions regarding the delivery status of your order, please reach out to us:
         <br />
-        <strong>Email:</strong> support@dehyde.in
+        <strong>Email:</strong> dehyde333@gmail.com
         <br />
         <strong>Phone:</strong> +91 62818 11294 (Mon-Fri, 10 AM to 6 PM IST)
       </p>

@@ -106,10 +106,14 @@ export function Footer() {
                     Shop
                   </Link>
                 </li>
-
                 <li>
                   <Link href="/contact" className="text-white/60 hover:text-white transition-colors">
                     Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/suggestions" className="text-white/60 hover:text-white transition-colors">
+                    Suggestions & Feedback
                   </Link>
                 </li>
               </ul>
@@ -155,9 +159,9 @@ export function Footer() {
                 Get in touch
               </h5>
               <ul className="space-y-3 text-xs text-white/60">
-                <li className="break-all">support@dehyde.in</li>
+                <li className="break-all">dehyde333@gmail.com</li>
                 <li>+91 62818 11294</li>
-                <li>Eluru, Andhra Pradesh, India</li>
+                <li>Gudivada, Andhra Pradesh, India</li>
               </ul>
             </div>
           </div>
