@@ -101,6 +101,9 @@ export const googleAuth = asyncHandler(async (req, res) => {
   // Clear OTP fields
   userForOtp.otpHash = undefined;
   userForOtp.otpExpires = undefined;
+  if (!userForOtp.name) {
+    userForOtp.name = name || "Google User";
+  }
   await userForOtp.save();
 
   // 3. Complete Google sign-in/registration
