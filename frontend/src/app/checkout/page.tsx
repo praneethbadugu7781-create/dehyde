@@ -17,7 +17,7 @@ declare global {
 }
 
 export default function CheckoutPage() {
-  const { items, subtotal, coinsToRedeem, couponCode, clearCart } = useCartStore();
+  const { items, subtotal, coinsToRedeem, couponCode, clearCart, setCoupon, setCoins } = useCartStore();
   const { accessToken, user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
@@ -32,8 +32,96 @@ export default function CheckoutPage() {
     pincode: "",
   });
 
+  const [couponInput, setCouponInput] = useState(couponCode || "");
+  const [couponDetails, setCouponDetails] = useState<any>(null);
+  const [couponError, setCouponError] = useState("");
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const [availableCoins, setAvailableCoins] = useState<number | null>(null);
+  const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
+
   const total = subtotal();
-  let shipping = total - coinsToRedeem >= 2999 ? 0 : 99;
+
+  useEffect(() => {
+    // Fetch active coupons
+    apiClient
+      .get<{ success: boolean; data: any[] }>("/coupons/active")
+      .then((res) => {
+        if (res.success && Array.isArray(res.data)) {
+          setActiveCoupons(res.data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch active coupons", err));
+  }, []);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setAvailableCoins(null);
+      return;
+    }
+    apiClient
+      .get<{ success: boolean; data: any }>("/rewards", accessToken)
+      .then((res) => setAvailableCoins(res.data?.balance ?? 0))
+      .catch(() => setAvailableCoins(0));
+  }, [accessToken]);
+
+  useEffect(() => {
+    setCouponInput(couponCode || "");
+  }, [couponCode]);
+
+  useEffect(() => {
+    if (!couponCode) {
+      setCouponDetails(null);
+      setCouponError("");
+      return;
+    }
+
+    setValidatingCoupon(true);
+    setCouponError("");
+
+    apiClient
+      .get<{ success: boolean; data: any }>(`/coupons/validate?code=${couponCode}&subtotal=${total}`)
+      .then((res) => {
+        if (res.success) {
+          setCouponDetails(res.data);
+          setCouponError("");
+        }
+      })
+      .catch((err) => {
+        setCouponDetails(null);
+        setCouponError(err instanceof Error ? err.message : "Invalid coupon code");
+      })
+      .finally(() => {
+        setValidatingCoupon(false);
+      });
+  }, [couponCode, total]);
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponInput.trim()) {
+      setCoupon(null);
+      return;
+    }
+    setCoupon(couponInput.toUpperCase().trim());
+  };
+
+  const handleRemoveCoupon = () => {
+    setCoupon(null);
+    setCouponInput("");
+  };
+
+  let couponDiscount = 0;
+  if (couponDetails) {
+    if (couponDetails.type === "percent") {
+      couponDiscount = Math.min((total * couponDetails.value) / 100, couponDetails.maxDiscount ?? Infinity);
+    } else {
+      couponDiscount = couponDetails.value;
+    }
+  }
+
+  const totalAfterDiscount = Math.max(0, total - couponDiscount - coinsToRedeem);
+  
+  let shipping = totalAfterDiscount >= 2999 ? 0 : 99;
   
   if (shippingDetails) {
     if (shippingMethod === "express") {
@@ -43,7 +131,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const grandTotal = Math.max(0, total - coinsToRedeem + shipping);
+  const grandTotal = Math.max(0, totalAfterDiscount + shipping);
 
   const isAddressComplete =
     address.fullName.trim() !== "" &&
@@ -276,11 +364,229 @@ export default function CheckoutPage() {
               </div>
             )}
           </div>
-          <aside>
-            <p className="text-[10px] uppercase tracking-editorial text-muted">Order total</p>
-            <p className="mt-4 text-3xl font-serif">{formatPrice(grandTotal)}</p>
-            <p className="mt-2 text-xs text-muted">
-              {items.length} item(s) · Coins applied: {coinsToRedeem}
+          <aside className="lg:sticky lg:top-32 lg:self-start">
+            <p className="text-[10px] uppercase tracking-editorial text-muted border-b border-charcoal/10 pb-4">Order Summary</p>
+            <div className="mt-6 space-y-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">Subtotal</span>
+                <span>{formatPrice(total)}</span>
+              </div>
+
+              {/* Coupon Code Input */}
+              <div className="space-y-4 pt-2 border-t border-charcoal/5">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase tracking-editorial text-muted font-bold block">Promo Code</label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value)}
+                      className="uppercase tracking-widest font-mono text-xs border-charcoal/20"
+                      disabled={!!couponDetails || validatingCoupon}
+                    />
+                    {couponDetails ? (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 text-xs uppercase tracking-widest font-semibold transition-colors rounded-lg cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={validatingCoupon || !couponInput.trim()}
+                        className="bg-charcoal text-offwhite hover:bg-black px-4 py-2 text-xs uppercase tracking-widest font-semibold transition-colors disabled:opacity-40 rounded-lg cursor-pointer min-w-[70px]"
+                      >
+                        {validatingCoupon ? "..." : "Apply"}
+                      </button>
+                    )}
+                  </div>
+
+                  {couponError && (
+                    <p className="text-red-600 text-xs font-semibold mt-1">
+                      ❌ {couponError}
+                    </p>
+                  )}
+
+                  {couponDetails && (
+                    <p className="text-green-600 text-xs font-semibold mt-1">
+                      ✓ Coupon <span className="font-mono uppercase text-royal font-bold">{couponDetails.code}</span> applied! ({couponDetails.type === "percent" ? `${couponDetails.value}%` : `₹${couponDetails.value}`} OFF)
+                    </p>
+                  )}
+                </div>
+
+                {/* Available Offers section */}
+                {activeCoupons.length > 0 && (
+                  <div className="pt-2 border-t border-charcoal/5 space-y-2">
+                    <p className="text-[10px] uppercase tracking-editorial text-muted font-bold">Available Offers</p>
+                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                      {activeCoupons.map((c) => {
+                        const isEligible = total >= c.minOrder;
+                        const isApplied = couponDetails?.code === c.code;
+                        const neededAmount = c.minOrder - total;
+                        const discountText = c.type === "percent" ? `${c.value}% OFF` : `₹${c.value} OFF`;
+                        const subtext = c.minOrder > 0 ? `on orders above ₹${c.minOrder}` : "on all orders";
+                        
+                        return (
+                          <div
+                            key={c.code}
+                            className={`p-3 border rounded-xl flex flex-col justify-between gap-2 transition-all ${
+                              isApplied
+                                ? "border-green-500 bg-green-50/10"
+                                : isEligible
+                                ? "border-charcoal/15 bg-white hover:border-royal/40"
+                                : "border-charcoal/5 bg-gray-50/50 opacity-80"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <span className={`font-mono text-[10px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase ${
+                                  isApplied
+                                    ? "text-green-700 bg-green-100 border-green-200"
+                                    : isEligible
+                                    ? "text-charcoal bg-stone/5 border-charcoal/15"
+                                    : "text-muted bg-stone/5 border-charcoal/5"
+                                }`}>
+                                  {c.code}
+                                </span>
+                                <p className="text-xs text-charcoal font-semibold mt-1.5">{discountText}</p>
+                                <p className="text-[10px] text-muted mt-0.5">{subtext}</p>
+                              </div>
+                              
+                              {isApplied ? (
+                                <span className="text-green-600 text-xs font-bold flex items-center gap-0.5">
+                                  ✓ Applied
+                                </span>
+                              ) : isEligible ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setCouponInput(c.code);
+                                    setCoupon(c.code);
+                                  }}
+                                  className="text-royal hover:text-blue-800 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
+                                >
+                                  Apply
+                                </button>
+                              ) : (
+                                <span className="text-amber-600 text-[9px] font-semibold bg-amber-50 border border-amber-100 px-2 py-1 rounded">
+                                  Locked
+                                </span>
+                              )}
+                            </div>
+                            
+                            {!isEligible && neededAmount > 0 && (
+                              <div className="pt-1 border-t border-charcoal/5 flex flex-col gap-1">
+                                <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                                  Add ₹{formatPrice(neededAmount).replace("₹", "")} more to unlock this offer
+                                </p>
+                                <div className="w-full bg-charcoal/5 h-1 rounded-full overflow-hidden">
+                                  <div
+                                    className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                                    style={{ width: `${Math.min(100, (total / c.minOrder) * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Coins Redemption Section */}
+              <div className="pt-4 border-t border-charcoal/5">
+                {!accessToken ? (
+                  <div className="border border-charcoal/10 p-4 rounded-xl bg-stone/5 space-y-1.5">
+                    <p className="text-xs font-semibold text-charcoal">Redeem DEHYDE Coins</p>
+                    <p className="text-[11px] text-muted leading-relaxed">
+                      <Link href="/account/login?redirect=/checkout" className="underline hover:text-royal font-medium">Sign in</Link> to redeem loyalty coins and save up to 30%.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-charcoal/15 p-4 rounded-xl bg-stone/5 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-semibold text-charcoal">DEHYDE Coins</span>
+                      <span className="text-xs font-mono font-bold text-royal bg-royal/10 px-2.5 py-0.5 rounded-full">
+                        {availableCoins !== null ? `${availableCoins} available` : "..."}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted leading-snug">
+                      1 Coin = ₹1. Redeem up to 30% of subtotal (max ₹{Math.floor(total * 0.3)}).
+                    </p>
+                    {availableCoins !== null && availableCoins > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted">₹</span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={Math.min(Math.floor(total * 0.3), availableCoins)}
+                              value={coinsToRedeem || ""}
+                              onChange={(e) => {
+                                const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                let val = Math.max(0, parseInt(e.target.value) || 0);
+                                if (val > maxVal) val = maxVal;
+                                setCoins(val);
+                              }}
+                              placeholder="0"
+                              className="w-full bg-white border border-charcoal/20 pl-6 pr-3 py-2 text-xs rounded-lg focus:outline-none focus:border-royal font-mono"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                              setCoins(maxVal);
+                            }}
+                            className="bg-royal text-offwhite hover:bg-blue-800 text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Redeem Max
+                          </button>
+                        </div>
+                        {coinsToRedeem > 0 && (
+                          <p className="text-green-600 text-[10px] font-semibold flex items-center gap-1">
+                            ✓ Applied ₹{coinsToRedeem} coin discount
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {couponDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-semibold">
+                  <span>Promo discount ({couponDetails?.code})</span>
+                  <span>-{formatPrice(couponDiscount)}</span>
+                </div>
+              )}
+
+              {coinsToRedeem > 0 && (
+                <div className="flex justify-between text-muted">
+                  <span>Coin discount</span>
+                  <span>-{formatPrice(coinsToRedeem)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <span className="text-muted">Shipping</span>
+                <span>{shipping === 0 ? "Complimentary" : formatPrice(shipping)}</span>
+              </div>
+              
+              <div className="flex justify-between border-t border-charcoal/10 pt-4 text-base font-bold">
+                <span>Total</span>
+                <span>{formatPrice(grandTotal)}</span>
+              </div>
+            </div>
+
+            <p className="mt-4 text-xs text-muted">
+              {items.length} item(s) shipping to {address.city || "destination"}
             </p>
             <Button 
               className="mt-8 w-full" 
