@@ -10,22 +10,22 @@ import { Input } from "@/components/ui/input";
 interface Coupon {
   _id: string;
   code: string;
-  discountType: "percentage" | "fixed";
-  discountValue: number;
-  minPurchaseAmount: number;
-  validUntil: string;
+  type: "percent" | "fixed";
+  value: number;
+  minOrder: number;
+  expiresAt: string;
   isActive: boolean;
-  maxUses: number;
-  currentUses: number;
+  usageLimit: number;
+  usedCount: number;
 }
 
 const emptyForm = {
   code: "",
-  discountType: "percentage" as const,
-  discountValue: "",
-  minPurchaseAmount: "",
-  validUntil: "",
-  maxUses: "",
+  type: "percent" as const,
+  value: "",
+  minOrder: "",
+  expiresAt: "",
+  usageLimit: "",
 };
 
 export default function AdminCouponsPage() {
@@ -59,9 +59,9 @@ export default function AdminCouponsPage() {
     try {
       await apiClient.post("/admin/coupons", {
         ...form,
-        discountValue: Number(form.discountValue),
-        minPurchaseAmount: Number(form.minPurchaseAmount || 0),
-        maxUses: Number(form.maxUses || 100),
+        value: Number(form.value),
+        minOrder: Number(form.minOrder || 0),
+        usageLimit: Number(form.usageLimit || 100),
       }, accessToken);
       setForm(emptyForm);
       setMessage("Coupon created successfully");
@@ -97,25 +97,59 @@ export default function AdminCouponsPage() {
           <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 border-b border-gray-100 pb-4">Create New Coupon</p>
           
           <div className="space-y-4">
-            <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40 uppercase" placeholder="Coupon Code (e.g. SUMMER25)" value={form.code} onChange={(e) => update("code", e.target.value.toUpperCase())} required />
+            <div className="space-y-1">
+              <label className="text-[9px] uppercase tracking-editorial text-charcoal/40 font-bold block">Coupon Code</label>
+              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40 uppercase" placeholder="e.g. SUMMER25" value={form.code} onChange={(e) => update("code", e.target.value.toUpperCase())} required />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <select className="h-10 w-full border-0 border-b border-gray-200 bg-white text-sm outline-none text-charcoal" value={form.discountType} onChange={(e) => update("discountType", e.target.value)} required>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount (₹)</option>
-              </select>
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="Discount Value" type="number" value={form.discountValue} onChange={(e) => update("discountValue", e.target.value)} required />
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-editorial text-charcoal/40 font-bold block">Discount Type</label>
+                <select className="h-10 w-full border-0 border-b border-gray-200 bg-white text-sm outline-none text-charcoal cursor-pointer" value={form.type} onChange={(e) => update("type", e.target.value)} required>
+                  <option value="percent">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-editorial text-charcoal/40 font-bold block">Discount Value</label>
+                <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder={form.type === "percent" ? "e.g. 25 (for 25% off)" : "e.g. 500 (for ₹500 off)"} type="number" value={form.value} onChange={(e) => update("value", e.target.value)} required />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="Min Purchase (₹)" type="number" value={form.minPurchaseAmount} onChange={(e) => update("minPurchaseAmount", e.target.value)} />
-              <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="Max Uses" type="number" value={form.maxUses} onChange={(e) => update("maxUses", e.target.value)} />
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-editorial text-charcoal/40 font-bold block">Min Purchase (₹)</label>
+                <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. 999" type="number" value={form.minOrder} onChange={(e) => update("minOrder", e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-editorial text-charcoal/40 font-bold block">Max Uses</label>
+                <Input className="border-gray-200 text-charcoal placeholder:text-charcoal/40" placeholder="e.g. 100" type="number" value={form.usageLimit} onChange={(e) => update("usageLimit", e.target.value)} />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] uppercase tracking-editorial text-charcoal/40">Valid Until</label>
-              <Input className="border-gray-200 text-charcoal bg-transparent" type="date" value={form.validUntil} onChange={(e) => update("validUntil", e.target.value)} required />
+              <label className="text-[10px] uppercase tracking-editorial text-charcoal/40 font-bold block">Valid Until</label>
+              <Input className="border-gray-200 text-charcoal bg-transparent" type="date" value={form.expiresAt} onChange={(e) => update("expiresAt", e.target.value)} required />
             </div>
+
+            {/* Dynamic discount live preview summary */}
+            {form.value && (
+              <div className="bg-royal/5 border border-royal/10 text-royal p-4 rounded-xl text-xs space-y-1.5 font-medium animate-in fade-in duration-300">
+                <p className="font-semibold uppercase tracking-wider text-[9px] text-royal/60">Live Discount Preview</p>
+                <p>
+                  This coupon will deduct{" "}
+                  <span className="font-bold text-royal">
+                    {form.type === "percent" ? `${form.value}%` : `₹${form.value}`}
+                  </span>{" "}
+                  from the order subtotal.
+                </p>
+                {form.minOrder && Number(form.minOrder) > 0 && (
+                  <p className="text-[11px] text-royal/70">
+                    * Only applies to orders of <span className="font-bold">₹{form.minOrder}</span> or more.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {message && <p className="text-xs text-amber-600 p-3 bg-amber-50 rounded-md font-medium">{message}</p>}
@@ -149,14 +183,14 @@ export default function AdminCouponsPage() {
                         {c.code}
                       </td>
                       <td className="px-6 py-4 font-medium text-charcoal">
-                        {c.discountType === 'percentage' ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
+                        {c.type === 'percent' ? `${c.value}% OFF` : `₹${c.value} OFF`}
                       </td>
                       <td className="px-6 py-4 text-charcoal/60">
-                        {c.currentUses} / {c.maxUses}
+                        {c.usedCount} / {c.usageLimit}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <span className={`px-2 py-1 text-[9px] uppercase tracking-widest rounded-md border ${new Date(c.validUntil) < new Date() ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
-                          {formatDate(c.validUntil)}
+                        <span className={`px-2 py-1 text-[9px] uppercase tracking-widest rounded-md border ${c.expiresAt && new Date(c.expiresAt) < new Date() ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
+                          {c.expiresAt ? formatDate(c.expiresAt) : "Never"}
                         </span>
                       </td>
                     </tr>
