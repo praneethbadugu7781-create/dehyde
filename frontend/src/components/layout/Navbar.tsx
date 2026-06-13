@@ -121,8 +121,9 @@ export function Navbar() {
               </Link>
               
               <Link
+                id="nav-cart-btn"
                 href="/cart"
-                className="relative p-1 hover:opacity-75 transition-opacity"
+                className="relative p-1 hover:opacity-75 transition-opacity inline-block"
                 aria-label="Cart"
               >
                 <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.5} />

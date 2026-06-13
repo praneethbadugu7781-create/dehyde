@@ -88,18 +88,100 @@ export default function ProductDetailsClient({ product }: Props) {
       alert("Please select a size first.");
       return;
     }
-    addItem({
-      productId: product._id,
-      slug: product.slug,
-      title: product.title,
-      image: activeImage,
-      price: product.price,
-      size,
-      color,
-      quantity: 1,
-      rewardCoins: product.rewardCoins,
-    });
-    if (buyNow) window.location.href = "/checkout";
+
+    if (!buyNow) {
+      const imgEl = document.getElementById("product-main-image");
+      const cartBtn = document.getElementById("nav-cart-btn");
+
+      if (imgEl && cartBtn) {
+        const imgRect = imgEl.getBoundingClientRect();
+        const cartRect = cartBtn.getBoundingClientRect();
+
+        // Create temporary flyer element
+        const flyer = document.createElement("div");
+        flyer.style.position = "fixed";
+        flyer.style.top = `${imgRect.top}px`;
+        flyer.style.left = `${imgRect.left}px`;
+        flyer.style.width = `${imgRect.width}px`;
+        flyer.style.height = `${imgRect.height}px`;
+        flyer.style.zIndex = "9999";
+        flyer.style.pointerEvents = "none";
+        flyer.style.borderRadius = "8px";
+        flyer.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.15)";
+        flyer.style.transition = "all 0.9s cubic-bezier(0.25, 1, 0.5, 1)";
+        flyer.style.overflow = "hidden";
+
+        const flyerImg = document.createElement("img");
+        flyerImg.src = activeImage;
+        flyerImg.style.width = "100%";
+        flyerImg.style.height = "100%";
+        flyerImg.style.objectFit = "cover";
+        flyer.appendChild(flyerImg);
+
+        document.body.appendChild(flyer);
+
+        // Trigger reflow
+        flyer.offsetWidth;
+
+        // Animate elements to cart position
+        flyer.style.top = `${cartRect.top + cartRect.height / 2 - 15}px`;
+        flyer.style.left = `${cartRect.left + cartRect.width / 2 - 15}px`;
+        flyer.style.width = "30px";
+        flyer.style.height = "30px";
+        flyer.style.opacity = "0.2";
+        flyer.style.transform = "scale(0.1) rotate(15deg)";
+        flyer.style.borderRadius = "50%";
+
+        setTimeout(() => {
+          flyer.remove();
+
+          // Add bounce effect to cart icon
+          cartBtn.classList.add("cart-bounce");
+          setTimeout(() => {
+            cartBtn.classList.remove("cart-bounce");
+          }, 400);
+
+          // Add item to cart
+          addItem({
+            productId: product._id,
+            slug: product.slug,
+            title: product.title,
+            image: activeImage,
+            price: product.price,
+            size,
+            color,
+            quantity: 1,
+            rewardCoins: product.rewardCoins,
+          });
+        }, 900);
+      } else {
+        // Fallback
+        addItem({
+          productId: product._id,
+          slug: product.slug,
+          title: product.title,
+          image: activeImage,
+          price: product.price,
+          size,
+          color,
+          quantity: 1,
+          rewardCoins: product.rewardCoins,
+        });
+      }
+    } else {
+      addItem({
+        productId: product._id,
+        slug: product.slug,
+        title: product.title,
+        image: activeImage,
+        price: product.price,
+        size,
+        color,
+        quantity: 1,
+        rewardCoins: product.rewardCoins,
+      });
+      window.location.href = "/checkout";
+    }
   };
 
   return (
@@ -109,6 +191,7 @@ export default function ProductDetailsClient({ product }: Props) {
           <div className="relative aspect-[3/4] overflow-hidden bg-stone/5">
             {activeImage ? (
               <Image
+                id="product-main-image"
                 src={activeImage}
                 alt={product.title}
                 fill
