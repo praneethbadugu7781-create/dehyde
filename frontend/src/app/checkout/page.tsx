@@ -467,64 +467,19 @@ export default function CheckoutPage() {
               />
             ))}
 
-            {/* Shipping Speed Selection */}
+            {/* Shipping details */}
             {shippingDetails && (
               <div className="mt-8 space-y-4 border-t border-charcoal/10 pt-6">
-                <p className="text-[10px] uppercase tracking-editorial text-muted mb-2">Shipping Speed</p>
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Standard Card */}
-                  <label className={`p-4 border rounded-lg cursor-pointer flex flex-col justify-between transition-all ${
-                    shippingMethod === "standard" ? "border-charcoal bg-cream/10" : "border-charcoal/10 hover:border-charcoal/30"
-                  }`}>
-                    <input
-                      type="radio"
-                      name="shippingMethod"
-                      value="standard"
-                      checked={shippingMethod === "standard"}
-                      onChange={() => setShippingMethod("standard")}
-                      className="sr-only"
-                    />
-                    <div>
-                      <p className="font-semibold text-xs text-charcoal uppercase tracking-wider">Standard Delivery</p>
-                      <p className="text-muted text-[11px] mt-1">Est: {shippingDetails.standard.dateString}</p>
-                      <p className="text-[10px] text-muted/80 mt-1">via {shippingDetails.standard.courier}</p>
-                    </div>
-                    <p className="font-semibold text-xs mt-3 text-charcoal">
-                      {shippingDetails.standard.price === 0 ? "FREE" : `₹${shippingDetails.standard.price}`}
-                    </p>
-                  </label>
-
-                  {/* Express Card */}
-                  {shippingDetails.express.isAvailable ? (
-                    <label className={`p-4 border rounded-lg cursor-pointer flex flex-col justify-between transition-all ${
-                      shippingMethod === "express" ? "border-charcoal bg-cream/10" : "border-charcoal/10 hover:border-charcoal/30"
-                    }`}>
-                      <input
-                        type="radio"
-                        name="shippingMethod"
-                        value="express"
-                        checked={shippingMethod === "express"}
-                        onChange={() => setShippingMethod("express")}
-                        className="sr-only"
-                      />
-                      <div>
-                        <p className="font-semibold text-xs text-charcoal uppercase tracking-wider flex items-center gap-1">
-                          Express Speed
-                          <span className="bg-charcoal text-offwhite text-[8px] px-1 py-0.2 rounded font-normal uppercase scale-90">Fast</span>
-                        </p>
-                        <p className="text-muted text-[11px] mt-1">Est: {shippingDetails.express.dateString}</p>
-                        <p className="text-[10px] text-muted/80 mt-1">via {shippingDetails.express.courier}</p>
-                      </div>
-                      <p className="font-semibold text-xs mt-3 text-charcoal">
-                        ₹{shippingDetails.express.price}
-                      </p>
-                    </label>
-                  ) : (
-                    <div className="p-4 border border-dashed border-charcoal/10 rounded-lg flex flex-col justify-center items-center text-center bg-stone/5">
-                      <p className="font-semibold text-xs text-muted uppercase tracking-wider">Express Delivery</p>
-                      <p className="text-muted text-[10px] mt-2 leading-relaxed">Unavailable for this region</p>
-                    </div>
-                  )}
+                <p className="text-[10px] uppercase tracking-editorial text-muted mb-2">Shipping Details</p>
+                <div className="p-4 border border-charcoal/10 rounded-lg flex justify-between items-center bg-cream/10">
+                  <div>
+                    <p className="font-semibold text-xs text-charcoal uppercase tracking-wider">Standard Shipping</p>
+                    <p className="text-muted text-[11px] mt-1">Est: {shippingDetails.standard.dateString}</p>
+                    <p className="text-[10px] text-muted/80 mt-1">via {shippingDetails.standard.courier}</p>
+                  </div>
+                  <p className="font-semibold text-xs text-charcoal">
+                    {shippingDetails.standard.price === 0 ? "FREE" : `₹${shippingDetails.standard.price}`}
+                  </p>
                 </div>
                 
                 {/* COD Warning */}

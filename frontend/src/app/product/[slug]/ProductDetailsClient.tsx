@@ -357,30 +357,13 @@ export default function ProductDetailsClient({ product }: Props) {
                   </span>
                 </div>
                 
-                <div className="mt-2 border-t border-charcoal/5 pt-2 grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-white border border-charcoal/5 rounded">
-                    <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider">Standard Delivery</p>
+                <div className="mt-2 border-t border-charcoal/5 pt-2">
+                  <div className="p-3.5 bg-white border border-charcoal/5 rounded">
+                    <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider">Shipping</p>
                     <p className="text-green-600 font-semibold mt-1">{estimate.standard.dateString}</p>
-                    <p className="text-muted mt-0.5">Shipping: {estimate.standard.price === 0 ? "Complimentary" : `₹${estimate.standard.price}`}</p>
-                    <p className="text-[10px] text-muted/80 mt-1">via {estimate.standard.courier}</p>
+                    <p className="text-muted mt-0.5">Rate: {estimate.standard.price === 0 ? "Complimentary" : `₹${estimate.standard.price}`}</p>
+                    <p className="text-[10px] text-muted/80 mt-1.5 border-t border-gray-100 pt-1.5">Dispatched via {estimate.standard.courier}</p>
                   </div>
-                  
-                  {estimate.express.isAvailable ? (
-                    <div className="p-3 bg-white border border-charcoal/5 rounded">
-                      <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider flex items-center gap-1">
-                        Express Delivery
-                        <span className="bg-charcoal text-offwhite text-[8px] px-1 py-0.2 rounded font-normal uppercase scale-90">Fast</span>
-                      </p>
-                      <p className="text-green-600 font-semibold mt-1">{estimate.express.dateString}</p>
-                      <p className="text-muted mt-0.5">Shipping: ₹{estimate.express.price}</p>
-                      <p className="text-[10px] text-muted/80 mt-1">via {estimate.express.courier}</p>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-stone/5 border border-dashed border-charcoal/10 rounded flex flex-col justify-center items-center text-center">
-                      <p className="text-[10px] text-muted uppercase font-semibold">Express Delivery</p>
-                      <p className="text-muted text-[10px] mt-1">Unavailable for this region</p>
-                    </div>
-                  )}
                 </div>
               </div>
             )}
