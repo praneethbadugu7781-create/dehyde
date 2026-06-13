@@ -440,12 +440,16 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 relative"
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-[#09090b] overflow-hidden relative"
     >
+      {/* Glowing decorative orbs for premium glassmorphism depth in DEHYDE royal blue */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-royal/15 blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-blue-950/20 blur-[140px] pointer-events-none z-0" />
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[420px] bg-black/75 backdrop-blur-xl border border-white/10 rounded-[28px] p-5 md:p-6 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
+        className="w-full max-w-[420px] bg-black/45 backdrop-blur-xl border border-white/10 rounded-[28px] p-5 md:p-6 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
       >
         {/* Header with tabs and close button */}
         {!otpSent && (
