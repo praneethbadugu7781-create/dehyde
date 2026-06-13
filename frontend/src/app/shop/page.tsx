@@ -57,7 +57,7 @@ function ShopContent() {
             </div>
           )}
           <div className="flex-1 w-full">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:gap-x-8">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
               {products.map((p, i) => (
                 <ProductCard key={p._id} product={p} index={i} />
               ))}

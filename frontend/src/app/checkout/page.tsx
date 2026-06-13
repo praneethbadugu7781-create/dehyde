@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import Image from "next/image";
 import { apiClient } from "@/lib/api";
 import { gsap } from "gsap";
 
@@ -452,20 +453,82 @@ export default function CheckoutPage() {
 
   return (
     <div className="pt-32 pb-section">
-      <div className="luxury-container max-w-4xl">
+      <div className="luxury-container max-w-6xl">
         <h1 className="editorial-heading text-5xl">Checkout</h1>
-        <div className="mt-16 grid gap-16 lg:grid-cols-2">
-          <div className="space-y-6">
-            <p className="text-[10px] uppercase tracking-editorial text-muted">Shipping address</p>
-            {(["fullName", "phone", "line1", "pincode", "city", "state"] as const).map((field) => (
-              <Input
-                key={field}
-                placeholder={field.replace(/([A-Z])/g, " $1")}
-                value={address[field]}
-                onChange={(e) => handleAddressChange(field, e.target.value)}
-                disabled={(field === "city" || field === "state") && loadingEstimate}
-              />
-            ))}
+        <div className="mt-12 grid gap-8 lg:grid-cols-[1.2fr_1fr] items-start">
+          {/* Left Column: Shipping Address Form inside Card */}
+          <div className="bg-white border border-gray-150 p-6 sm:p-8 rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.015)] h-fit space-y-6">
+            <p className="font-serif text-lg text-charcoal border-b border-charcoal/10 pb-4">Shipping Address</p>
+            
+            <div className="space-y-5">
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">Full Name</label>
+                <Input
+                  placeholder="E.g., Badugu Praneeth"
+                  value={address.fullName}
+                  onChange={(e) => handleAddressChange("fullName", e.target.value)}
+                  className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11"
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">Phone Number</label>
+                <Input
+                  type="tel"
+                  placeholder="E.g., +91 98765 43210"
+                  value={address.phone}
+                  onChange={(e) => handleAddressChange("phone", e.target.value)}
+                  className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11"
+                />
+              </div>
+
+              {/* Address Line 1 */}
+              <div className="space-y-1.5">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">Address Line 1</label>
+                <Input
+                  placeholder="E.g., Door No, Street Name"
+                  value={address.line1}
+                  onChange={(e) => handleAddressChange("line1", e.target.value)}
+                  className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11"
+                />
+              </div>
+
+              {/* Pincode, City, State Grid */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">Pincode</label>
+                  <Input
+                    placeholder="6-digit PIN"
+                    maxLength={6}
+                    value={address.pincode}
+                    onChange={(e) => handleAddressChange("pincode", e.target.value)}
+                    className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11 text-center font-mono tracking-widest"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">City</label>
+                  <Input
+                    placeholder="City"
+                    value={address.city}
+                    onChange={(e) => handleAddressChange("city", e.target.value)}
+                    disabled={loadingEstimate}
+                    className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11 disabled:bg-gray-50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[9px] uppercase tracking-widest text-charcoal/60 font-bold block">State</label>
+                  <Input
+                    placeholder="State"
+                    value={address.state}
+                    onChange={(e) => handleAddressChange("state", e.target.value)}
+                    disabled={loadingEstimate}
+                    className="bg-white border border-gray-200 focus:border-charcoal focus:ring-1 focus:ring-charcoal px-4 rounded-xl h-11 disabled:bg-gray-50"
+                  />
+                </div>
+              </div>
+            </div>
 
             {/* Shipping details */}
             {shippingDetails && (
@@ -491,8 +554,46 @@ export default function CheckoutPage() {
               </div>
             )}
           </div>
-          <aside className="lg:sticky lg:top-32 lg:self-start">
-            <p className="text-[10px] uppercase tracking-editorial text-muted border-b border-charcoal/10 pb-4">Order Summary</p>
+
+          {/* Right Column: Order Summary inside Card */}
+          <aside className="lg:sticky lg:top-32 lg:self-start bg-white border border-gray-150 p-6 sm:p-8 rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
+            <p className="font-serif text-lg text-charcoal border-b border-charcoal/10 pb-4">Order Summary</p>
+            
+            {/* Items List in Order Summary */}
+            <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 border-b border-charcoal/10 pb-4 scrollbar-thin">
+              {items.map((item) => (
+                <div key={`${item.productId}-${item.size}-${item.color}`} className="flex gap-3 items-center">
+                  <div className="relative w-12 h-16 bg-stone/5 rounded overflow-hidden flex-shrink-0 border border-black/5">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[8px] font-bold text-neutral-400">
+                        DEHYDE
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-charcoal truncate">{item.title}</p>
+                    <p className="text-[10px] text-muted mt-0.5">
+                      Size: <span className="font-medium text-charcoal">{item.size}</span> &middot; Color: <span className="font-medium text-charcoal">{item.color}</span>
+                    </p>
+                    <p className="text-[10px] text-muted mt-0.5">Qty: {item.quantity}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold text-charcoal">
+                      {formatPrice(item.price * item.quantity)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className="mt-6 space-y-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>

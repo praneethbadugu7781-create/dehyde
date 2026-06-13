@@ -183,50 +183,60 @@ export function ProductCard({ product, index = 0 }: Props) {
       </div>
 
       {/* Info Blocks (Title, Price, Swatches) */}
-      <div className="pt-2 flex flex-col flex-1 bg-transparent justify-between px-0">
+      <div className="pt-2 flex flex-col flex-1 bg-transparent justify-start px-0">
+        {/* Swatches Row - above Title, matching Style Union style */}
+        <div className="min-h-[22px] flex items-center mb-1">
+          {product.variants && product.variants.length > 1 ? (
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
+                {product.variants.slice(0, 3).map((v, idx) => {
+                  const isActive = selectedVariantIdx === idx;
+                  return (
+                    <button
+                      key={v.color}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedVariantIdx(isActive ? null : idx);
+                      }}
+                      onMouseEnter={() => setSelectedVariantIdx(idx)}
+                      className={cn(
+                        "relative h-4.5 w-4.5 rounded-full flex items-center justify-center transition-all duration-200 border",
+                        isActive ? "border-charcoal scale-105" : "border-gray-200 hover:border-charcoal/50"
+                      )}
+                      title={v.color}
+                    >
+                      <span
+                        className="h-3 w-3 rounded-full shadow-inner"
+                        style={{ backgroundColor: getColorHex(v.color, v.colorHex) }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+              {product.variants.length > 3 && (
+                <span className="text-[10px] text-muted font-medium">
+                  +{product.variants.length - 3}
+                </span>
+              )}
+            </div>
+          ) : null}
+        </div>
+
         <Link href={`/product/${product.slug}`} className="block">
           <h3 className="card-product__title">
             {product.title}
           </h3>
-          <div className="mt-2 flex items-center gap-2 font-sans font-bold text-sm md:text-[16px] text-black">
+          <div className="mt-1 flex items-center gap-2 font-sans font-bold text-xs md:text-sm text-black">
             <span>{formatPrice(product.price)}</span>
             {product.compareAtPrice && (
-              <span className="text-xs text-neutral-400 line-through font-normal">
+              <span className="text-[10px] md:text-xs text-neutral-400 line-through font-normal">
                 {formatPrice(product.compareAtPrice)}
               </span>
             )}
           </div>
         </Link>
-
-        {/* Swatches Section (Bottom row inside Info frame) */}
-        {product.variants && product.variants.length > 1 && (
-          <div className="mt-4 pt-3 border-t border-black/5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-            {product.variants.map((v, idx) => {
-              const isActive = selectedVariantIdx === idx;
-              return (
-                <button
-                  key={v.color}
-                  type="button"
-                  onClick={() => setSelectedVariantIdx(isActive ? null : idx)}
-                  onMouseEnter={() => setSelectedVariantIdx(idx)}
-                  className={cn(
-                    "relative h-5 w-5 rounded-full flex items-center justify-center transition-all duration-300 border",
-                    isActive ? "border-black scale-105" : "border-black/10 hover:border-black/30"
-                  )}
-                  title={v.color}
-                >
-                  <span
-                    className="h-3.5 w-3.5 rounded-full shadow-inner"
-                    style={{ backgroundColor: getColorHex(v.color, v.colorHex) }}
-                  />
-                  {isActive && (
-                    <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5 rounded-full bg-black" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
       </div>
     </motion.article>
   );
