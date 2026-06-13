@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { apiClient } from "@/lib/api";
+import { gsap } from "gsap";
 
 declare global {
   interface Window {
@@ -21,6 +22,116 @@ export default function CheckoutPage() {
   const { accessToken, user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<"standard" | "express">("standard");
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const startTruckAnimation = (onComplete: () => void) => {
+    const button = buttonRef.current;
+    if (!button) return;
+
+    const box = button.querySelector(".box");
+    const truck = button.querySelector(".truck");
+    if (!box || !truck) return;
+
+    button.classList.add("animation");
+
+    gsap.to(button, {
+      "--box-s": 1,
+      "--box-o": 1,
+      duration: 0.3,
+      delay: 0.5,
+    });
+
+    gsap.to(box, {
+      x: 0,
+      duration: 0.4,
+      delay: 0.7,
+    });
+
+    gsap.to(button, {
+      "--hx": -5,
+      "--bx": 50,
+      duration: 0.18,
+      delay: 0.92,
+    });
+
+    gsap.to(box, {
+      y: 0,
+      duration: 0.1,
+      delay: 1.15,
+    });
+
+    gsap.set(button, {
+      "--truck-y": 0,
+      "--truck-y-n": -26,
+    });
+
+    gsap.to(button, {
+      "--truck-y": 1,
+      "--truck-y-n": -25,
+      duration: 0.2,
+      delay: 1.25,
+      onComplete() {
+        gsap
+          .timeline({
+            onComplete() {
+              button.classList.add("done");
+              setTimeout(onComplete, 300); // Small buffer before proceeding
+            },
+          })
+          .to(truck, {
+            x: 0,
+            duration: 0.4,
+          })
+          .to(truck, {
+            x: 40,
+            duration: 1,
+          })
+          .to(truck, {
+            x: 20,
+            duration: 0.6,
+          })
+          .to(truck, {
+            x: 96,
+            duration: 0.4,
+          });
+
+        gsap.to(button, {
+          "--progress": 1,
+          duration: 2.4,
+          ease: "power2.in",
+        });
+      },
+    });
+  };
+
+  const resetTruckAnimation = () => {
+    const button = buttonRef.current;
+    if (!button) return;
+    const box = button.querySelector(".box");
+    const truck = button.querySelector(".truck");
+    if (!box || !truck) return;
+
+    button.classList.remove("animation", "done");
+    gsap.set(truck, {
+      x: 4,
+    });
+    gsap.set(button, {
+      "--progress": 0,
+      "--hx": 0,
+      "--bx": 0,
+      "--box-s": 0.5,
+      "--box-o": 0,
+      "--truck-y": 0,
+      "--truck-y-n": -26,
+    });
+    gsap.set(box, {
+      x: -24,
+      y: -6,
+    });
+    setIsAnimating(false);
+  };
   const [shippingDetails, setShippingDetails] = useState<any>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
   const [address, setAddress] = useState({
@@ -192,9 +303,18 @@ export default function CheckoutPage() {
       alert("Please fill in all shipping address fields.");
       return;
     }
+    if (loading || isAnimating) return;
+
     setLoading(true);
-    try {
-      const res = await apiClient.post<any>(
+    setIsAnimating(true);
+
+    let apiResponse: any = null;
+    let apiError: any = null;
+    let apiCompleted = false;
+
+    // Start API call concurrently
+    apiClient
+      .post<any>(
         "/orders",
         {
           items: items.map((i) => ({
@@ -210,61 +330,93 @@ export default function CheckoutPage() {
           shippingMethod,
         },
         accessToken
-      );
+      )
+      .then((res) => {
+        apiResponse = res;
+        apiCompleted = true;
+      })
+      .catch((err) => {
+        apiError = err;
+        apiCompleted = true;
+      });
 
-      if (!res.success) throw new Error(res.message);
+    // Start the truck animation
+    startTruckAnimation(() => {
+      const checkAndProceed = () => {
+        if (apiCompleted) {
+          setLoading(false);
+          setIsAnimating(false);
 
-      const { razorpayOrderId, amount, key, order } = res.data;
-      if (amount === 0) {
-        clearCart();
-        window.location.href = `/account/orders/${order._id}?success=1`;
-        return;
-      }
+          if (apiError) {
+            alert(apiError.message || "Payment could not be initiated. Please try again.");
+            resetTruckAnimation();
+            return;
+          }
 
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => {
-        const rzp = new window.Razorpay!({
-          key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount,
-          currency: "INR",
-          name: "DEHYDE",
-          description: order.orderNumber,
-          order_id: razorpayOrderId,
-          handler: async (response: {
-            razorpay_order_id: string;
-            razorpay_payment_id: string;
-            razorpay_signature: string;
-          }) => {
-            try {
-              await apiClient.post(
-                "/orders/verify-payment",
-                {
-                  orderId: order._id,
-                  razorpayOrderId: response.razorpay_order_id,
-                  razorpayPaymentId: response.razorpay_payment_id,
-                  razorpaySignature: response.razorpay_signature,
+          if (!apiResponse.success) {
+            alert(apiResponse.message || "Failed to create order");
+            resetTruckAnimation();
+            return;
+          }
+
+          const { razorpayOrderId, amount, key, order } = apiResponse.data;
+          if (amount === 0) {
+            clearCart();
+            window.location.href = `/account/orders/${order._id}?success=1`;
+            return;
+          }
+
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => {
+            const rzp = new window.Razorpay!({
+              key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+              amount,
+              currency: "INR",
+              name: "DEHYDE",
+              description: order.orderNumber,
+              order_id: razorpayOrderId,
+              handler: async (response: {
+                razorpay_order_id: string;
+                razorpay_payment_id: string;
+                razorpay_signature: string;
+              }) => {
+                try {
+                  await apiClient.post(
+                    "/orders/verify-payment",
+                    {
+                      orderId: order._id,
+                      razorpayOrderId: response.razorpay_order_id,
+                      razorpayPaymentId: response.razorpay_payment_id,
+                      razorpaySignature: response.razorpay_signature,
+                    },
+                    accessToken
+                  );
+                  clearCart();
+                  window.location.href = `/account/orders?success=1`;
+                } catch (verifyErr) {
+                  console.error("Payment verification error:", verifyErr);
+                  alert("Payment verification failed. Please contact support.");
+                  resetTruckAnimation();
+                }
+              },
+              modal: {
+                ondismiss: () => {
+                  resetTruckAnimation();
                 },
-                accessToken
-              );
-              clearCart();
-              window.location.href = `/account/orders?success=1`;
-            } catch (verifyErr) {
-              console.error("Payment verification error:", verifyErr);
-              alert("Payment verification failed. Please contact support.");
-            }
-          },
-          theme: { color: "#1a1a1a" },
-        });
-        rzp.open();
+              },
+              theme: { color: "#1a1a1a" },
+            });
+            rzp.open();
+          };
+          document.body.appendChild(script);
+        } else {
+          // Check again in 200ms
+          setTimeout(checkAndProceed, 200);
+        }
       };
-      document.body.appendChild(script);
-    } catch (e: any) {
-      console.error(e);
-      alert(e.message || "Payment could not be initiated. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+      checkAndProceed();
+    });
   };
 
   if (items.length === 0) {
@@ -588,17 +740,37 @@ export default function CheckoutPage() {
             <p className="mt-4 text-xs text-muted">
               {items.length} item(s) shipping to {address.city || "destination"}
             </p>
-            <Button 
-              className="mt-8 w-full" 
-              onClick={handlePayment} 
-              disabled={loading || !isAddressComplete}
-            >
-              {loading 
-                ? "Processing..." 
-                : !isAddressComplete 
-                  ? "Enter shipping details" 
-                  : "Pay with Razorpay"}
-            </Button>
+            <div className="mt-8 flex justify-center w-full">
+              {!isAddressComplete ? (
+                <Button 
+                  className="w-full" 
+                  disabled
+                >
+                  Enter shipping details
+                </Button>
+              ) : (
+                <button
+                  ref={buttonRef}
+                  onClick={handlePayment}
+                  disabled={loading || isAnimating}
+                  className="truck-button"
+                >
+                  <span className="default">Pay with Razorpay</span>
+                  <span className="success">
+                    Order Placed
+                    <svg viewBox="0 0 12 10">
+                      <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+                    </svg>
+                  </span>
+                  <div className="truck">
+                    <div className="wheel"></div>
+                    <div className="back"></div>
+                    <div className="front"></div>
+                    <div className="box"></div>
+                  </div>
+                </button>
+              )}
+            </div>
           </aside>
         </div>
       </div>
