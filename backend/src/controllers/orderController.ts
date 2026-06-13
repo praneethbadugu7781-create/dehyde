@@ -177,3 +177,18 @@ export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response)
   }
   res.json({ success: true, data: order });
 });
+
+export const cancelOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user!.userId });
+  if (!order) {
+    res.status(404).json({ success: false, message: "Order not found" });
+    return;
+  }
+  if (order.status !== "pending") {
+    res.status(400).json({ success: false, message: "Only pending orders can be cancelled" });
+    return;
+  }
+  order.status = "cancelled";
+  await order.save();
+  res.json({ success: true, message: "Order cancelled successfully", data: order });
+});

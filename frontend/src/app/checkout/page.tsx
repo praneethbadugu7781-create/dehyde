@@ -369,45 +369,65 @@ export default function CheckoutPage() {
           const script = document.createElement("script");
           script.src = "https://checkout.razorpay.com/v1/checkout.js";
           script.onload = () => {
-            const rzp = new window.Razorpay!({
-              key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-              amount,
-              currency: "INR",
-              name: "DEHYDE",
-              description: order.orderNumber,
-              order_id: razorpayOrderId,
-              handler: async (response: {
-                razorpay_order_id: string;
-                razorpay_payment_id: string;
-                razorpay_signature: string;
-              }) => {
-                try {
-                  await apiClient.post(
-                    "/orders/verify-payment",
-                    {
-                      orderId: order._id,
-                      razorpayOrderId: response.razorpay_order_id,
-                      razorpayPaymentId: response.razorpay_payment_id,
-                      razorpaySignature: response.razorpay_signature,
-                    },
-                    accessToken
-                  );
-                  clearCart();
-                  window.location.href = `/account/orders?success=1`;
-                } catch (verifyErr) {
-                  console.error("Payment verification error:", verifyErr);
-                  alert("Payment verification failed. Please contact support.");
-                  resetTruckAnimation();
-                }
-              },
-              modal: {
-                ondismiss: () => {
-                  resetTruckAnimation();
+            try {
+              const rzp = new window.Razorpay!({
+                key: key || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                amount,
+                currency: "INR",
+                name: "DEHYDE",
+                description: order.orderNumber,
+                order_id: razorpayOrderId,
+                handler: async (response: {
+                  razorpay_order_id: string;
+                  razorpay_payment_id: string;
+                  razorpay_signature: string;
+                }) => {
+                  try {
+                    await apiClient.post(
+                      "/orders/verify-payment",
+                      {
+                        orderId: order._id,
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpaySignature: response.razorpay_signature,
+                      },
+                      accessToken
+                    );
+                    clearCart();
+                    window.location.href = `/account/orders?success=1`;
+                  } catch (verifyErr) {
+                    console.error("Payment verification error:", verifyErr);
+                    alert("Payment verification failed. Please contact support.");
+                    resetTruckAnimation();
+                  }
                 },
-              },
-              theme: { color: "#1a1a1a" },
-            });
-            rzp.open();
+                modal: {
+                  ondismiss: () => {
+                    resetTruckAnimation();
+                    // Cancel order if user closed the payment modal
+                    apiClient
+                      .post(`/orders/${order._id}/cancel`, {}, accessToken)
+                      .catch((err) => console.error("Error cancelling order on dismiss", err));
+                  },
+                },
+                theme: { color: "#1a1a1a" },
+              });
+              rzp.open();
+            } catch (err) {
+              console.error("Razorpay init error:", err);
+              apiClient
+                .post(`/orders/${order._id}/cancel`, {}, accessToken)
+                .catch((err) => console.error("Error cancelling order on init failure", err));
+              resetTruckAnimation();
+              alert("Failed to initialize Razorpay checkout.");
+            }
+          };
+          script.onerror = () => {
+            apiClient
+              .post(`/orders/${order._id}/cancel`, {}, accessToken)
+              .catch((err) => console.error("Error cancelling order on load failure", err));
+            resetTruckAnimation();
+            alert("Failed to load Razorpay SDK. Please check your network connection.");
           };
           document.body.appendChild(script);
         } else {
