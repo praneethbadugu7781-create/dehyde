@@ -182,29 +182,60 @@ function LoginForm() {
 
   // Dynamic Google GIS integration
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    let script = document.querySelector('script[src="https://accounts.google.com/gsi/client"]') as HTMLScriptElement;
+    if (!script) {
+      script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
 
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "25622336753-mflvqi8mbdvdh0g9tjnfeihr6h88u4lq.apps.googleusercontent.com",
-          callback: handleGoogleCredentialResponse,
-        });
-        window.google.accounts.id.renderButton(
-          document.getElementById("google-signin-btn"),
-          { theme: "outline", size: "large", width: "100%", text: "continue_with" }
-        );
+    const renderGoogleButton = () => {
+      if (window.google && !otpSent) {
+        const btnContainer = document.getElementById("google-signin-btn");
+        if (btnContainer) {
+          btnContainer.innerHTML = ""; // Clear existing button to prevent double-border or duplicate render
+          
+          const parentWidth = btnContainer.parentElement?.clientWidth || btnContainer.clientWidth || 360;
+          const buttonWidth = Math.max(200, Math.min(400, parentWidth));
+
+          window.google.accounts.id.initialize({
+            client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "25622336753-mflvqi8mbdvdh0g9tjnfeihr6h88u4lq.apps.googleusercontent.com",
+            callback: handleGoogleCredentialResponse,
+          });
+          window.google.accounts.id.renderButton(
+            btnContainer,
+            { 
+              theme: "outline", 
+              size: "large", 
+              width: buttonWidth, 
+              text: "continue_with",
+              shape: "rectangular",
+              logo_alignment: "left"
+            }
+          );
+        }
       }
     };
 
-    return () => {
-      document.body.removeChild(script);
+    if (window.google) {
+      setTimeout(renderGoogleButton, 50);
+    } else {
+      script.onload = () => {
+        setTimeout(renderGoogleButton, 50);
+      };
+    }
+
+    const handleResize = () => {
+      renderGoogleButton();
     };
-  }, []);
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [otpSent]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
     setLoading(true);
@@ -401,7 +432,7 @@ function LoginForm() {
   }, [status]);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 pt-24 pb-12">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 pt-36 pb-20">
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
@@ -442,10 +473,8 @@ function LoginForm() {
                     className="space-y-5"
                   >
                     {/* Google Button Section */}
-                    <div className="space-y-4">
-                      <div className="w-full h-[50px] overflow-hidden flex items-center justify-center rounded-xl border border-charcoal/15 bg-stone-50 hover:bg-stone-100 transition-colors">
-                        <div id="google-signin-btn" className="w-full scale-105" />
-                      </div>
+                    <div className="w-full overflow-hidden flex justify-center py-1">
+                      <div id="google-signin-btn" className="w-full" style={{ minHeight: "44px" }} />
                     </div>
 
                     {/* Separator */}
@@ -612,11 +641,11 @@ function LoginForm() {
           </div>
 
           {/* Right Side - Campaign Image Section */}
-          <div className="relative lg:rounded-[2rem] m-0 lg:m-4 overflow-hidden min-h-[400px] lg:min-h-auto">
+          <div className="relative overflow-hidden min-h-[400px] lg:min-h-auto">
             
             {/* Background Image */}
             <img
-              src="/headphone.jpg"
+              src="/campaign_streetwear.png"
               alt="DEHYDE Streetwear Campaign"
               className="absolute inset-0 w-full h-full object-cover"
             />
