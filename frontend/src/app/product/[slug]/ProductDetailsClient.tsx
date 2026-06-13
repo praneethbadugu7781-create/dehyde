@@ -92,7 +92,7 @@ export default function ProductDetailsClient({ product }: Props) {
   const images = product.images?.length ? product.images : product.variants?.flatMap((v) => v.images || []) || [];
   const activeImage = variantImageOverride || images[selectedImage] || productImage(product);
 
-  const handleAdd = (buyNow = false) => {
+  const handleAdd = (buyNow = false, e?: React.MouseEvent<HTMLButtonElement>) => {
     if (!size) {
       alert("Please select a size first.");
       return;
@@ -103,16 +103,23 @@ export default function ProductDetailsClient({ product }: Props) {
 
       const imgEl = document.getElementById("product-main-image");
       const cartBtn = document.getElementById("nav-cart-btn");
+      const btnEl = e?.currentTarget;
 
       if (imgEl && cartBtn) {
         const imgRect = imgEl.getBoundingClientRect();
         const cartRect = cartBtn.getBoundingClientRect();
+        const btnRect = btnEl ? btnEl.getBoundingClientRect() : null;
+
+        // Check if main product image is visible on-screen
+        const isImgVisible = imgRect.bottom > 80 && imgRect.top < window.innerHeight;
+        // Start from product image if visible (typical on desktop), else start from clicked button (typical on mobile)
+        const startRect = (isImgVisible || !btnRect) ? imgRect : btnRect;
 
         setFlyingItem({
-          startX: imgRect.left,
-          startY: imgRect.top,
-          width: imgRect.width,
-          height: imgRect.height,
+          startX: startRect.left,
+          startY: startRect.top,
+          width: startRect.width,
+          height: startRect.height,
           endX: cartRect.left + cartRect.width / 2 - 15,
           endY: cartRect.top + cartRect.height / 2 - 15,
         });
@@ -138,7 +145,7 @@ export default function ProductDetailsClient({ product }: Props) {
             quantity: 1,
             rewardCoins: product.rewardCoins,
           });
-        }, 800);
+        }, 1000);
       } else {
         // Fallback
         addItem({
@@ -292,10 +299,10 @@ export default function ProductDetailsClient({ product }: Props) {
           </div>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button className="flex-1" onClick={() => handleAdd(false)}>
+            <Button className="flex-1" onClick={(e) => handleAdd(false, e)}>
               Add to cart
             </Button>
-            <Button variant="outline" className="flex-1" onClick={() => handleAdd(true)}>
+            <Button variant="outline" className="flex-1" onClick={(e) => handleAdd(true, e)}>
               Buy now
             </Button>
           </div>
@@ -416,8 +423,10 @@ export default function ProductDetailsClient({ product }: Props) {
             }}
             exit={{ opacity: 0 }}
             transition={{
-              duration: 0.7,
-              ease: [0.25, 1, 0.5, 1], // easeOutQuart
+              type: "spring",
+              stiffness: 50,
+              damping: 15,
+              mass: 0.8,
             }}
           >
             <img src={activeImage} alt="" className="w-full h-full object-cover" />
