@@ -440,7 +440,7 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 pt-36 pb-20 bg-cover bg-center bg-no-repeat relative"
+      className="min-h-screen w-full flex items-start justify-center p-4 md:p-6 lg:p-8 pt-36 md:pt-40 pb-20 bg-cover bg-center bg-no-repeat relative"
       style={{
         backgroundImage: "url('/auth_bg.jpeg')",
       }}
@@ -603,9 +603,10 @@ function LoginForm() {
               </Button>
 
               {/* Separator */}
-              <div className="relative py-2 flex items-center justify-center">
-                <div className="absolute inset-x-0 h-[1px] bg-white/10" />
-                <span className="relative z-10 bg-black/40 px-4 text-[9px] uppercase tracking-widest text-white/40">Or</span>
+              <div className="flex items-center justify-center gap-4 py-2">
+                <div className="flex-1 h-[1px] bg-white/10" />
+                <span className="text-[9px] uppercase tracking-widest text-white/40 font-semibold">Or</span>
+                <div className="flex-1 h-[1px] bg-white/10" />
               </div>
 
               {/* Google Button Section */}
