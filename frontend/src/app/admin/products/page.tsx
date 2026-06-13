@@ -297,9 +297,29 @@ export default function AdminProductsPage() {
       stock,
     };
 
-    const finalVariants = hasAdditionalColors 
+    let finalVariants = hasAdditionalColors 
       ? [primaryVariant, ...variantsList] 
       : [primaryVariant];
+
+    // Auto-save the variant in the "Add New Color Variant" subform if it has been filled out
+    const pendingImages = newVariant.imageUrls
+      .split(/\r?\n|,/)
+      .map((url) => url.trim())
+      .filter(Boolean);
+
+    if (hasAdditionalColors && newVariant.color.trim() && pendingImages.length > 0) {
+      const isAlreadyAdded = variantsList.some(
+        (v) => v.color.toLowerCase().trim() === newVariant.color.toLowerCase().trim()
+      );
+      if (!isAlreadyAdded) {
+        finalVariants.push({
+          color: newVariant.color.trim(),
+          colorHex: newVariant.colorHex,
+          stock: Number(newVariant.stock || 0),
+          images: pendingImages,
+        });
+      }
+    }
 
     const totalStock = finalVariants.reduce((sum, v) => sum + v.stock, 0);
     const allImages = Array.from(new Set(finalVariants.flatMap((v) => v.images)));
@@ -334,6 +354,12 @@ export default function AdminProductsPage() {
       setImageUrls("");
       setVariantsList([]);
       setHasAdditionalColors(false);
+      setNewVariant({
+        color: "Off-Black",
+        colorHex: "#1a1a1a",
+        stock: "50",
+        imageUrls: "",
+      });
       refresh();
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Product save failed");
