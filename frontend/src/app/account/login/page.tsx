@@ -440,18 +440,12 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-cover bg-center bg-no-repeat relative"
-      style={{
-        backgroundImage: "url('/auth_bg.jpeg')",
-      }}
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 relative"
     >
-      {/* Dark overlay to make the card stand out and keep it readable */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0" />
-
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[420px] bg-black/40 backdrop-blur-xl border border-white/10 rounded-[28px] p-5 md:p-6 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
+        className="w-full max-w-[420px] bg-black/75 backdrop-blur-xl border border-white/10 rounded-[28px] p-5 md:p-6 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
       >
         {/* Header with tabs and close button */}
         {!otpSent && (
