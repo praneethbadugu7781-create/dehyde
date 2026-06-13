@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/store/authStore";
 import { apiClient } from "@/lib/api";
+import { Mail, User, X } from "lucide-react";
 
 declare global {
   interface Window {
@@ -59,8 +59,8 @@ const boxVariants = {
         x: [0, offsets[0], offsets[0], offsets[0]], 
         rotate: [0, 12, 0, 0], 
         scale: [1, 0.95, 1.15, 1], 
-        backgroundColor: ["#ffffff", "#ffffff", "#1a56db", "#1a56db"], // Fades to royal blue
-        borderColor: ["#e5e7eb", "#e5e7eb", "#1a56db", "#1a56db"],
+        backgroundColor: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.1)", "#1d4ed8", "#1d4ed8"], // Fades to royal blue
+        borderColor: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.1)", "#1d4ed8", "#1d4ed8"],
         borderRadius: ["12px", "12px", "50%", "50%"],
         zIndex: 10,
         transition: {
@@ -89,8 +89,8 @@ const boxVariants = {
 
 const textVariants = {
   idle: { 
-    color: "#0a0a0a",
-    backgroundColor: "#ffffff"
+    color: "#ffffff",
+    backgroundColor: "rgba(0, 0, 0, 0.3)"
   },
   success: { 
     color: "rgba(255, 255, 255, 0)", 
@@ -141,6 +141,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpArray, setOtpArray] = useState(["", "", "", "", "", ""]);
@@ -289,6 +290,12 @@ function LoginForm() {
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    
+    if (activeTab === "signup" && !name.trim()) {
+      setError("Please enter your name to complete signup.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setSuccessMsg("");
@@ -432,247 +439,331 @@ function LoginForm() {
   }, [status]);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 bg-gradient-to-br from-stone-100 via-neutral-50 to-zinc-100 pt-36 pb-20">
+    <div
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-6 lg:p-8 pt-36 pb-20 bg-cover bg-center bg-no-repeat relative"
+      style={{
+        backgroundImage: "url('/auth_bg.jpeg')",
+      }}
+    >
+      {/* Dark overlay to make the card stand out and keep it readable */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-0" />
+
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[1000px] bg-white rounded-2xl md:rounded-[2.5rem] shadow-2xl overflow-hidden border border-charcoal/5"
+        className="w-full max-w-[440px] bg-black/40 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 md:p-8 shadow-2xl z-10 text-white transform transition-all duration-300 hover:scale-[1.01] hover:shadow-3xl relative"
       >
-        <div className="grid lg:grid-cols-2 gap-0 min-h-[600px]">
-          {/* Left Side - Auth Form */}
-          <div className="flex flex-col items-center justify-center p-8 lg:p-12 bg-white">
-            <div className="w-full max-w-[360px] space-y-6">
-              
-              {/* Header section with AnimatePresence */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={showVerifiedText ? "verified" : "unverified"}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                >
-                  <h1 className="editorial-heading text-[32px] font-normal tracking-tight text-charcoal">
-                    {showVerifiedText ? "Verified successfully" : "Sign in"}
-                  </h1>
-                  <p className="mt-2 text-xs text-muted">
-                    {showVerifiedText ? "Welcome to DEHYDE!" : "Cinematic streetwear and custom orders await."}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Form and Inputs */}
-              <AnimatePresence mode="wait">
-                {!otpSent ? (
-                  <motion.form
-                    key="request-form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onSubmit={handleRequestOtp}
-                    className="space-y-5"
-                  >
-                    {/* Google Button Section */}
-                    <div className="w-full overflow-hidden flex justify-center py-1">
-                      <div id="google-signin-btn" className="w-full" style={{ minHeight: "44px" }} />
-                    </div>
-
-                    {/* Separator */}
-                    <div className="relative py-2 flex items-center justify-center">
-                      <div className="absolute inset-x-0 h-[1px] bg-charcoal/10" />
-                      <span className="relative z-10 bg-white px-4 text-[9px] uppercase tracking-widest text-muted">Or</span>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        placeholder="name@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        disabled={loading}
-                        className="h-[50px] bg-white border border-charcoal/20 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm px-4 w-full transition-all"
-                      />
-                    </div>
-
-                    {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
-                    
-                    <Button type="submit" className="w-full h-[50px] bg-charcoal text-white hover:bg-black font-semibold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm" disabled={loading}>
-                      {loading ? "Sending..." : "Send OTP"}
-                    </Button>
-                  </motion.form>
-                ) : (
-                  <motion.form
-                    key="verify-form"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onSubmit={(e) => handleVerifyOtp(e)}
-                    className="space-y-5"
-                  >
-                    <div className="bg-stone-50 p-4 rounded-xl border border-charcoal/5 flex justify-between items-center text-xs">
-                      <span className="text-muted truncate mr-4">OTP sent to: <strong>{email}</strong></span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOtpSent(false);
-                          setError("");
-                          setDevOtp("");
-                          setGooglePayload(null);
-                          setOtpArray(["", "", "", "", "", ""]);
-                          setStatus("idle");
-                        }}
-                        className="text-royal uppercase tracking-widest text-[9px] font-bold hover:underline whitespace-nowrap"
-                      >
-                        Change
-                      </button>
-                    </div>
-
-                    {isNewUser && (
-                      <div className="space-y-2">
-                        <label htmlFor="name" className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">
-                          Full Name (New Customer)
-                        </label>
-                        <input
-                          id="name"
-                          placeholder="Enter your name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                          disabled={loading}
-                          className="h-[50px] bg-white border border-charcoal/20 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm px-4 w-full transition-all"
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-4">
-                      <label className="text-[10px] uppercase tracking-widest text-muted block mb-1 text-center font-bold">
-                        One-Time Code (OTP)
-                      </label>
-                      <div className="flex justify-center gap-3 relative min-h-[64px] items-center" onPaste={handlePaste}>
-                        {otpArray.map((digit, index) => (
-                          <motion.div
-                            key={index}
-                            className="relative z-10 w-10 h-12 md:w-12 md:h-14 rounded-xl overflow-hidden p-[2px] flex items-center justify-center bg-charcoal/10 focus-within:bg-royal"
-                            custom={{ index, isMobile }}
-                            variants={boxVariants}
-                            initial="idle"
-                            animate={status}
-                          >
-                            {/* Rotating gradient border effect */}
-                            {status === "success" && (
-                              <motion.div 
-                                className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0%,transparent_55%,rgba(26,86,219,0.15)_70%,#1a56db_92%,#60a5fa_100%)] animate-[spin_1s_linear_infinite]"
-                                variants={gradientVariants}
-                                initial="idle"
-                                animate={status}
-                              />
-                            )}
-
-                            <motion.input
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={1}
-                              ref={inputRefs[index]}
-                              value={digit}
-                              onChange={(e) => handleChange(index, e)}
-                              onKeyDown={(e) => handleKeyDown(index, e)}
-                              readOnly={status !== "idle" || loading}
-                              className="w-full h-full text-center font-mono text-xl font-bold rounded-[10px] focus:outline-none transition-all disabled:opacity-50 text-charcoal shadow-sm z-10"
-                              variants={textVariants}
-                              initial="idle"
-                              animate={status}
-                            />
-
-                            {index === 0 && (
-                              <motion.svg
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                className="absolute top-1/2 left-1/2 w-6 h-6 z-20 pointer-events-none"
-                                variants={tickContainerVariants}
-                                initial="idle"
-                                animate={status}
-                              >
-                                <motion.path
-                                  d="M5 13l4 4L19 7"
-                                  stroke="#ffffff"
-                                  strokeWidth="3.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  variants={tickPathVariants}
-                                />
-                              </motion.svg>
-                            )}
-                          </motion.div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {devOtp && (
-                      <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-[10px] text-amber-800 font-medium">
-                        Development Mode: Use verification code <strong>{devOtp}</strong>
-                      </div>
-                    )}
-
-                    {error && <p className="text-xs text-red-600 font-semibold">{error}</p>}
-                    {successMsg && <p className="text-xs text-green-600 font-semibold">{successMsg}</p>}
-
-                    <div className="space-y-3">
-                      <Button type="submit" className="w-full h-[50px] bg-charcoal text-white hover:bg-black font-semibold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm" disabled={loading || status === "success"}>
-                        {status === "success" ? "Verified" : loading ? "Verifying..." : "Verify & Sign In"}
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={handleRequestOtp}
-                        disabled={loading}
-                        className="w-full text-center text-[10px] uppercase tracking-widest font-bold text-muted hover:text-charcoal py-2 transition-colors"
-                      >
-                        Resend Code
-                      </button>
-                    </div>
-                  </motion.form>
-                )}
-              </AnimatePresence>
+        {/* Header with tabs and close button */}
+        {!otpSent && (
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex bg-black/35 backdrop-blur-sm rounded-full p-1 border border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("signup");
+                  setError("");
+                  setSuccessMsg("");
+                }}
+                className={`px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === "signup"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Sign up
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("signin");
+                  setError("");
+                  setSuccessMsg("");
+                }}
+                className={`px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 transform hover:scale-105 ${
+                  activeTab === "signin"
+                    ? "bg-white text-black shadow-lg"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Sign in
+              </button>
             </div>
-          </div>
-
-          {/* Right Side - Campaign Image Section */}
-          <div className="relative overflow-hidden min-h-[400px] lg:min-h-auto">
             
-            {/* Background Image */}
-            <img
-              src="/campaign_streetwear.png"
-              alt="DEHYDE Streetwear Campaign"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            <Link 
+              href="/"
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/40 transition-all duration-200 hover:scale-110 hover:rotate-90"
+            >
+              <X className="w-5 h-5 text-white/80" />
+            </Link>
+          </div>
+        )}
 
-            {/* Bottom Caption/Description Card */}
-            <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-5 space-y-3 border border-charcoal/5">
-              <p className="text-[10px] text-charcoal font-bold leading-relaxed uppercase tracking-widest">
-                DEHYDE Streetwear
+        {otpSent && (
+          <div className="flex items-center justify-end mb-6">
+            <Link 
+              href="/"
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/40 transition-all duration-200 hover:scale-110 hover:rotate-90"
+            >
+              <X className="w-5 h-5 text-white/80" />
+            </Link>
+          </div>
+        )}
+
+        {/* Title Section */}
+        <div className="mb-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={showVerifiedText ? "verified" : otpSent ? "otp" : activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <h1 className="font-serif text-3xl font-normal tracking-tight text-white">
+                {showVerifiedText 
+                  ? "Verified successfully" 
+                  : otpSent 
+                    ? "Verify OTP" 
+                    : activeTab === "signup" 
+                      ? "Create an account" 
+                      : "Welcome back"}
+              </h1>
+              <p className="mt-2 text-xs text-white/60 font-sans">
+                {showVerifiedText 
+                  ? "Welcome to DEHYDE!" 
+                  : otpSent 
+                    ? `We sent a code to ${email}` 
+                    : activeTab === "signup" 
+                      ? "Sign up to start your luxury streetwear journey." 
+                      : "Cinematic streetwear and custom orders await."}
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed font-sans">
-                Premium streetwear silhouettes and customized fits. Engineered for modern character and cinematic streetwear campaigns.
-              </p>
-              
-              <div className="flex items-center gap-2 pt-1">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-charcoal/5 rounded-lg text-charcoal">
-                  <div className="w-1.5 h-1.5 bg-royal rounded-full animate-pulse"></div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Summer '26</span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Form and Inputs */}
+        <AnimatePresence mode="wait">
+          {!otpSent ? (
+            <motion.form
+              key="request-form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleRequestOtp}
+              className="space-y-5"
+            >
+              {activeTab === "signup" && (
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-[10px] uppercase tracking-widest text-white/60 font-bold block mb-1">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                    <input
+                      id="name"
+                      type="text"
+                      placeholder="Enter your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                    />
+                  </div>
                 </div>
+              )}
 
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-charcoal/5 rounded-lg text-charcoal">
-                  <span className="text-[9px] font-bold uppercase tracking-wider">Collection 01</span>
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-[10px] uppercase tracking-widest text-white/60 font-bold block mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="name@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                    className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                  />
                 </div>
               </div>
-            </div>
-          </div>
 
-        </div>
+              {error && <p className="text-xs text-red-400 font-semibold">{error}</p>}
+              
+              <Button 
+                type="submit" 
+                className="w-full h-14 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Send OTP"}
+              </Button>
+
+              {/* Separator */}
+              <div className="relative py-2 flex items-center justify-center">
+                <div className="absolute inset-x-0 h-[1px] bg-white/10" />
+                <span className="relative z-10 bg-black/40 px-4 text-[9px] uppercase tracking-widest text-white/40">Or</span>
+              </div>
+
+              {/* Google Button Section */}
+              <div className="w-full overflow-hidden flex justify-center py-1">
+                <div id="google-signin-btn" className="w-full" style={{ minHeight: "44px" }} />
+              </div>
+            </motion.form>
+          ) : (
+            <motion.form
+              key="verify-form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={(e) => handleVerifyOtp(e)}
+              className="space-y-5"
+            >
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex justify-between items-center text-xs">
+                <span className="text-white/60 truncate mr-4">OTP sent to: <strong>{email}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpSent(false);
+                    setError("");
+                    setDevOtp("");
+                    setGooglePayload(null);
+                    setOtpArray(["", "", "", "", "", ""]);
+                    setStatus("idle");
+                  }}
+                  className="text-royal uppercase tracking-widest text-[9px] font-bold hover:underline whitespace-nowrap"
+                >
+                  Change
+                </button>
+              </div>
+
+              {isNewUser && !name && (
+                <div className="space-y-2">
+                  <label htmlFor="name-verify" className="text-[10px] uppercase tracking-widest text-white/60 font-bold block mb-1">
+                    Full Name (New Customer)
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/40" />
+                    <input
+                      id="name-verify"
+                      placeholder="Enter your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={loading}
+                      className="h-14 bg-black/20 backdrop-blur-sm border border-white/10 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal rounded-xl text-sm pl-12 pr-4 w-full text-white transition-all hover:bg-black/35 focus:bg-black/35"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <label className="text-[10px] uppercase tracking-widest text-white/60 block mb-1 text-center font-bold">
+                  One-Time Code (OTP)
+                </label>
+                <div className="flex justify-center gap-3 relative min-h-[64px] items-center" onPaste={handlePaste}>
+                  {otpArray.map((digit, index) => (
+                    <motion.div
+                      key={index}
+                      className="relative z-10 w-10 h-12 md:w-12 md:h-14 rounded-xl overflow-hidden p-[2px] flex items-center justify-center bg-white/10 focus-within:bg-royal"
+                      custom={{ index, isMobile }}
+                      variants={boxVariants}
+                      initial="idle"
+                      animate={status}
+                    >
+                      {/* Rotating gradient border effect */}
+                      {status === "success" && (
+                        <motion.div 
+                          className="absolute inset-[-150%] bg-[conic-gradient(from_0deg,transparent_0%,transparent_55%,rgba(26,86,219,0.15)_70%,#1a56db_92%,#60a5fa_100%)] animate-[spin_1s_linear_infinite]"
+                          variants={gradientVariants}
+                          initial="idle"
+                          animate={status}
+                        />
+                      )}
+
+                      <motion.input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        ref={inputRefs[index]}
+                        value={digit}
+                        onChange={(e) => handleChange(index, e)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        readOnly={status !== "idle" || loading}
+                        className="w-full h-full text-center font-mono text-xl font-bold rounded-[10px] focus:outline-none transition-all disabled:opacity-50 text-white bg-black/30 shadow-sm z-10"
+                        variants={textVariants}
+                        initial="idle"
+                        animate={status}
+                      />
+
+                      {index === 0 && (
+                        <motion.svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          className="absolute top-1/2 left-1/2 w-6 h-6 z-20 pointer-events-none"
+                          variants={tickContainerVariants}
+                          initial="idle"
+                          animate={status}
+                        >
+                          <motion.path
+                            d="M5 13l4 4L19 7"
+                            stroke="#ffffff"
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            variants={tickPathVariants}
+                          />
+                        </motion.svg>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {devOtp && (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white/80 font-medium">
+                  Development Mode: Use verification code <strong>{devOtp}</strong>
+                </div>
+              )}
+
+              {error && <p className="text-xs text-red-400 font-semibold">{error}</p>}
+              {successMsg && <p className="text-xs text-green-400 font-semibold">{successMsg}</p>}
+
+              <div className="space-y-3">
+                <Button 
+                  type="submit" 
+                  className="w-full h-14 bg-white text-black hover:bg-white/90 font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-sm active:scale-[0.98] transform"
+                  disabled={loading || status === "success"}
+                >
+                  {status === "success" ? "Verified" : loading ? "Verifying..." : "Verify & Sign In"}
+                </Button>
+                <button
+                  type="button"
+                  onClick={handleRequestOtp}
+                  disabled={loading}
+                  className="w-full text-center text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-white py-2 transition-colors"
+                >
+                  Resend Code
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+
+        <p className="text-center text-white/45 text-[11px] mt-6 tracking-wide leading-relaxed">
+          By signing in or creating an account, you agree to our{" "}
+          <Link href="/terms" className="hover:text-white underline">
+            Terms & Conditions
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="hover:text-white underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </motion.div>
     </div>
   );
@@ -680,7 +771,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="luxury-container py-32 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="luxury-container py-32 text-center text-white">Loading...</div>}>
       <LoginForm />
     </Suspense>
   );
