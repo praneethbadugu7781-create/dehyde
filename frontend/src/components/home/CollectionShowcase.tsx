@@ -33,6 +33,14 @@ const CATEGORY_MAP: Record<string, CategoryMeta> = {
     maxPrice: "₹1,299",
     image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=600&auto=format&fit=crop"
   },
+  "tees": {
+    tag: "Tee's",
+    subtitle: "Premium Graphic Tees & Basics",
+    desc: "Aesthetic fit standard crewneck tees with premium structural drop shoulders.",
+    minPrice: "₹499",
+    maxPrice: "₹999",
+    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop"
+  },
   "pants": {
     tag: "Pants",
     subtitle: "Urban Pants & Cargos",
@@ -57,6 +65,7 @@ export function CollectionShowcase() {
   const displayCategories = categories.length > 0 ? categories : [
     { _id: "1", name: "Shirts", slug: "shirts", description: "" },
     { _id: "2", name: "T-Shirts", slug: "t-shirts", description: "" },
+    { _id: "4", name: "Tee's", slug: "tees", description: "" },
     { _id: "3", name: "Pants", slug: "pants", description: "" }
   ];
 

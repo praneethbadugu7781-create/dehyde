@@ -2,7 +2,6 @@ import { Hero } from "@/components/home/Hero";
 import { RatingSection } from "@/components/home/RatingSection";
 import { CategoryTabs } from "@/components/home/CategoryTabs";
 import { NewArrivals } from "@/components/home/NewArrivals";
-import { BrandStory } from "@/components/home/BrandStory";
 import { TrendingProducts } from "@/components/home/TrendingProducts";
 import { Reviews } from "@/components/home/Reviews";
 import { SocialPromo } from "@/components/home/SocialPromo";
@@ -32,9 +31,6 @@ export default function HomePage() {
 
         {/* Stay connected social promo banner */}
         <SocialPromo />
-
-        {/* Brand Story split block */}
-        <BrandStory />
       </div>
     </>
   );

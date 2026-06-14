@@ -9,6 +9,7 @@ const CATEGORIES = [
   { name: "Shirts", slug: "shirts", order: 1 },
   { name: "T-Shirts", slug: "t-shirts", order: 2 },
   { name: "Pants", slug: "pants", order: 3 },
+  { name: "Tee's", slug: "tees", order: 4 },
 ];
 
 async function seed() {

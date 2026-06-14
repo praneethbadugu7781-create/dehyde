@@ -15,12 +15,23 @@ interface TabItem {
 }
 
 export function CategoryTabs() {
-  const [activeTab, setActiveTab] = useState("t-shirts");
+  const [activeTab, setActiveTab] = useState("tees");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Custom outline SVG icons for T-Shirts, Shirts, and Pants
+  // Custom outline SVG icons for Tee's, T-Shirts, Shirts, and Pants
   const tabs: TabItem[] = [
+    {
+      id: "tees",
+      name: "Tee's",
+      slug: "tees",
+      icon: (
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-all duration-300">
+          <path d="M24 12 C24 16, 40 16, 40 12" />
+          <path d="M24 12 L12 15 L6 26 L15 30 L18 27 L18 58 H46 V27 L49 30 L58 26 L52 15 L40 12" />
+        </svg>
+      )
+    },
     {
       id: "t-shirts",
       name: "T-Shirts",
@@ -86,33 +97,39 @@ export function CategoryTabs() {
         {/* Style Union Flanking Header Selector Layout */}
         <div className="flex flex-row items-center justify-center gap-2 sm:gap-8 md:gap-12 lg:gap-16 mb-16 w-full max-w-4xl mx-auto px-1 sm:px-4">
           
-          {/* Left Block (T-Shirts Category Tab) */}
-          <div className="flex items-center justify-center">
-            <button
-              onClick={() => setActiveTab("t-shirts")}
-              className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
-                activeTab === "t-shirts" ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
-              }`}
-            >
-              {/* SVG Outline Icon */}
-              <div className={`transform transition-all duration-300 group-hover:scale-105 ${
-                activeTab === "t-shirts" ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
-              }`}>
-                {tabs[0].icon}
-              </div>
-              {/* Label */}
-              <span className="text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.15em] sm:tracking-[0.25em] font-extrabold transition-colors duration-300">
-                {tabs[0].name}
-              </span>
-              {/* Slide Line Indicator */}
-              {activeTab === "t-shirts" && (
-                <motion.div
-                  layoutId="activeTabIndicator"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                />
-              )}
-            </button>
+          {/* Left Block (Tee's & T-Shirts side-by-side Tabs) */}
+          <div className="flex gap-2.5 sm:gap-8 md:gap-12 items-center justify-center">
+            {tabs.slice(0, 2).map((tab) => {
+              const isActive = activeTab === tab.slug;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.slug)}
+                  className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
+                    isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+                  }`}
+                >
+                  {/* SVG Outline Icon */}
+                  <div className={`transform transition-all duration-300 group-hover:scale-105 ${
+                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+                  }`}>
+                    {tab.icon}
+                  </div>
+                  {/* Label */}
+                  <span className="text-[8px] sm:text-[10px] md:text-xs uppercase tracking-[0.15em] sm:tracking-[0.25em] font-extrabold transition-colors duration-300">
+                    {tab.name}
+                  </span>
+                  {/* Slide Line Indicator */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Central Card (white background with thin border) */}
@@ -124,7 +141,7 @@ export function CategoryTabs() {
 
           {/* Right Block (Shirts & Pants side-by-side Tabs) */}
           <div className="flex gap-2.5 sm:gap-8 md:gap-12 items-center justify-center">
-            {tabs.slice(1).map((tab) => {
+            {tabs.slice(2).map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
                 <button
