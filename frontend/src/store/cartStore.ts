@@ -60,6 +60,9 @@ export const useCartStore = create<CartState>()(
       subtotal: () => get().items.reduce((s, i) => s + i.price * i.quantity, 0),
       itemCount: () => get().items.reduce((s, i) => s + i.quantity, 0),
     }),
-    { name: "dehyde-cart" }
+    {
+      name: "dehyde-cart",
+      partialize: (state) => ({ items: state.items }),
+    }
   )
 );
