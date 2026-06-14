@@ -179,6 +179,9 @@ function LoginForm() {
   const [successMsg, setSuccessMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isProcessingGoogle = useRef(false);
+  const isVerifyingOtp = useRef(false);
+
   const redirect = searchParams.get("redirect") || "/account";
 
   // Dynamic Google GIS integration
@@ -239,6 +242,8 @@ function LoginForm() {
   }, [otpSent]);
 
   const handleGoogleCredentialResponse = async (response: any) => {
+    if (isProcessingGoogle.current) return;
+    isProcessingGoogle.current = true;
     setLoading(true);
     setError("");
     try {
@@ -283,6 +288,7 @@ function LoginForm() {
       setError(err instanceof Error ? err.message : "Google login failed");
     } finally {
       setLoading(false);
+      isProcessingGoogle.current = false;
     }
   };
 
@@ -323,12 +329,14 @@ function LoginForm() {
   // Verifying OTP
   const handleVerifyOtp = async (e?: React.FormEvent, directOtp?: string) => {
     if (e) e.preventDefault();
+    if (isVerifyingOtp.current) return;
     const finalOtp = directOtp || otp;
     if (!email || !finalOtp) return;
     if (isNewUser && !name) {
       setError("Please enter your name to complete signup.");
       return;
     }
+    isVerifyingOtp.current = true;
     setLoading(true);
     setError("");
     try {
@@ -366,12 +374,14 @@ function LoginForm() {
         } catch (fetchMeErr) {
           setError("Failed to retrieve profile. Please login again.");
           setLoading(false);
+          isVerifyingOtp.current = false;
         }
       }, 2400);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
       setLoading(false);
+      isVerifyingOtp.current = false;
       // Reset otp boxes if verification fails so they can retry
       setOtpArray(["", "", "", "", "", ""]);
       setOtp("");

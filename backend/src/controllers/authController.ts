@@ -56,6 +56,7 @@ export const googleAuth = asyncHandler(async (req, res) => {
   // 1. If OTP is not provided, send OTP
   if (!otp) {
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`[Google Auth] Generating OTP for ${email.toLowerCase()}: ${generatedOtp}`);
     const hash = await bcrypt.hash(generatedOtp, 10);
     
     // Check if user exists to determine isNewUser
@@ -83,20 +84,25 @@ export const googleAuth = asyncHandler(async (req, res) => {
   }
 
   // 2. If OTP is provided, verify OTP first
+  console.log(`[Google Auth] Verifying OTP for ${email.toLowerCase()}. Input code: ${otp}`);
   const userForOtp = await User.findOne({ email: email.toLowerCase() });
   if (!userForOtp || !userForOtp.otpHash || !userForOtp.otpExpires) {
+    console.log(`[Google Auth] OTP Verification failed for ${email.toLowerCase()}: No active OTP hash or expiration found in DB`);
     res.status(400).json({ success: false, message: "Invalid request or OTP expired" });
     return;
   }
   if (userForOtp.otpExpires.getTime() < Date.now()) {
+    console.log(`[Google Auth] OTP Verification failed for ${email.toLowerCase()}: OTP has expired (expiration: ${userForOtp.otpExpires.toISOString()}, now: ${new Date().toISOString()})`);
     res.status(400).json({ success: false, message: "OTP expired" });
     return;
   }
   const valid = await bcrypt.compare(otp, userForOtp.otpHash);
   if (!valid) {
+    console.log(`[Google Auth] OTP Verification failed for ${email.toLowerCase()}: Hash mismatch`);
     res.status(400).json({ success: false, message: "Invalid OTP" });
     return;
   }
+  console.log(`[Google Auth] OTP successfully verified for ${email.toLowerCase()}`);
 
   // Clear OTP fields
   userForOtp.otpHash = undefined;
@@ -280,6 +286,7 @@ export const requestEmailOtp = asyncHandler(async (req, res) => {
     return;
   }
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  console.log(`[Email OTP] Generating OTP for ${email.toLowerCase()}: ${otp}`);
   const hash = await bcrypt.hash(otp, 10);
   
   // Upsert the user with the email and store OTP. If it's a new user, they won't have a name.
@@ -308,20 +315,25 @@ export const verifyEmailOtp = asyncHandler(async (req, res) => {
     res.status(400).json({ success: false, message: "Email and OTP are required" });
     return;
   }
+  console.log(`[Email OTP] Verifying OTP for ${email.toLowerCase()}. Input code: ${otp}`);
   const user = await User.findOne({ email: email.toLowerCase() });
   if (!user || !user.otpHash || !user.otpExpires) {
+    console.log(`[Email OTP] Verification failed for ${email.toLowerCase()}: No active OTP hash or expiration found in DB`);
     res.status(400).json({ success: false, message: "Invalid request or OTP expired" });
     return;
   }
   if (user.otpExpires.getTime() < Date.now()) {
+    console.log(`[Email OTP] Verification failed for ${email.toLowerCase()}: OTP has expired (expiration: ${user.otpExpires.toISOString()}, now: ${new Date().toISOString()})`);
     res.status(400).json({ success: false, message: "OTP expired" });
     return;
   }
   const valid = await bcrypt.compare(otp, user.otpHash);
   if (!valid) {
+    console.log(`[Email OTP] Verification failed for ${email.toLowerCase()}: Hash mismatch`);
     res.status(400).json({ success: false, message: "Invalid OTP" });
     return;
   }
+  console.log(`[Email OTP] OTP successfully verified for ${email.toLowerCase()}`);
   
   // Clear OTP
   user.otpHash = undefined;
