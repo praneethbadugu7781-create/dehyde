@@ -136,12 +136,12 @@ export default function AdminSettingsPage() {
         {/* 2. Shipping Rates & Limits */}
         <div className="pt-6 border-t border-gray-100">
           <h2 className="text-xl font-serif text-charcoal mb-2">Shipping Rates & Limits</h2>
-          <p className="text-sm text-charcoal/50 mb-6">Manage shipping fees and thresholds for Standard and Express modes.</p>
+          <p className="text-sm text-charcoal/50 mb-6">Manage shipping fees and thresholds for customer orders.</p>
           
-          <div className="grid sm:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6">
             <div>
-              <p className="font-medium text-charcoal mb-2">Free Shipping Threshold</p>
-              <p className="text-xs text-charcoal/50 mb-4">Order total required for free Standard delivery (₹)</p>
+              <p className="font-medium text-charcoal mb-2">Free Shipping Threshold (₹)</p>
+              <p className="text-xs text-charcoal/50 mb-4">Minimum order total required to qualify for free delivery.</p>
               <Input 
                 type="number" 
                 value={settings.freeShippingThreshold} 
@@ -150,22 +150,12 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <p className="font-medium text-charcoal mb-2">Standard Shipping Fee</p>
-              <p className="text-xs text-charcoal/50 mb-4">Flat fee for orders below threshold (₹)</p>
+              <p className="font-medium text-charcoal mb-2">Standard Shipping Fee (₹)</p>
+              <p className="text-xs text-charcoal/50 mb-4">Flat fee charged on orders that do not meet the free shipping threshold.</p>
               <Input 
                 type="number" 
                 value={settings.defaultShippingFee} 
                 onChange={(e) => update("defaultShippingFee", Number(e.target.value))} 
-                className="bg-white border-gray-200 text-charcoal" 
-              />
-            </div>
-            <div>
-              <p className="font-medium text-charcoal mb-2">Express Shipping Fee</p>
-              <p className="text-xs text-charcoal/50 mb-4">Flat fee for Express shipping speed surcharge (₹)</p>
-              <Input 
-                type="number" 
-                value={settings.expressShippingFee} 
-                onChange={(e) => update("expressShippingFee", Number(e.target.value))} 
                 className="bg-white border-gray-200 text-charcoal" 
               />
             </div>

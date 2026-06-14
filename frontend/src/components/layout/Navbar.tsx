@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, ShoppingBag, Heart, Menu, X, User } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
+import { apiClient } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { SearchOverlay } from "./SearchOverlay";
 import { AnnouncementBar } from "./AnnouncementBar";
@@ -23,6 +25,26 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const cartCount = useCartStore((s) => s.itemCount());
   const pathname = usePathname();
+
+  const { accessToken } = useAuthStore();
+  const [coinsBalance, setCoinsBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setCoinsBalance(null);
+      return;
+    }
+    apiClient
+      .get<{ success: boolean; data: { balance: number } }>("/rewards", accessToken)
+      .then((res) => {
+        if (res.success && res.data) {
+          setCoinsBalance(res.data.balance);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch wallet in navbar", err);
+      });
+  }, [accessToken]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -111,6 +133,80 @@ export function Navbar() {
               >
                 <Heart className="h-[18px] w-[18px]" strokeWidth={1.5} />
               </Link>
+
+              {/* Animated Coins Rewards Widget */}
+              <div className="relative group flex items-center">
+                <Link
+                  href={accessToken ? "/account/wallet" : "/account"}
+                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  aria-label="Rewards Wallet"
+                >
+                  <div className="relative h-[20px] w-[20px] flex-shrink-0 animate-coin-spin-pulse">
+                    {/* SVG Gold Coin */}
+                    <svg className="h-full w-full text-amber-500 fill-amber-400 drop-shadow-[0_0_5px_rgba(245,158,11,0.6)]" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="12" cy="12" r="10" stroke="#d97706" strokeWidth="1.5" />
+                      <circle cx="12" cy="12" r="7" stroke="#d97706" strokeWidth="1" strokeDasharray="2 1" />
+                      <text x="12" y="15.5" fontFamily="serif" fontWeight="bold" fontSize="10" textAnchor="middle" fill="#78350f">D</text>
+                    </svg>
+                    {/* Pulsing ring indicator */}
+                    <span className="absolute -inset-0.5 rounded-full border border-amber-400/30 animate-ping opacity-60 pointer-events-none" />
+                  </div>
+                  
+                  {/* Coin Text display */}
+                  <span className="hidden md:inline-flex text-[10px] uppercase tracking-[0.15em] font-bold text-amber-600 dark:text-amber-400 select-none">
+                    {accessToken ? (
+                      `${coinsBalance !== null ? coinsBalance : "..."} Coins`
+                    ) : (
+                      "Rewards"
+                    )}
+                  </span>
+                </Link>
+
+                {/* Premium Tooltip/Dropdown Menu on Hover */}
+                <div className="absolute right-[-40px] md:right-0 top-full mt-2 w-72 bg-white border border-gray-100 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-50 text-left pointer-events-auto">
+                  <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <div className="h-9 w-9 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100">
+                      <svg className="h-5 w-5 text-amber-600 fill-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke="#d97706" strokeWidth="1.5" />
+                        <circle cx="12" cy="12" r="7" stroke="#d97706" strokeWidth="1" strokeDasharray="2 1" />
+                        <text x="12" y="15.5" fontFamily="serif" fontWeight="bold" fontSize="10" textAnchor="middle" fill="#78350f">D</text>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-charcoal uppercase tracking-wider">
+                        {accessToken ? "DEHYDE Gold Club" : "DEHYDE Rewards Club"}
+                      </p>
+                      <p className="text-[10px] text-muted">
+                        {accessToken ? "Loyal Member status active" : "Earn coins on every purchase"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="py-4 space-y-2">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[11px] text-muted font-medium">Your Coins:</span>
+                      <span className="font-mono font-bold text-lg text-charcoal">
+                        {accessToken ? (coinsBalance !== null ? coinsBalance : "...") : "0"} Coins
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-muted leading-relaxed">
+                      {accessToken 
+                        ? `Equivalent to ₹${coinsBalance !== null ? coinsBalance : 0} cash value. You can redeem these to get up to 30% off your purchase at checkout!` 
+                        : "Join the DEHYDE Loyalty Club and receive up to 30% off your purchases. Earn 1 coin for every ₹1 spent."
+                      }
+                    </p>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-3">
+                    <Link
+                      href={accessToken ? "/account/wallet" : "/account"}
+                      className="w-full inline-flex items-center justify-center text-[9px] uppercase tracking-widest font-extrabold bg-charcoal text-white hover:bg-black py-2.5 rounded-lg transition-colors"
+                    >
+                      {accessToken ? "Manage Coins Wallet" : "Get Started Now"}
+                    </Link>
+                  </div>
+                </div>
+              </div>
               
               <Link
                 href="/account"

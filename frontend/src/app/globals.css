@@ -351,3 +351,32 @@
   --o: 1;
   --offset: 0;
 }
+
+/* Coin 3D Spin and Pulse Animation */
+@keyframes coin-spin-pulse {
+  0% {
+    transform: scale(1) rotateY(0deg);
+    filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4));
+  }
+  45% {
+    transform: scale(1.08) rotateY(180deg);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
+  }
+  50% {
+    transform: scale(1.08) rotateY(180deg);
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
+  }
+  95% {
+    transform: scale(1) rotateY(360deg);
+    filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4));
+  }
+  100% {
+    transform: scale(1) rotateY(360deg);
+    filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4));
+  }
+}
+
+.animate-coin-spin-pulse {
+  animation: coin-spin-pulse 5s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
