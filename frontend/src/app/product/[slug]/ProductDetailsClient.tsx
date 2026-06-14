@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cartStore";
 import { ProductCard } from "@/components/product/ProductCard";
 import { apiClient } from "@/lib/api";
 import type { Product } from "@/types";
 import { productImage } from "@/lib/products";
+import { Heart, Share2 } from "lucide-react";
+import { useWishlistStore } from "@/store/wishlistStore";
 
 interface Props {
   product: Product;
@@ -17,11 +19,43 @@ interface Props {
 
 export default function ProductDetailsClient({ product }: Props) {
   const addItem = useCartStore((s) => s.addItem);
+  const { has: hasWishlist, toggle: toggleWishlist } = useWishlistStore();
+  const inWishlist = hasWishlist(product._id);
+  const [copied, setCopied] = useState(false);
   const [related, setRelated] = useState<Product[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [variantImageOverride, setVariantImageOverride] = useState<string | null>(null);
   const [size, setSize] = useState(product.sizes?.[0] || "");
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error("Could not copy link: ", err);
+      });
+  };
+
+  const handleShare = () => {
+    if (typeof window !== "undefined") {
+      if (navigator.share) {
+        navigator.share({
+          title: product.title,
+          text: `Check out ${product.title} on DEHYDE`,
+          url: window.location.href,
+        }).catch((err) => {
+          if (err.name !== "AbortError") {
+            copyToClipboard();
+          }
+        });
+      } else {
+        copyToClipboard();
+      }
+    }
+  };
 
   const [flyingItem, setFlyingItem] = useState<{
     startX: number;
@@ -214,15 +248,36 @@ export default function ProductDetailsClient({ product }: Props) {
           {/* Main Image Container */}
           <div className="relative flex-1 aspect-[3/4] w-full overflow-hidden bg-stone/5">
             {activeImage ? (
-              <Image
-                id="product-main-image"
-                src={activeImage}
-                alt={product.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                priority
-              />
+              <div className="relative w-full h-full">
+                <Image
+                  id="product-main-image"
+                  src={activeImage}
+                  alt={product.title}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+                {/* Floating Wishlist Button (Top Right) */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleWishlist(product._id);
+                  }}
+                  className="absolute right-4 top-4 z-10 p-2 text-charcoal hover:text-black transition-all"
+                  aria-label="Toggle wishlist"
+                >
+                  <Heart
+                    className={cn(
+                      "h-6 w-6 transition-all duration-300",
+                      inWishlist ? "fill-black text-black" : "text-black hover:scale-110"
+                    )}
+                    strokeWidth={1.5}
+                  />
+                </button>
+              </div>
             ) : (
               <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-editorial text-muted">
                 DEHYDE
@@ -235,7 +290,33 @@ export default function ProductDetailsClient({ product }: Props) {
           <p className="text-[10px] uppercase tracking-editorial text-muted">
             {typeof product.category === "object" ? product.category.name : "Collection"}
           </p>
-          <h1 className="editorial-heading mt-4 text-4xl md:text-5xl">{product.title}</h1>
+          <div className="flex justify-between items-start gap-4 mt-4">
+            <h1 className="editorial-heading text-3xl md:text-4xl lg:text-5xl flex-1 leading-tight">{product.title}</h1>
+            <div className="relative flex-shrink-0 mt-1">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-charcoal hover:bg-neutral-200 hover:text-black transition-all duration-300 shadow-sm border border-black/5"
+                title="Share product"
+                aria-label="Share product"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              
+              <AnimatePresence>
+                {copied && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 bottom-full mb-2 z-20 whitespace-nowrap bg-charcoal text-offwhite text-[10px] uppercase tracking-widest px-3 py-1.5 shadow-md font-medium"
+                  >
+                    Link copied!
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
           <div className="mt-6 flex items-center gap-4">
             <span className="text-lg">{formatPrice(product.price)}</span>
             {product.compareAtPrice && (
