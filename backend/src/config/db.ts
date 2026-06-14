@@ -26,6 +26,15 @@ function buildUri(user: string, pass: string, host: string, dbPath: string, extr
 export async function connectDB(): Promise<void> {
   if (mongoose.connection.readyState === 1) return;
 
+  try {
+    mongoose.set("strictQuery", true);
+    await mongoose.connect(env.mongoUri, { serverSelectionTimeoutMS: 5000 });
+    console.log("MongoDB connected successfully via native driver.");
+    return;
+  } catch (err) {
+    console.warn("Direct MongoDB connection failed, falling back to SRV host probe...", err);
+  }
+
   const parsed = new URL(env.mongoUri.replace("mongodb+srv://", "https://"));
   const user = decodeURIComponent(parsed.username);
   const pass = decodeURIComponent(parsed.password);

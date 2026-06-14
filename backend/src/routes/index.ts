@@ -15,6 +15,12 @@ import feedbackRoutes from "./feedbackRoutes.js";
 
 const router = Router();
 
+// Disable caching for all API endpoints to ensure client-side state is always fresh
+router.use((_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  next();
+});
+
 router.use("/auth", authRoutes);
 router.use("/products", productRoutes);
 router.use("/orders", orderRoutes);
