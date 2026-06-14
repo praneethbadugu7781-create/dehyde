@@ -187,8 +187,32 @@ export default function ProductDetailsClient({ product }: Props) {
   return (
     <div className="luxury-container">
       <motion.div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-        <div className="space-y-4">
-          <div className="relative aspect-[3/4] overflow-hidden bg-stone/5">
+        <div className="flex flex-col-reverse md:flex-row gap-4 items-start w-full">
+          {/* Thumbnail list (vertical on desktop, horizontal on mobile) */}
+          {images.length > 0 && (
+            <div className="flex flex-row md:flex-col gap-3 w-full md:w-[80px] md:max-h-[650px] overflow-x-auto md:overflow-y-auto no-scrollbar justify-start flex-shrink-0">
+              {images.map((img, i) => (
+                <button
+                  key={img}
+                  type="button"
+                  onClick={() => {
+                    setSelectedImage(i);
+                    setVariantImageOverride(null);
+                  }}
+                  className={`relative w-20 h-24 md:w-20 md:h-24 flex-shrink-0 overflow-hidden transition-all ${
+                    (variantImageOverride === null && selectedImage === i) || variantImageOverride === img 
+                      ? "ring-1 ring-charcoal opacity-100" 
+                      : "opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <Image src={img} alt="" fill className="object-cover" sizes="100px" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Main Image Container */}
+          <div className="relative flex-1 aspect-[3/4] w-full overflow-hidden bg-stone/5">
             {activeImage ? (
               <Image
                 id="product-main-image"
@@ -205,25 +229,6 @@ export default function ProductDetailsClient({ product }: Props) {
               </div>
             )}
           </div>
-          {images.length > 0 && (
-            <div className="grid grid-cols-4 gap-3">
-              {images.map((img, i) => (
-                <button
-                  key={img}
-                  type="button"
-                  onClick={() => {
-                    setSelectedImage(i);
-                    setVariantImageOverride(null);
-                  }}
-                  className={`relative aspect-square overflow-hidden ${
-                    (variantImageOverride === null && selectedImage === i) || variantImageOverride === img ? "ring-1 ring-charcoal" : "opacity-60"
-                  }`}
-                >
-                  <Image src={img} alt="" fill className="object-cover" sizes="100px" />
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
