@@ -220,8 +220,8 @@ export default function ProductDetailsClient({ product }: Props) {
 
   return (
     <div className="luxury-container">
-      <motion.div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-        <div className="flex flex-col-reverse md:flex-row gap-4 items-start w-full">
+      <motion.div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5 flex flex-col-reverse md:flex-row gap-4 items-start w-full">
           {/* Thumbnail list (vertical on desktop, horizontal on mobile) */}
           {images.length > 0 && (
             <div className="flex flex-row md:flex-col gap-3 w-full md:w-[80px] md:max-h-[650px] overflow-x-auto md:overflow-y-auto no-scrollbar justify-start flex-shrink-0">
@@ -254,8 +254,8 @@ export default function ProductDetailsClient({ product }: Props) {
                   src={activeImage}
                   alt={product.title}
                   fill
-                  className="object-contain"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 40vw"
                   priority
                 />
                 {/* Floating Wishlist Button (Top Right) */}
@@ -286,7 +286,7 @@ export default function ProductDetailsClient({ product }: Props) {
           </div>
         </div>
 
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-7 w-full">
           <p className="text-[10px] uppercase tracking-editorial text-muted">
             {typeof product.category === "object" ? product.category.name : "Collection"}
           </p>
