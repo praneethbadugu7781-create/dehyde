@@ -100,6 +100,8 @@ export default function AdminProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L", "XL"]);
   const [imageUrls, setImageUrls] = useState("");
+  const [showRawUrls, setShowRawUrls] = useState(false);
+  const [showVariantRawUrls, setShowVariantRawUrls] = useState(false);
 
   // Local color variants list managed in the form
   const [variantsList, setVariantsList] = useState<any[]>([]);
@@ -180,6 +182,8 @@ export default function AdminProductsPage() {
     setImageUrls("");
     setVariantsList([]);
     setHasAdditionalColors(false);
+    setShowRawUrls(false);
+    setShowVariantRawUrls(false);
     setMessage("");
   };
 
@@ -352,6 +356,8 @@ export default function AdminProductsPage() {
       setForm({ ...emptyForm, category: categories[0]?._id || "" });
       setSelectedSizes(["S", "M", "L", "XL"]);
       setImageUrls("");
+      setShowRawUrls(false);
+      setShowVariantRawUrls(false);
       setVariantsList([]);
       setHasAdditionalColors(false);
       setNewVariant({
@@ -662,14 +668,46 @@ export default function AdminProductsPage() {
                   </p>
                 </div>
 
+                {/* Uploaded Image Previews */}
+                {imageUrls.split(/\r?\n/).filter(Boolean).length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+                    {imageUrls.split(/\r?\n/).filter(Boolean).map((url, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group shadow-sm">
+                        <img src={url.trim()} alt="Product Preview" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = imageUrls.split(/\r?\n/).filter(Boolean).filter((_, i) => i !== idx);
+                            setImageUrls(updated.join("\n"));
+                          }}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity transition-colors duration-200"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="space-y-1">
-                  <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Image URLs (one per line)</label>
-                  <textarea
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-24 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
-                    placeholder="https://images.unsplash.com/photo-..."
-                    value={imageUrls}
-                    onChange={(e) => setImageUrls(e.target.value)}
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Image URLs</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowRawUrls(!showRawUrls)}
+                      className="text-[9px] uppercase tracking-wider text-charcoal/50 hover:text-charcoal font-bold underline transition-colors"
+                    >
+                      {showRawUrls ? "Hide Raw URLs" : "Show Raw URLs"}
+                    </button>
+                  </div>
+                  {showRawUrls && (
+                    <textarea
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-24 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
+                      placeholder="https://images.unsplash.com/photo-..."
+                      value={imageUrls}
+                      onChange={(e) => setImageUrls(e.target.value)}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -853,14 +891,46 @@ export default function AdminProductsPage() {
                             </p>
                           </div>
 
+                          {/* Uploaded Variant Image Previews */}
+                          {newVariant.imageUrls.split(/\r?\n/).filter(Boolean).length > 0 && (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 pt-2">
+                              {newVariant.imageUrls.split(/\r?\n/).filter(Boolean).map((url, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 group shadow-sm">
+                                  <img src={url.trim()} alt="Variant Preview" className="w-full h-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = newVariant.imageUrls.split(/\r?\n/).filter(Boolean).filter((_, i) => i !== idx);
+                                      setNewVariant((curr) => ({ ...curr, imageUrls: updated.join("\n") }));
+                                    }}
+                                    className="absolute top-1.5 right-1.5 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity transition-colors duration-200"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           <div className="space-y-1">
-                            <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Variant Image URLs (one per line)</label>
-                            <textarea
-                              className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
-                              placeholder="https://images.unsplash.com/photo-..."
-                              value={newVariant.imageUrls}
-                              onChange={(e) => setNewVariant((curr) => ({ ...curr, imageUrls: e.target.value }))}
-                            />
+                            <div className="flex items-center justify-between">
+                              <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-medium">Variant Image URLs</label>
+                              <button
+                                type="button"
+                                onClick={() => setShowVariantRawUrls(!showVariantRawUrls)}
+                                className="text-[9px] uppercase tracking-wider text-charcoal/50 hover:text-charcoal font-bold underline transition-colors"
+                              >
+                                {showVariantRawUrls ? "Hide Raw URLs" : "Show Raw URLs"}
+                              </button>
+                            </div>
+                            {showVariantRawUrls && (
+                              <textarea
+                                className="w-full border border-gray-200 rounded-xl px-4 py-3 min-h-20 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs font-mono resize-none"
+                                placeholder="https://images.unsplash.com/photo-..."
+                                value={newVariant.imageUrls}
+                                onChange={(e) => setNewVariant((curr) => ({ ...curr, imageUrls: e.target.value }))}
+                              />
+                            )}
                           </div>
                         </div>
 
