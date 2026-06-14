@@ -151,6 +151,7 @@ export default function CheckoutPage() {
 
   const [availableCoins, setAvailableCoins] = useState<number | null>(null);
   const [showCoinsRedemption, setShowCoinsRedemption] = useState(false);
+  const [showAvailableOffers, setShowAvailableOffers] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
   const total = subtotal();
@@ -649,80 +650,98 @@ export default function CheckoutPage() {
                 {/* Available Offers section */}
                 {activeCoupons.length > 0 && (
                   <div className="pt-2 border-t border-charcoal/5 space-y-2">
-                    <p className="text-[10px] uppercase tracking-editorial text-muted font-bold">Available Offers</p>
-                    <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                      {activeCoupons.map((c) => {
-                        const isEligible = total >= c.minOrder;
-                        const isApplied = couponDetails?.code === c.code;
-                        const neededAmount = c.minOrder - total;
-                        const discountText = c.type === "percent" ? `${c.value}% OFF` : `₹${c.value} OFF`;
-                        const subtext = c.minOrder > 0 ? `on orders above ₹${c.minOrder}` : "on all orders";
-                        
-                        return (
-                          <div
-                            key={c.code}
-                            className={`p-3 border rounded-xl flex flex-col justify-between gap-2 transition-all ${
-                              isApplied
-                                ? "border-green-500 bg-green-50/10"
-                                : isEligible
-                                ? "border-charcoal/15 bg-white hover:border-royal/40"
-                                : "border-charcoal/5 bg-gray-50/50 opacity-80"
-                            }`}
-                          >
-                            <div className="flex justify-between items-start gap-2">
-                              <div>
-                                <span className={`font-mono text-[10px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase ${
-                                  isApplied
-                                    ? "text-green-700 bg-green-100 border-green-200"
-                                    : isEligible
-                                    ? "text-charcoal bg-stone/5 border-charcoal/15"
-                                    : "text-muted bg-stone/5 border-charcoal/5"
-                                }`}>
-                                  {c.code}
-                                </span>
-                                <p className="text-xs text-charcoal font-semibold mt-1.5">{discountText}</p>
-                                <p className="text-[10px] text-muted mt-0.5">{subtext}</p>
+                    <div 
+                      onClick={() => setShowAvailableOffers(!showAvailableOffers)}
+                      className="flex justify-between items-center cursor-pointer select-none group"
+                    >
+                      <p className="text-[10px] uppercase tracking-editorial text-muted font-bold group-hover:text-charcoal transition-colors">
+                        Available Offers
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] font-bold text-muted group-hover:text-charcoal transition-colors uppercase tracking-wider">
+                          {showAvailableOffers ? "Hide" : "Show"}
+                        </span>
+                        <span className={`text-[9px] text-muted transition-transform duration-200 ${showAvailableOffers ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+
+                    {showAvailableOffers && (
+                      <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1 animate-in slide-in-from-top-2 duration-200">
+                        {activeCoupons.map((c) => {
+                          const isEligible = total >= c.minOrder;
+                          const isApplied = couponDetails?.code === c.code;
+                          const neededAmount = c.minOrder - total;
+                          const discountText = c.type === "percent" ? `${c.value}% OFF` : `₹${c.value} OFF`;
+                          const subtext = c.minOrder > 0 ? `on orders above ₹${c.minOrder}` : "on all orders";
+                          
+                          return (
+                            <div
+                              key={c.code}
+                              className={`p-3 border rounded-xl flex flex-col justify-between gap-2 transition-all ${
+                                isApplied
+                                  ? "border-green-500 bg-green-50/10"
+                                  : isEligible
+                                  ? "border-charcoal/15 bg-white hover:border-royal/40"
+                                  : "border-charcoal/5 bg-gray-50/50 opacity-80"
+                              }`}
+                            >
+                              <div className="flex justify-between items-start gap-2">
+                                <div>
+                                  <span className={`font-mono text-[10px] font-bold tracking-widest px-2 py-0.5 rounded border uppercase ${
+                                    isApplied
+                                      ? "text-green-700 bg-green-100 border-green-200"
+                                      : isEligible
+                                      ? "text-charcoal bg-stone/5 border-charcoal/15"
+                                      : "text-muted bg-stone/5 border-charcoal/5"
+                                  }`}>
+                                    {c.code}
+                                  </span>
+                                  <p className="text-xs text-charcoal font-semibold mt-1.5">{discountText}</p>
+                                  <p className="text-[10px] text-muted mt-0.5">{subtext}</p>
+                                </div>
+                                
+                                {isApplied ? (
+                                  <span className="text-green-600 text-xs font-bold flex items-center gap-0.5">
+                                    ✓ Applied
+                                  </span>
+                                ) : isEligible ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCouponInput(c.code);
+                                      setCoupon(c.code);
+                                    }}
+                                    className="text-royal hover:text-blue-800 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
+                                  >
+                                    Apply
+                                  </button>
+                                ) : (
+                                  <span className="text-amber-600 text-[9px] font-semibold bg-amber-50 border border-amber-100 px-2 py-1 rounded">
+                                    Locked
+                                  </span>
+                                )}
                               </div>
                               
-                              {isApplied ? (
-                                <span className="text-green-600 text-xs font-bold flex items-center gap-0.5">
-                                  ✓ Applied
-                                </span>
-                              ) : isEligible ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setCouponInput(c.code);
-                                    setCoupon(c.code);
-                                  }}
-                                  className="text-royal hover:text-blue-800 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
-                                >
-                                  Apply
-                                </button>
-                              ) : (
-                                <span className="text-amber-600 text-[9px] font-semibold bg-amber-50 border border-amber-100 px-2 py-1 rounded">
-                                  Locked
-                                </span>
+                              {!isEligible && neededAmount > 0 && (
+                                <div className="pt-1 border-t border-charcoal/5 flex flex-col gap-1">
+                                  <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                                    Add ₹{formatPrice(neededAmount).replace("₹", "")} more to unlock this offer
+                                  </p>
+                                  <div className="w-full bg-charcoal/5 h-1 rounded-full overflow-hidden">
+                                    <div
+                                      className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                                      style={{ width: `${Math.min(100, (total / c.minOrder) * 100)}%` }}
+                                    />
+                                  </div>
+                                </div>
                               )}
                             </div>
-                            
-                            {!isEligible && neededAmount > 0 && (
-                              <div className="pt-1 border-t border-charcoal/5 flex flex-col gap-1">
-                                <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
-                                  Add ₹{formatPrice(neededAmount).replace("₹", "")} more to unlock this offer
-                                </p>
-                                <div className="w-full bg-charcoal/5 h-1 rounded-full overflow-hidden">
-                                  <div
-                                    className="bg-amber-500 h-full rounded-full transition-all duration-300"
-                                    style={{ width: `${Math.min(100, (total / c.minOrder) * 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
