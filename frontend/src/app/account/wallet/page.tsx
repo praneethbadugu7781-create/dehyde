@@ -33,10 +33,29 @@ export default function WalletPage() {
         <Link href="/account" className="text-[10px] uppercase tracking-editorial text-muted">
           ← Account
         </Link>
-        <h1 className="editorial-heading mt-6 text-5xl">DEHYDE Coins</h1>
+        <h1 className="editorial-heading mt-6 text-5xl">DEHYDE Rewards</h1>
         <p className="mt-4 text-sm text-muted">1 coin = ₹1 · Redeem up to 30% on orders</p>
 
-        <motion.div className="mt-12 border border-charcoal/10 p-10">
+        {/* How it works card */}
+        <div className="mt-8 bg-amber-50/15 border border-amber-200/40 p-6 rounded-xl space-y-4">
+          <p className="text-[10px] uppercase tracking-wider text-amber-800 font-bold">How DEHYDE Rewards Work</p>
+          <div className="grid sm:grid-cols-3 gap-6 text-xs text-charcoal/80">
+            <div className="space-y-1">
+              <p className="font-bold text-charcoal">1. Earn Coins</p>
+              <p className="text-muted leading-relaxed">Receive coins automatically on every purchase you make.</p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold text-charcoal">2. Cash Value</p>
+              <p className="text-muted leading-relaxed">1 DEHYDE Coin is always worth exactly ₹1 in savings.</p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold text-charcoal">3. Save Big</p>
+              <p className="text-muted leading-relaxed">Redeem your coins at checkout to pay for up to 30% of your order.</p>
+            </div>
+          </div>
+        </div>
+
+        <motion.div className="mt-10 border border-charcoal/10 p-10">
           <p className="text-[10px] uppercase tracking-editorial text-muted">Available balance</p>
           <p className="editorial-heading mt-2 text-6xl">{wallet?.balance ?? 0}</p>
           <div className="mt-8 flex gap-8 text-sm text-muted">

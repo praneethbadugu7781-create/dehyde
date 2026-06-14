@@ -174,10 +174,10 @@ export function Navbar() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-charcoal uppercase tracking-wider">
-                        {accessToken ? "DEHYDE Gold Club" : "DEHYDE Rewards Club"}
+                        DEHYDE Rewards
                       </p>
                       <p className="text-[10px] text-muted">
-                        {accessToken ? "Loyal Member status active" : "Earn coins on every purchase"}
+                        Earn & redeem coins on orders
                       </p>
                     </div>
                   </div>
@@ -192,7 +192,7 @@ export function Navbar() {
                     <p className="text-[11px] text-muted leading-relaxed">
                       {accessToken 
                         ? `Equivalent to ₹${coinsBalance !== null ? coinsBalance : 0} cash value. You can redeem these to get up to 30% off your purchase at checkout!` 
-                        : "Join the DEHYDE Loyalty Club and receive up to 30% off your purchases. Earn 1 coin for every ₹1 spent."
+                        : "Join DEHYDE Rewards and receive up to 30% off your purchases. Earn 1 coin for every ₹1 spent."
                       }
                     </p>
                   </div>
