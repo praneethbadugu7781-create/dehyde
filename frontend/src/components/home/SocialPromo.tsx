@@ -6,10 +6,8 @@ import { motion } from "framer-motion";
 import { Instagram, MessageCircle } from "lucide-react";
 
 const COMMUNITY_IMAGES = [
-  "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=400&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400&auto=format&fit=crop"
+  "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1618886614638-80e3c103d31a?q=80&w=600&auto=format&fit=crop"
 ];
 
 export function SocialPromo() {
@@ -50,7 +48,7 @@ export function SocialPromo() {
           </div>
 
           {/* Community Images Grid (Right) */}
-          <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="lg:col-span-7 grid grid-cols-2 gap-4 md:gap-6">
             {COMMUNITY_IMAGES.map((img, idx) => (
               <motion.div
                 key={idx}
@@ -65,7 +63,7 @@ export function SocialPromo() {
                   alt={`Community style ${idx + 1}`}
                   fill
                   className="object-cover hover:scale-102 transition-transform duration-500"
-                  sizes="(max-width: 768px) 50vw, 15vw"
+                  sizes="(max-width: 768px) 50vw, 30vw"
                 />
               </motion.div>
             ))}
