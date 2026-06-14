@@ -150,6 +150,7 @@ export default function CheckoutPage() {
   const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   const [availableCoins, setAvailableCoins] = useState<number | null>(null);
+  const [showCoinsRedemption, setShowCoinsRedemption] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
   const total = subtotal();
@@ -729,57 +730,93 @@ export default function CheckoutPage() {
               {/* Coins Redemption Section */}
               <div className="pt-4 border-t border-charcoal/5">
                 {!accessToken ? (
-                  <div className="border border-charcoal/10 p-4 rounded-xl bg-stone/5 space-y-1.5">
-                    <p className="text-xs font-semibold text-charcoal">Redeem DEHYDE Coins</p>
-                    <p className="text-[11px] text-muted leading-relaxed">
+                  <div className="border border-amber-200 bg-amber-50/10 p-4 rounded-xl space-y-1.5 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block animate-coin-spin-pulse text-sm">🪙</span>
+                      <p className="text-xs font-semibold text-amber-900">DEHYDE Coins</p>
+                    </div>
+                    <p className="text-[11px] text-amber-800/80 leading-relaxed pl-6">
                       <Link href="/account/login?redirect=/checkout" className="underline hover:text-royal font-medium">Sign in</Link> to redeem loyalty coins and save up to 30%.
                     </p>
                   </div>
                 ) : (
-                  <div className="border border-charcoal/15 p-4 rounded-xl bg-stone/5 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs font-semibold text-charcoal">DEHYDE Coins</span>
-                      <span className="text-xs font-mono font-bold text-royal bg-royal/10 px-2.5 py-0.5 rounded-full">
-                        {availableCoins !== null ? `${availableCoins} available` : "..."}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted leading-snug">
-                      1 Coin = ₹1. Redeem up to 30% of subtotal (max ₹{Math.floor(total * 0.3)}).
-                    </p>
-                    {availableCoins !== null && availableCoins > 0 && (
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted">₹</span>
-                            <input
-                              type="number"
-                              min={0}
-                              max={Math.min(Math.floor(total * 0.3), availableCoins)}
-                              value={coinsToRedeem || ""}
-                              onChange={(e) => {
-                                const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
-                                let val = Math.max(0, parseInt(e.target.value) || 0);
-                                if (val > maxVal) val = maxVal;
-                                setCoins(val);
-                              }}
-                              placeholder="0"
-                              className="w-full bg-white border border-charcoal/20 pl-6 pr-3 py-2 text-xs rounded-lg focus:outline-none focus:border-royal font-mono"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
-                              setCoins(maxVal);
-                            }}
-                            className="bg-royal text-offwhite hover:bg-blue-800 text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer"
-                          >
-                            Redeem Max
-                          </button>
-                        </div>
+                  <div className="border border-amber-300/80 bg-amber-50/10 p-4 rounded-xl space-y-3 shadow-sm">
+                    <div 
+                      onClick={() => setShowCoinsRedemption(!showCoinsRedemption)}
+                      className="flex justify-between items-center cursor-pointer select-none group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="inline-block animate-coin-spin-pulse text-sm">🪙</span>
+                        <span className="text-xs font-semibold text-amber-900 group-hover:text-amber-950 transition-colors">
+                          DEHYDE Coins
+                        </span>
                         {coinsToRedeem > 0 && (
-                          <p className="text-green-600 text-[10px] font-semibold flex items-center gap-1">
-                            ✓ Applied ₹{coinsToRedeem} coin discount
+                          <span className="text-[9px] font-semibold text-green-700 bg-green-100 border border-green-200 px-2 py-0.5 rounded-full ml-1 animate-in fade-in duration-300">
+                            Applied -₹{coinsToRedeem}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-amber-700 group-hover:text-amber-800 transition-colors uppercase tracking-wider">
+                          {showCoinsRedemption ? "Hide details" : "Redeem / Balance"}
+                        </span>
+                        <span className={`text-[9px] text-amber-600 transition-transform duration-200 ${showCoinsRedemption ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+
+                    {showCoinsRedemption && (
+                      <div className="pt-2 border-t border-amber-200/40 space-y-3 animate-in slide-in-from-top-2 duration-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[11px] text-amber-800 font-medium">Your loyalty balance:</span>
+                          <span className="text-xs font-mono font-bold text-amber-800 bg-amber-200/40 px-2.5 py-0.5 rounded-full border border-amber-300/30">
+                            {availableCoins !== null ? `${availableCoins} coins` : "..."}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-amber-700/80 leading-snug">
+                          1 Coin = ₹1. Redeem up to 30% of subtotal (max ₹{Math.floor(total * 0.3)}).
+                        </p>
+                        {availableCoins !== null && availableCoins > 0 ? (
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <div className="relative flex-1">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-amber-600/70">₹</span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={Math.min(Math.floor(total * 0.3), availableCoins)}
+                                  value={coinsToRedeem || ""}
+                                  onChange={(e) => {
+                                    const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                    let val = Math.max(0, parseInt(e.target.value) || 0);
+                                    if (val > maxVal) val = maxVal;
+                                    setCoins(val);
+                                  }}
+                                  placeholder="0"
+                                  className="w-full bg-white border border-amber-200/60 pl-6 pr-3 py-2 text-xs rounded-lg focus:outline-none focus:border-amber-400 font-mono text-amber-950"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                  setCoins(maxVal);
+                                }}
+                                className="bg-amber-600 hover:bg-amber-700 text-offwhite text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                              >
+                                Redeem Max
+                              </button>
+                            </div>
+                            {coinsToRedeem > 0 && (
+                              <p className="text-green-600 text-[10px] font-semibold flex items-center gap-1">
+                                ✓ Applied ₹{coinsToRedeem} coin discount
+                              </p>
+                            )}
+                          </div>
+                        ) : availableCoins !== null && (
+                          <p className="text-[10px] text-amber-600 font-medium">
+                            You don't have any coins to redeem yet. Earn coins on your next orders!
                           </p>
                         )}
                       </div>
