@@ -186,3 +186,21 @@ export const changePassword = asyncHandler(async (req: AuthRequest, res) => {
   res.json({ success: true, message: "Password updated successfully" });
 });
 
+export const updateCoupon = asyncHandler(async (req, res) => {
+  const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (!coupon) {
+    res.status(404).json({ success: false, message: "Coupon not found" });
+    return;
+  }
+  res.json({ success: true, data: coupon });
+});
+
+export const deleteCoupon = asyncHandler(async (req, res) => {
+  const coupon = await Coupon.findByIdAndDelete(req.params.id);
+  if (!coupon) {
+    res.status(404).json({ success: false, message: "Coupon not found" });
+    return;
+  }
+  res.json({ success: true, message: "Coupon deleted" });
+});
+

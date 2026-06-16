@@ -13,6 +13,8 @@ router.patch("/orders/:id", admin.updateOrderStatus);
 router.get("/customers", admin.getCustomers);
 router.get("/coupons", admin.manageCoupons);
 router.post("/coupons", admin.manageCoupons);
+router.patch("/coupons/:id", admin.updateCoupon);
+router.delete("/coupons/:id", admin.deleteCoupon);
 router.get("/banners", admin.manageBanners);
 router.post("/banners", admin.createBanner);
 router.patch("/banners/:id", admin.updateBanner);

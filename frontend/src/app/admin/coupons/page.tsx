@@ -6,6 +6,7 @@ import { apiClient } from "@/lib/api";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Power, Trash2 } from "lucide-react";
 
 interface Coupon {
   _id: string;
@@ -35,6 +36,29 @@ export default function AdminCouponsPage() {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  const handleToggleActive = async (coupon: Coupon) => {
+    if (!accessToken) return;
+    try {
+      await apiClient.patch(`/admin/coupons/${coupon._id}`, {
+        isActive: !coupon.isActive
+      }, accessToken);
+      fetchCoupons();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to toggle coupon status");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this coupon?")) return;
+    if (!accessToken) return;
+    try {
+      await apiClient.delete(`/admin/coupons/${id}`, accessToken);
+      fetchCoupons();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete coupon");
+    }
+  };
 
   const fetchCoupons = () => {
     if (!accessToken) return;
@@ -167,15 +191,17 @@ export default function AdminCouponsPage() {
                 <tr>
                   <th className="px-6 py-4 font-normal">Code</th>
                   <th className="px-6 py-4 font-normal">Discount</th>
+                  <th className="px-6 py-4 font-normal">Status</th>
                   <th className="px-6 py-4 font-normal">Uses</th>
-                  <th className="px-6 py-4 font-normal text-right">Expires</th>
+                  <th className="px-6 py-4 font-normal">Expires</th>
+                  <th className="px-6 py-4 font-normal text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
-                  <tr><td colSpan={4} className="px-6 py-8 text-center text-charcoal/40">Loading...</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-8 text-center text-charcoal/40">Loading...</td></tr>
                 ) : coupons.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-8 text-center text-charcoal/40">No coupons active.</td></tr>
+                  <tr><td colSpan={6} className="px-6 py-8 text-center text-charcoal/40">No coupons active.</td></tr>
                 ) : (
                   coupons.map((c) => (
                     <tr key={c._id} className="hover:bg-gray-50/30 transition-colors">
@@ -185,13 +211,49 @@ export default function AdminCouponsPage() {
                       <td className="px-6 py-4 font-medium text-charcoal">
                         {c.type === 'percent' ? `${c.value}% OFF` : `₹${c.value} OFF`}
                       </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-0.5 text-[9px] uppercase tracking-widest rounded-full font-bold border ${
+                          c.isActive 
+                            ? 'bg-green-50 text-green-700 border-green-200' 
+                            : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}>
+                          {c.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-charcoal/60">
                         {c.usedCount} / {c.usageLimit}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-4">
                         <span className={`px-2 py-1 text-[9px] uppercase tracking-widest rounded-md border ${c.expiresAt && new Date(c.expiresAt) < new Date() ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
                           {c.expiresAt ? formatDate(c.expiresAt) : "Never"}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Toggle Active Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActive(c)}
+                            className={`p-2 rounded-lg border transition-all ${
+                              c.isActive
+                                ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                                : "bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200"
+                            }`}
+                            title={c.isActive ? "Deactivate Coupon" : "Activate Coupon"}
+                          >
+                            <Power size={13} strokeWidth={2.5} />
+                          </button>
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(c._id)}
+                            className="p-2 rounded-lg border bg-red-50 border-red-100 text-red-600 hover:text-red-700 hover:border-red-200 hover:bg-red-100 transition-all"
+                            title="Delete Coupon"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
