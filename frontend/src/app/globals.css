@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,9 +9,9 @@
     --background: 0 0% 97%;
     --foreground: 0 0% 0%;
     --border: 0 0% 90%;
-    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-sans: 'Rubik', sans-serif;
     --font-serif: 'Playfair Display', serif;
-    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-display: 'Rubik', sans-serif;
   }
 
   * {
@@ -73,7 +73,7 @@
 }
 
 .card-product__title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Rubik', sans-serif;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.3;
