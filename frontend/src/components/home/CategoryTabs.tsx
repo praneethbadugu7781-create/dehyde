@@ -27,19 +27,8 @@ export function CategoryTabs() {
       slug: "tees",
       icon: (
         <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 transition-all duration-300">
-          {/* Left Ear */}
-          <path d="M22 28 C20 18, 14 6, 22 4 C28 2, 28 16, 28 28" />
-          {/* Right Ear */}
-          <path d="M42 28 C44 18, 50 6, 42 4 C36 2, 36 16, 36 28" />
-          {/* Face outline */}
-          <path d="M20 28 C14 30, 14 50, 24 56 C30 60, 34 60, 40 56 C50 50, 50 30, 44 28" />
-          {/* Bunny eyes */}
-          <circle cx="26" cy="40" r="1.5" fill="currentColor" />
-          <circle cx="38" cy="40" r="1.5" fill="currentColor" />
-          {/* Bunny nose and whiskers */}
-          <path d="M32 44 L30 46 H34 Z" />
-          <path d="M29 45 L22 43" />
-          <path d="M35 45 L42 43" />
+          <path d="M26 10 C26 14, 38 14, 38 10" />
+          <path d="M26 10 L14 13 L8 23 L16 27 L19 25 L19 60 L45 60 L45 25 L48 27 L56 23 L50 13 L38 10" />
         </svg>
       )
     },
