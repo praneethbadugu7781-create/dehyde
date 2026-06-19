@@ -76,8 +76,8 @@ export function Navbar() {
           className={cn(
             "w-full transition-all duration-500 ease-luxury border-b",
             isDarkHeader
-              ? "bg-royal border-transparent py-6 text-white"
-              : "bg-white/90 backdrop-blur-md border-royal/10 py-4 text-royal"
+              ? "bg-royal border-transparent py-3 text-white"
+              : "bg-white/90 backdrop-blur-md border-royal/10 py-2.5 text-royal"
           )}
         >
           <nav className="mx-auto w-full max-w-[1400px] px-6 md:px-10 flex items-center justify-between">
