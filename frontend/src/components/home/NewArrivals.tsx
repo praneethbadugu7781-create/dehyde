@@ -27,7 +27,7 @@ export function NewArrivals() {
             <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">
               New Arrivals
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-black tracking-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-royal tracking-tight">
               Fresh fits in our latest drop
             </h2>
           </div>

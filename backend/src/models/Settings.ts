@@ -8,6 +8,7 @@ export interface ISettings extends Document {
   freeShippingThreshold: number;
   defaultShippingFee: number;
   expressShippingFee: number;
+  introAnimationImage?: string;
 }
 
 const settingsSchema = new Schema<ISettings>(
@@ -19,6 +20,7 @@ const settingsSchema = new Schema<ISettings>(
     freeShippingThreshold: { type: Number, default: 2999 },
     defaultShippingFee: { type: Number, default: 99 },
     expressShippingFee: { type: Number, default: 149 },
+    introAnimationImage: { type: String, default: "/campaign_streetwear.png" },
   },
   { timestamps: true }
 );

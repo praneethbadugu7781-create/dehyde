@@ -20,7 +20,7 @@ export function SocialPromo() {
             <p className="text-[10px] uppercase tracking-[0.2em] text-amber-600 font-bold">
               Our Story & Community
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-black tracking-tight leading-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-royal tracking-tight leading-tight">
               Grit, struggle, and the journey of keeping DEHYDE alive
             </h2>
             <p className="mt-4 text-xs md:text-sm text-neutral-500 leading-relaxed font-light max-w-sm">

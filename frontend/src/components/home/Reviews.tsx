@@ -52,7 +52,7 @@ export function Reviews() {
             <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">
               Customer reviews
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-black tracking-tight leading-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-royal tracking-tight leading-tight">
               The voice of quality
             </h2>
             <p className="mt-4 text-xs md:text-sm text-neutral-500 leading-relaxed font-light max-w-sm">
@@ -60,10 +60,10 @@ export function Reviews() {
             </p>
             
             <div className="mt-8 flex items-center gap-2">
-              <span className="text-sm font-bold text-black">4.9/5</span>
-              <div className="flex text-black">
+              <span className="text-sm font-bold text-royal">4.9/5</span>
+              <div className="flex text-royal">
                 {Array(5).fill(0).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-black text-black" />
+                  <Star key={i} className="h-3 w-3 fill-royal text-royal" />
                 ))}
               </div>
               <span className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400 ml-2">
@@ -84,7 +84,7 @@ export function Reviews() {
               >
                 <div className="flex text-neutral-300 mb-6">
                   {Array(REVIEWS[activeIdx].rating).fill(0).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-black text-black" />
+                    <Star key={i} className="h-4 w-4 fill-royal text-royal" />
                   ))}
                 </div>
 

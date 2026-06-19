@@ -228,7 +228,7 @@ export function ProductCard({ product, index = 0 }: Props) {
           <h3 className="card-product__title">
             {product.title}
           </h3>
-          <div className="mt-1 flex items-center gap-2 font-sans font-bold text-xs md:text-sm text-black">
+          <div className="mt-1 flex items-center gap-2 font-sans font-bold text-xs md:text-sm text-royal">
             <span>{formatPrice(product.price)}</span>
             {product.compareAtPrice && (
               <span className="text-[10px] md:text-xs text-neutral-400 line-through font-normal">

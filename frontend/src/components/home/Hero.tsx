@@ -223,13 +223,13 @@ export function Hero() {
                       <div className="mt-8 flex flex-wrap justify-center gap-4">
                         <Link
                           href={banner.link}
-                          className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-white text-black px-8 py-3.5 hover:bg-black hover:text-white border border-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-white text-royal px-8 py-3.5 hover:bg-royal hover:text-white border border-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                         >
                           {banner.cta}
                         </Link>
                         <Link
                           href="/shop"
-                          className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-transparent text-white px-8 py-3.5 hover:bg-white hover:text-black border border-white/30 hover:border-white transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                          className="inline-flex items-center justify-center text-[10px] md:text-xs uppercase tracking-widest font-extrabold rounded-full bg-transparent text-white px-8 py-3.5 hover:bg-white hover:text-royal border border-white/30 hover:border-white transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
                         >
                           Explore Collection
                         </Link>

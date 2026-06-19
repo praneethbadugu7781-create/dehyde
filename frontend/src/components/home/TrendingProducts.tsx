@@ -27,7 +27,7 @@ export function TrendingProducts() {
             <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-semibold">
               Best sellers
             </p>
-            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-black tracking-tight">
+            <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-royal tracking-tight">
               Our signature best selling pieces
             </h2>
           </div>

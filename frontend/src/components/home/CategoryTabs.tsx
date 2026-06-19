@@ -106,12 +106,12 @@ export function CategoryTabs() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.slug)}
                   className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
-                    isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+                    isActive ? "text-[#1d4ed8]" : "text-neutral-400 hover:text-neutral-600"
                   }`}
                 >
                   {/* SVG Outline Icon */}
                   <div className={`transform transition-all duration-300 group-hover:scale-105 ${
-                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(29,78,216,0.15)]" : ""
                   }`}>
                     {tab.icon}
                   </div>
@@ -123,7 +123,7 @@ export function CategoryTabs() {
                   {isActive && (
                     <motion.div
                       layoutId="activeTabIndicator"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1d4ed8]"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -134,7 +134,7 @@ export function CategoryTabs() {
 
           {/* Central Card (white background with thin border) */}
           <div className="w-[85px] h-[85px] sm:w-[130px] sm:h-[130px] md:w-[190px] md:h-[190px] bg-white border border-black/5 flex flex-col items-center justify-center shadow-sm rounded-lg px-1 sm:px-4 pointer-events-none select-none shrink-0">
-            <h3 className="font-display text-[#c80a0a] text-[8px] sm:text-xs md:text-lg font-black tracking-wider text-center leading-[1.2] uppercase">
+            <h3 className="font-display text-[#1d4ed8] text-[8px] sm:text-xs md:text-lg font-black tracking-wider text-center leading-[1.2] uppercase">
               TRENDY.<br />PREMIUM.<br />AFFORDABLE
             </h3>
           </div>
@@ -148,12 +148,12 @@ export function CategoryTabs() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.slug)}
                   className={`flex flex-col items-center gap-2 md:gap-3 group focus:outline-none transition-all duration-300 relative pb-2 ${
-                    isActive ? "text-[#c80a0a]" : "text-neutral-400 hover:text-neutral-600"
+                    isActive ? "text-[#1d4ed8]" : "text-neutral-400 hover:text-neutral-600"
                   }`}
                 >
                   {/* SVG Outline Icon */}
                   <div className={`transform transition-all duration-300 group-hover:scale-105 ${
-                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(200,10,10,0.15)]" : ""
+                    isActive ? "scale-105 drop-shadow-[0_4px_12px_rgba(29,78,216,0.15)]" : ""
                   }`}>
                     {tab.icon}
                   </div>
@@ -165,7 +165,7 @@ export function CategoryTabs() {
                   {isActive && (
                     <motion.div
                       layoutId="activeTabIndicator"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#c80a0a]"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#1d4ed8]"
                       transition={{ type: "spring", stiffness: 380, damping: 30 }}
                     />
                   )}

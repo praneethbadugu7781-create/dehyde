@@ -15,6 +15,7 @@ interface SettingsData {
   freeShippingThreshold: number;
   defaultShippingFee: number;
   expressShippingFee: number;
+  introAnimationImage?: string;
 }
 
 export default function AdminSettingsPage() {
@@ -22,6 +23,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<SettingsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const [message, setMessage] = useState("");
 
   // Change Password Form State
@@ -45,7 +47,8 @@ export default function AdminSettingsPage() {
         coinExpiryDays: 365,
         freeShippingThreshold: 2999,
         defaultShippingFee: 99,
-        expressShippingFee: 149
+        expressShippingFee: 149,
+        introAnimationImage: "/campaign_streetwear.png"
       }))
       .finally(() => setLoading(false));
   };
@@ -162,11 +165,57 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
+        {/* 3. Intro Animation Image */}
+        <div className="pt-6 border-t border-gray-100">
+          <h2 className="text-xl font-serif text-charcoal mb-2">Intro Animation Image</h2>
+          <p className="text-sm text-charcoal/50 mb-6">Customize the campaign image revealed in the letter-split welcome screen.</p>
+          
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Intro Campaign Image</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !accessToken) return;
+                  setImageUploading(true);
+                  setMessage("");
+                  try {
+                    const data = new FormData();
+                    data.append("image", file);
+                    const res = await apiClient.upload<{ success: boolean; data: { url: string } }>("/upload", data, accessToken);
+                    update("introAnimationImage", res.data.url);
+                  } catch (err) {
+                    setMessage(err instanceof Error ? err.message : "Image upload failed");
+                  } finally {
+                    setImageUploading(false);
+                  }
+                }}
+                className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
+              />
+              <Input
+                type="text"
+                value={settings.introAnimationImage || ""}
+                onChange={(e) => update("introAnimationImage", e.target.value)}
+                placeholder="Or paste campaign image URL"
+                className="bg-white border-gray-200 text-charcoal"
+              />
+            </div>
+            
+            {settings.introAnimationImage && (
+              <div className="relative h-44 w-36 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-black">
+                <img src={settings.introAnimationImage} alt="Intro Preview" className="w-full h-full object-cover" />
+              </div>
+            )}
+          </div>
+        </div>
+
         {message && <p className={`text-xs p-3 rounded-md font-medium ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>{message}</p>}
         
         <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="bg-charcoal text-white hover:bg-black h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={saving}>
-            {saving ? "Saving Changes..." : "Save Settings"}
+          <Button onClick={handleSave} className="bg-charcoal text-white hover:bg-black h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={saving || imageUploading}>
+            {saving ? "Saving Changes..." : imageUploading ? "Uploading Image..." : "Save Settings"}
           </Button>
         </div>
       </motion.div>

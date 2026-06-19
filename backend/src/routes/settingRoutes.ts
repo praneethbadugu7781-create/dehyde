@@ -123,6 +123,7 @@ router.get(
         freeShippingThreshold: settings.freeShippingThreshold,
         defaultShippingFee: settings.defaultShippingFee,
         expressShippingFee: settings.expressShippingFee,
+        introAnimationImage: settings.introAnimationImage || "/campaign_streetwear.png",
       }
     });
   })

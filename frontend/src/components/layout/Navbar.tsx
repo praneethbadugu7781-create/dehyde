@@ -76,8 +76,8 @@ export function Navbar() {
           className={cn(
             "w-full transition-all duration-500 ease-luxury border-b",
             isDarkHeader
-              ? "bg-transparent border-transparent py-6 text-white"
-              : "bg-white/90 backdrop-blur-md border-black/5 py-4 text-black"
+              ? "bg-royal border-transparent py-6 text-white"
+              : "bg-white/90 backdrop-blur-md border-royal/10 py-4 text-royal"
           )}
         >
           <nav className="mx-auto w-full max-w-[1400px] px-6 md:px-10 flex items-center justify-between">
@@ -138,7 +138,7 @@ export function Navbar() {
               <div className="relative group flex items-center">
                 <Link
                   href={accessToken ? "/account/wallet" : "/account"}
-                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-1.5 p-1 rounded-full hover:bg-royal/5 transition-colors"
                   aria-label="Rewards Wallet"
                 >
                   <div className="relative h-[20px] w-[20px] flex-shrink-0 animate-coin-spin-pulse">
@@ -200,7 +200,7 @@ export function Navbar() {
                   <div className="border-t border-gray-100 pt-3">
                     <Link
                       href={accessToken ? "/account/wallet" : "/account"}
-                      className="w-full inline-flex items-center justify-center text-[9px] uppercase tracking-widest font-extrabold bg-charcoal text-white hover:bg-black py-2.5 rounded-lg transition-colors"
+                      className="w-full inline-flex items-center justify-center text-[9px] uppercase tracking-widest font-extrabold bg-royal text-white hover:bg-blue-800 py-2.5 rounded-lg transition-colors"
                     >
                       {accessToken ? "Manage Coins Wallet" : "Get Started Now"}
                     </Link>
@@ -226,7 +226,7 @@ export function Navbar() {
                 {cartCount > 0 && (
                   <span className={cn(
                     "absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold",
-                    isDarkHeader ? "bg-white text-black" : "bg-black text-white"
+                    isDarkHeader ? "bg-white text-royal" : "bg-royal text-white"
                   )}>
                     {cartCount}
                   </span>
@@ -239,7 +239,7 @@ export function Navbar() {
                 className={cn(
                   "hidden md:inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full px-5 py-2.5 transition-all duration-300",
                   isDarkHeader
-                    ? "bg-white text-black hover:bg-neutral-200"
+                    ? "bg-white text-royal hover:bg-neutral-200"
                     : "bg-royal text-white hover:bg-blue-800"
                 )}
               >

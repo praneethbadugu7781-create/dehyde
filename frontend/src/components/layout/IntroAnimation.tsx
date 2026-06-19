@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { apiClient } from "@/lib/api";
 
 export function IntroAnimation() {
   const [isMounted, setIsMounted] = useState(false);
   const [phase, setPhase] = useState<"idle" | "appear" | "split" | "exit" | "completed">("idle");
   const [targetWidth, setTargetWidth] = useState(0);
+  const [imageUrl, setImageUrl] = useState("/campaign_streetwear.png");
 
   useEffect(() => {
     setIsMounted(true);
@@ -48,6 +50,18 @@ export function IntroAnimation() {
 
     handleResize();
     window.addEventListener("resize", handleResize);
+
+    // Fetch dynamic intro animation image from backend public settings
+    apiClient
+      .get<{ success: boolean; data: { introAnimationImage?: string } }>("/settings/public")
+      .then((res) => {
+        if (res.success && res.data && res.data.introAnimationImage) {
+          setImageUrl(res.data.introAnimationImage);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load dynamic intro animation image", err);
+      });
 
     return () => {
       clearTimeout(timer1);
@@ -106,7 +120,7 @@ export function IntroAnimation() {
             className="h-full px-2 sm:px-3 md:px-4"
           >
             <img
-              src="/campaign_streetwear.png"
+              src={imageUrl}
               alt="DEHYDE Streetwear"
               className="h-full w-auto object-cover rounded-xl sm:rounded-2xl border border-white/20 shadow-2xl"
             />
