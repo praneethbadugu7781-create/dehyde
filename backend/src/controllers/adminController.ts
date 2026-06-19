@@ -204,3 +204,32 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
   res.json({ success: true, message: "Coupon deleted" });
 });
 
+export const exportOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({})
+    .populate("user", "name email")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  let csvContent = "\ufeffOrder Number,Date,Customer Name,Customer Email,Items,Subtotal,Discount,Coin Discount,Shipping,Total,Status,Payment Method,Tracking Number,Shipping Address\n";
+
+  for (const order of orders) {
+    const user: any = order.user;
+    const orderDate = (order as any).createdAt ? new Date((order as any).createdAt).toLocaleDateString("en-IN") : "";
+    const customerName = user ? `"${user.name.replace(/"/g, '""')}"` : "Guest";
+    const customerEmail = user ? user.email : "";
+    
+    const itemsSummary = order.items.map(item => `${item.title} (${item.size}, ${item.color}) x${item.quantity}`).join("; ");
+    const escapedItems = `"${itemsSummary.replace(/"/g, '""')}"`;
+    
+    const addr = order.shippingAddress || {};
+    const addressStr = `${addr.fullName || ""}, ${addr.line1 || ""}, ${addr.line2 || ""}, ${addr.city || ""}, ${addr.state || ""} - ${addr.pincode || ""}`;
+    const escapedAddress = `"${addressStr.replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
+
+    csvContent += `${order.orderNumber},${orderDate},${customerName},${customerEmail},${escapedItems},${order.subtotal},${order.discount},${order.coinDiscount},${order.shipping},${order.total},${order.status},${order.paymentMethod},${order.trackingNumber || ""},${escapedAddress}\n`;
+  }
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename=orders-export-${Date.now()}.csv`);
+  res.status(200).send(csvContent);
+});
+

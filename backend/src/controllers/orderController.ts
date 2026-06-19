@@ -12,6 +12,8 @@ import {
   redeemCoins,
 } from "../services/walletService.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
+import { User } from "../models/User.js";
+import { sendOrderStatusEmail } from "../services/mailService.js";
 
 async function getShippingFee(subtotal: number) {
   const settings = await Settings.findOne({ key: "global" });
@@ -105,6 +107,38 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     razorpayOrder = await createRazorpayOrder(amountPaise, orderNumber);
     order.razorpayOrderId = razorpayOrder.id;
     await order.save();
+  } else {
+    // Free order (100% covered by coupon/coins or standard shipping fee configured as 0)
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock = Math.max(0, product.stock - item.quantity);
+        await product.save();
+      }
+    }
+
+    if (order.coinsRedeemed > 0) {
+      await redeemCoins(userId, order.coinsRedeemed, order._id);
+    }
+
+    if (order.couponCode) {
+      await Coupon.findOneAndUpdate({ code: order.couponCode }, { $inc: { usedCount: 1 } });
+    }
+
+    order.status = "paid";
+    await order.save();
+
+    await creditCoins(
+      userId,
+      order.coinsEarned,
+      order._id,
+      `Earned from order ${order.orderNumber}`
+    );
+
+    const user = await User.findById(userId);
+    if (user) {
+      sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+    }
   }
 
   res.status(201).json({
@@ -160,6 +194,11 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
     order._id,
     `Earned from order ${order.orderNumber}`
   );
+
+  const user = await User.findById(req.user!.userId);
+  if (user) {
+    sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+  }
 
   res.json({ success: true, data: order });
 });

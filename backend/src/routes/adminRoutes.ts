@@ -8,6 +8,7 @@ const router = Router();
 router.use(authenticate, requireAdmin);
 
 router.get("/dashboard", admin.getDashboard);
+router.get("/orders/export", admin.exportOrders);
 router.get("/orders", admin.getAllOrders);
 router.patch("/orders/:id", admin.updateOrderStatus);
 router.get("/customers", admin.getCustomers);

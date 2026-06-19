@@ -6,7 +6,7 @@ import { formatPrice } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Eye, Package, Shield, Truck, CreditCard, ShoppingBag, MapPin, Mail, Phone, User as UserIcon } from "lucide-react";
+import { X, Eye, Package, Shield, Truck, CreditCard, ShoppingBag, MapPin, Mail, Phone, User as UserIcon, Download, ChevronDown, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface OrderItem {
@@ -53,6 +53,145 @@ export default function AdminOrdersPage() {
   const [trackingInput, setTrackingInput] = useState("");
   const [statusInput, setStatusInput] = useState("");
   const [savingChanges, setSavingChanges] = useState(false);
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+
+  const handleExportCSV = async () => {
+    if (!accessToken) return;
+    setExportingCSV(true);
+    setShowExportDropdown(false);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${API_URL}/admin/orders/export`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      });
+      if (!res.ok) throw new Error("Failed to export CSV");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `orders-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export CSV");
+    } finally {
+      setExportingCSV(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    setShowExportDropdown(false);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      alert("Please allow popups to export PDF");
+      return;
+    }
+
+    const orderRows = orders.map(order => `
+      <tr style="border-bottom: 1px solid #f3f4f6;">
+        <td style="padding: 12px 10px; font-weight: bold; font-family: monospace; color: #111827;">${order.orderNumber}</td>
+        <td style="padding: 12px 10px; color: #4b5563;">${new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
+        <td style="padding: 12px 10px; color: #111827;">
+          <div style="font-weight: 600;">${order.shippingAddress?.fullName || order.user?.name || "Guest"}</div>
+          <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">${order.user?.email || "N/A"}</div>
+        </td>
+        <td style="padding: 12px 10px; color: #374151;">
+          <div style="font-size: 11px; max-width: 250px; line-height: 1.4;">
+            ${order.items.map(item => `${item.title} (${item.size}) x${item.quantity}`).join(", ")}
+          </div>
+        </td>
+        <td style="padding: 12px 10px; text-transform: uppercase; font-size: 9px; font-weight: 700; letter-spacing: 0.5px;">
+          <span style="padding: 4px 8px; border-radius: 4px; background-color: #f3f4f6; color: #374151;">
+            ${order.status}
+          </span>
+        </td>
+        <td style="padding: 12px 10px; font-weight: bold; text-align: right; color: #111827;">₹${order.total.toLocaleString('en-IN')}</td>
+      </tr>
+    `).join("");
+
+    const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+
+    const htmlContent = `
+      <html>
+        <head>
+          <title>DEHYDE - Orders Report</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #111827; padding: 40px; }
+            .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #111827; padding-bottom: 20px; margin-bottom: 30px; }
+            .logo { font-family: Georgia, serif; font-size: 28px; letter-spacing: 4px; text-transform: uppercase; margin: 0; }
+            .title { font-size: 14px; text-transform: uppercase; tracking-widest; color: #666; margin: 5px 0 0 0; }
+            .meta { text-align: right; font-size: 12px; color: #4b5563; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+            th { background-color: #f9fafb; padding: 12px 10px; font-weight: bold; text-transform: uppercase; font-size: 10px; border-bottom: 1px solid #111827; }
+            .summary { margin-top: 40px; display: flex; justify-content: flex-end; }
+            .summary-table { width: 250px; font-size: 14px; }
+            .summary-table td { padding: 6px 0; }
+            @media print {
+              body { padding: 0; }
+              @page { size: A4 landscape; margin: 1.5cm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 class="logo">D E H Y D E</h1>
+              <p class="title">Orders Export Report</p>
+            </div>
+            <div class="meta">
+              <p>Generated: ${new Date().toLocaleString('en-IN')}</p>
+              <p>Total Orders: ${orders.length}</p>
+            </div>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: left;">Order ID</th>
+                <th style="text-align: left;">Date</th>
+                <th style="text-align: left;">Customer</th>
+                <th style="text-align: left; width: 30%;">Items</th>
+                <th style="text-align: left;">Status</th>
+                <th style="text-align: right;">Total Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orderRows}
+            </tbody>
+          </table>
+          
+          <div class="summary">
+            <table class="summary-table">
+              <tr>
+                <td style="text-align: left; color: #4b5563;">Total Orders:</td>
+                <td style="text-align: right; font-weight: bold;">${orders.length}</td>
+              </tr>
+              <tr style="border-top: 1px solid #111827; font-size: 16px; font-weight: bold;">
+                <td style="padding-top: 10px; text-align: left;">Total Revenue:</td>
+                <td style="padding-top: 10px; text-align: right;">₹${totalRevenue.toLocaleString('en-IN')}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  };
 
   const getPaymentStatus = (orderStatus: string) => {
     switch (orderStatus) {
@@ -151,9 +290,49 @@ export default function AdminOrdersPage() {
           <h1 className="font-serif text-3xl text-charcoal">Orders Management</h1>
           <p className="text-xs text-charcoal/50 mt-1">Track and manage customer transactions.</p>
         </div>
-        <Button onClick={fetchOrders} variant="outline" className="border-gray-200 text-charcoal hover:bg-gray-50 h-10 px-4 text-[10px] uppercase tracking-widest bg-white">
-          Refresh List
-        </Button>
+        <div className="flex items-center gap-3 relative">
+          <div className="relative">
+            <Button 
+              onClick={() => setShowExportDropdown(!showExportDropdown)} 
+              variant="outline" 
+              className="border-gray-200 text-charcoal hover:bg-gray-50 h-10 px-4 text-[10px] uppercase tracking-widest bg-white flex items-center gap-2"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Export
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showExportDropdown ? 'rotate-180' : ''}`} />
+            </Button>
+            
+            {showExportDropdown && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowExportDropdown(false)}
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-150 rounded-xl shadow-lg py-1.5 z-20 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <button
+                    onClick={handleExportCSV}
+                    disabled={exportingCSV}
+                    className="w-full text-left px-4 py-2 text-xs text-charcoal hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50"
+                  >
+                    <Download className="w-3.5 h-3.5 text-charcoal/50" />
+                    <span>{exportingCSV ? "Exporting CSV..." : "Export as CSV (.csv)"}</span>
+                  </button>
+                  <button
+                    onClick={handleExportPDF}
+                    className="w-full text-left px-4 py-2 text-xs text-charcoal hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-charcoal/50" />
+                    <span>Export as PDF (.pdf)</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          
+          <Button onClick={fetchOrders} variant="outline" className="border-gray-200 text-charcoal hover:bg-gray-50 h-10 px-4 text-[10px] uppercase tracking-widest bg-white">
+            Refresh List
+          </Button>
+        </div>
       </div>
 
       {/* Orders Table */}
