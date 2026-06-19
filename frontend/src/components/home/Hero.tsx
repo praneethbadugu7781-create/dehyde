@@ -109,6 +109,16 @@ export function Hero() {
     return () => window.removeEventListener("scroll", handleWindowScroll);
   }, []);
 
+  // Autoplay slides every 5 seconds
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setTimeout(() => {
+      const nextIdx = (activeBannerIdx + 1) % banners.length;
+      scrollToSlide(nextIdx);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [activeBannerIdx, banners.length]);
+
   const scrollToSlide = (idx: number) => {
     const container = document.getElementById("hero-slides-container");
     if (container) {
