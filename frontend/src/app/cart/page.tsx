@@ -27,6 +27,25 @@ export default function CartPage() {
   const [showAvailableOffers, setShowAvailableOffers] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
+  const [shippingRules, setShippingRules] = useState({
+    freeShippingThreshold: 2999,
+    defaultShippingFee: 99
+  });
+
+  useEffect(() => {
+    apiClient
+      .get<{ success: boolean; data: { freeShippingThreshold: number; defaultShippingFee: number } }>("/settings/public")
+      .then((res) => {
+        if (res.success && res.data) {
+          setShippingRules({
+            freeShippingThreshold: res.data.freeShippingThreshold,
+            defaultShippingFee: res.data.defaultShippingFee
+          });
+        }
+      })
+      .catch((err) => console.error("Failed to fetch public shipping rules in cart", err));
+  }, []);
+
   useEffect(() => {
     // Fetch active coupons
     apiClient
@@ -105,7 +124,7 @@ export default function CartPage() {
   }
 
   const totalAfterDiscount = Math.max(0, total - couponDiscount - coinDiscount);
-  const shipping = totalAfterDiscount >= 2999 ? 0 : 99;
+  const shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
   const grandTotal = Math.max(0, totalAfterDiscount + shipping);
 
   if (items.length === 0) {

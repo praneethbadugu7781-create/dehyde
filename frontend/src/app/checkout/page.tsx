@@ -133,6 +133,26 @@ export default function CheckoutPage() {
     });
     setIsAnimating(false);
   };
+  const [shippingRules, setShippingRules] = useState({
+    freeShippingThreshold: 2999,
+    defaultShippingFee: 99,
+    expressShippingFee: 149
+  });
+
+  useEffect(() => {
+    apiClient
+      .get<{ success: boolean; data: { freeShippingThreshold: number; defaultShippingFee: number; expressShippingFee: number } }>("/settings/public")
+      .then((res) => {
+        if (res.success && res.data) {
+          setShippingRules({
+            freeShippingThreshold: res.data.freeShippingThreshold,
+            defaultShippingFee: res.data.defaultShippingFee,
+            expressShippingFee: res.data.expressShippingFee
+          });
+        }
+      })
+      .catch((err) => console.error("Failed to fetch public shipping rules in checkout", err));
+  }, []);
   const [shippingDetails, setShippingDetails] = useState<any>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
   const [address, setAddress] = useState({
@@ -235,13 +255,13 @@ export default function CheckoutPage() {
 
   const totalAfterDiscount = Math.max(0, total - couponDiscount - coinsToRedeem);
   
-  let shipping = totalAfterDiscount >= 2999 ? 0 : 99;
+  let shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
   
   if (shippingDetails) {
     if (shippingMethod === "express") {
-      shipping = shippingDetails.express.price;
+      shipping = shippingRules.expressShippingFee;
     } else {
-      shipping = shippingDetails.standard.price;
+      shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
     }
   }
 
@@ -260,7 +280,7 @@ export default function CheckoutPage() {
     try {
       const res = await apiClient.post<any>("/settings/estimate", {
         pincode: pin,
-        subtotal: total - coinsToRedeem,
+        subtotal: totalAfterDiscount,
       });
       if (res.success && res.data) {
         setShippingDetails(res.data);
@@ -543,7 +563,7 @@ export default function CheckoutPage() {
                     <p className="text-[10px] text-muted/80 mt-1">via {shippingDetails.standard.courier}</p>
                   </div>
                   <p className="font-semibold text-xs text-charcoal">
-                    {shippingDetails.standard.price === 0 ? "FREE" : `₹${shippingDetails.standard.price}`}
+                    {(totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee) === 0 ? "FREE" : `₹${totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee}`}
                   </p>
                 </div>
                 
