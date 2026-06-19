@@ -14,6 +14,7 @@ import {
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { User } from "../models/User.js";
 import { sendOrderStatusEmail } from "../services/mailService.js";
+import { generateInvoicePDF } from "../services/invoiceService.js";
 
 async function getShippingFee(subtotal: number) {
   const settings = await Settings.findOne({ key: "global" });
@@ -137,7 +138,14 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 
     const user = await User.findById(userId);
     if (user) {
-      sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+      generateInvoicePDF(order, user.email, user.name || "Customer")
+        .then(pdfBuffer => {
+          sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(console.error);
+        })
+        .catch(err => {
+          console.error("Failed to generate free order PDF invoice:", err);
+          sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+        });
     }
   }
 
@@ -197,7 +205,14 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
 
   const user = await User.findById(req.user!.userId);
   if (user) {
-    sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+    generateInvoicePDF(order, user.email, user.name || "Customer")
+      .then(pdfBuffer => {
+        sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(console.error);
+      })
+      .catch(err => {
+        console.error("Failed to generate order PDF invoice:", err);
+        sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+      });
   }
 
   res.json({ success: true, data: order });

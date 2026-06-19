@@ -1,6 +1,6 @@
 import { IOrder } from "../models/Order.js";
 
-export async function sendOrderStatusEmail(email: string, customerName: string, order: IOrder) {
+export async function sendOrderStatusEmail(email: string, customerName: string, order: IOrder, pdfBuffer?: Buffer) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn("Resend API Key is missing. Skipping status email.");
@@ -133,6 +133,13 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
 
   const sender: string = "DEHYDE <orders@dehyde.in>";
 
+  const attachments = pdfBuffer ? [
+    {
+      content: pdfBuffer.toString("base64"),
+      filename: `invoice-${order.orderNumber}.pdf`,
+    }
+  ] : undefined;
+
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -145,6 +152,7 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
         to: email.toLowerCase(),
         subject: subject,
         html: html,
+        attachments,
       }),
     });
 
@@ -164,6 +172,7 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
             to: email.toLowerCase(),
             subject: subject,
             html: html,
+            attachments,
           }),
         });
       }
