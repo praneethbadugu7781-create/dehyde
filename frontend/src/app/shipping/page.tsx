@@ -28,7 +28,7 @@ export default function ShippingPage() {
         We aim to keep shipping transparent and straightforward:
       </p>
       <ul className="list-disc pl-5 space-y-2">
-        <li><strong>Complimentary Shipping:</strong> We offer free standard delivery on all orders above <strong>₹2,999</strong>.</li>
+        <li><strong>Free Shipping:</strong> We offer free standard delivery on all orders above <strong>₹2,999</strong>.</li>
         <li><strong>Standard Shipping Fee:</strong> For orders below ₹2,999, a flat shipping and handling fee of <strong>₹99</strong> is charged at checkout.</li>
       </ul>
 

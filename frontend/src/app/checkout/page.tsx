@@ -880,7 +880,7 @@ export default function CheckoutPage() {
 
               <div className="flex justify-between">
                 <span className="text-muted">Shipping</span>
-                <span>{shipping === 0 ? "Complimentary" : formatPrice(shipping)}</span>
+                <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
               </div>
               
               <div className="flex justify-between border-t border-charcoal/10 pt-4 text-base font-bold">

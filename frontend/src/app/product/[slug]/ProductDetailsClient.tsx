@@ -447,7 +447,7 @@ export default function ProductDetailsClient({ product }: Props) {
                   <div className="p-3.5 bg-white border border-charcoal/5 rounded">
                     <p className="font-semibold text-[10px] text-charcoal uppercase tracking-wider">Shipping</p>
                     <p className="text-green-600 font-semibold mt-1">{estimate.standard.dateString}</p>
-                    <p className="text-muted mt-0.5">Rate: {estimate.standard.price === 0 ? "Complimentary" : `₹${estimate.standard.price}`}</p>
+                    <p className="text-muted mt-0.5">Rate: {estimate.standard.price === 0 ? "FREE" : `₹${estimate.standard.price}`}</p>
                     <p className="text-[10px] text-muted/80 mt-1.5 border-t border-gray-100 pt-1.5">Dispatched via {estimate.standard.courier}</p>
                   </div>
                 </div>
