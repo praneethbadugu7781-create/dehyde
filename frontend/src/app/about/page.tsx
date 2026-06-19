@@ -38,7 +38,7 @@ export default function AboutPage() {
               <span className="text-[10px] uppercase tracking-[0.2em] text-royal font-extrabold">
                 OUR MISSION
               </span>
-              <h2 className="font-serif text-3xl md:text-4xl text-charcoal mt-3 font-semibold leading-tight">
+              <h2 className="font-display text-3xl md:text-4xl text-royal mt-3 font-semibold leading-tight">
                 Accessible fashion,<br />without compromise.
               </h2>
             </div>
@@ -51,7 +51,7 @@ export default function AboutPage() {
               <p>
                 We are committed to delivering premium quality clothing without compromising affordability. Every product is carefully selected and crafted to provide the perfect balance of style, comfort, and value.
               </p>
-              <p className="font-medium text-charcoal">
+              <p className="font-medium text-royal">
                 Our goal is simple: to make trendy, high-quality fashion available at prices everyone can afford.
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function AboutPage() {
             <span className="text-[10px] uppercase tracking-[0.2em] text-royal font-bold">
               THE THREE PILLARS
             </span>
-            <h3 className="font-serif text-2xl md:text-3xl text-charcoal font-bold mt-3">
+            <h3 className="font-display text-2xl md:text-3xl text-royal font-bold mt-3">
               How we redefine D2C clothing
             </h3>
           </div>
@@ -88,7 +88,7 @@ export default function AboutPage() {
             <div className="border border-black/5 p-8 md:p-10 rounded-2xl bg-[#fcfcfc] flex flex-col justify-between min-h-[220px]">
               <div>
                 <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">01 / PREDICT</span>
-                <h4 className="font-serif text-lg font-bold text-charcoal mt-4 mb-2">Trend Analysis</h4>
+                <h4 className="font-display text-lg font-bold text-royal mt-4 mb-2">Trend Analysis</h4>
                 <p className="text-xs text-neutral-500 leading-relaxed font-light">
                   We study global streetwear movements to identify upcoming styles early, delivering drops right when they are most desired.
                 </p>
@@ -99,7 +99,7 @@ export default function AboutPage() {
             <div className="border border-black/5 p-8 md:p-10 rounded-2xl bg-[#fcfcfc] flex flex-col justify-between min-h-[220px]">
               <div>
                 <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">02 / CRAFT</span>
-                <h4 className="font-serif text-lg font-bold text-charcoal mt-4 mb-2">Premium Quality</h4>
+                <h4 className="font-display text-lg font-bold text-royal mt-4 mb-2">Premium Quality</h4>
                 <p className="text-xs text-neutral-500 leading-relaxed font-light">
                   Every garment is meticulously selected and constructed to provide an optimal balance of premium fit, long-term durability, and daily comfort.
                 </p>
@@ -110,7 +110,7 @@ export default function AboutPage() {
             <div className="border border-black/5 p-8 md:p-10 rounded-2xl bg-[#fcfcfc] flex flex-col justify-between min-h-[220px]">
               <div>
                 <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-bold">03 / VALUE</span>
-                <h4 className="font-serif text-lg font-bold text-charcoal mt-4 mb-2">True Affordability</h4>
+                <h4 className="font-display text-lg font-bold text-royal mt-4 mb-2">True Affordability</h4>
                 <p className="text-xs text-neutral-500 leading-relaxed font-light">
                   By cutting out middlemen and optimizing direct production, we bring high-end fashion design directly to you at honest, affordable prices.
                 </p>
