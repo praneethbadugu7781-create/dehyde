@@ -23,6 +23,26 @@ async function getShippingFee(subtotal: number) {
   return subtotal >= threshold ? 0 : fee;
 }
 
+function deductProductStock(product: any, color: string, size: string, quantity: number) {
+  const variant = product.variants?.find((v: any) => v.color === color);
+  if (variant) {
+    if (variant.sizes && variant.sizes.length > 0) {
+      const sizeObj = variant.sizes.find((s: any) => s.size === size);
+      if (sizeObj) {
+        sizeObj.stock = Math.max(0, sizeObj.stock - quantity);
+      }
+      variant.stock = variant.sizes.reduce((sum: number, s: any) => sum + s.stock, 0);
+    } else {
+      variant.stock = Math.max(0, variant.stock - quantity);
+    }
+  }
+  if (product.variants && product.variants.length > 0) {
+    product.stock = product.variants.reduce((sum: number, v: any) => sum + v.stock, 0);
+  } else {
+    product.stock = Math.max(0, product.stock - quantity);
+  }
+}
+
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { items, shippingAddress, couponCode, coinsToRedeem = 0, shippingMethod = "standard" } = req.body;
   const userId = req.user!.userId;
@@ -37,9 +57,33 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       res.status(400).json({ success: false, message: `Product unavailable: ${item.productId}` });
       return;
     }
-    if (product.stock < item.quantity) {
-      res.status(400).json({ success: false, message: `Insufficient stock for ${product.title}` });
-      return;
+    
+    // Size-wise stock check
+    const variant = product.variants?.find((v: any) => v.color === item.color);
+    if (variant) {
+      if (variant.sizes && variant.sizes.length > 0) {
+        const sizeObj = variant.sizes.find((s: any) => s.size === item.size);
+        if (!sizeObj || sizeObj.stock < item.quantity) {
+          res.status(400).json({
+            success: false,
+            message: `Insufficient stock for ${product.title} (Color: ${item.color}, Size: ${item.size})`,
+          });
+          return;
+        }
+      } else {
+        if (variant.stock < item.quantity) {
+          res.status(400).json({
+            success: false,
+            message: `Insufficient stock for ${product.title} (Color: ${item.color})`,
+          });
+          return;
+        }
+      }
+    } else {
+      if (product.stock < item.quantity) {
+        res.status(400).json({ success: false, message: `Insufficient stock for ${product.title}` });
+        return;
+      }
     }
     const lineTotal = product.price * item.quantity;
     subtotal += lineTotal;
@@ -113,7 +157,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     for (const item of order.items) {
       const product = await Product.findById(item.product);
       if (product) {
-        product.stock = Math.max(0, product.stock - item.quantity);
+        deductProductStock(product, item.color, item.size, item.quantity);
         await product.save();
       }
     }
@@ -178,7 +222,7 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
   for (const item of order.items) {
     const product = await Product.findById(item.product);
     if (product) {
-      product.stock = Math.max(0, product.stock - item.quantity);
+      deductProductStock(product, item.color, item.size, item.quantity);
       await product.save();
     }
   }

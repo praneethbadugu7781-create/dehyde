@@ -105,11 +105,13 @@ export const createProduct = asyncHandler(async (req: AuthRequest, res: Response
 });
 
 export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const product = await Product.findById(req.params.id);
   if (!product) {
     res.status(404).json({ success: false, message: "Product not found" });
     return;
   }
+  Object.assign(product, req.body);
+  await product.save();
   res.json({ success: true, data: product });
 });
 

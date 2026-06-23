@@ -218,6 +218,11 @@ export default function ProductDetailsClient({ product }: Props) {
     }
   };
 
+  const selectedSizeObj = activeVariant?.sizes?.find((sz) => sz.size === size);
+  const isOutOfStock = selectedSizeObj 
+    ? (selectedSizeObj.stock <= 0) 
+    : (activeVariant ? activeVariant.stock <= 0 : product.stock <= 0);
+
   return (
     <div className="luxury-container">
       <motion.div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
@@ -372,29 +377,49 @@ export default function ProductDetailsClient({ product }: Props) {
           <div className="mt-8">
             <p className="text-[10px] uppercase tracking-editorial text-muted">Size</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {product.sizes.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSize(s)}
-                  className={`min-w-[48px] border px-4 py-3 text-xs uppercase ${
-                    size === s
-                      ? "border-charcoal bg-charcoal text-offwhite"
-                      : "border-charcoal/20 hover:border-charcoal"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+              {product.sizes.map((s) => {
+                const sizeStock = activeVariant?.sizes?.find((sz) => sz.size === s)?.stock ?? 1;
+                const outOfStock = sizeStock <= 0;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSize(s)}
+                    className={`min-w-[48px] border px-4 py-3 text-xs uppercase relative transition-all ${
+                      size === s
+                        ? "border-charcoal bg-charcoal text-offwhite"
+                        : outOfStock
+                        ? "border-charcoal/15 text-charcoal/30 cursor-not-allowed bg-stone/5"
+                        : "border-charcoal/20 hover:border-charcoal"
+                    }`}
+                  >
+                    {s}
+                    {outOfStock && (
+                      <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="w-[120%] h-[1px] bg-charcoal/20 rotate-45 transform origin-center" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Button className="flex-1" onClick={(e) => handleAdd(false, e)}>
-              Add to cart
+            <Button 
+              className="flex-1 font-bold text-xs uppercase tracking-widest h-12" 
+              onClick={(e) => handleAdd(false, e)}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? "Out of Stock" : "Add to cart"}
             </Button>
-            <Button variant="outline" className="flex-1" onClick={(e) => handleAdd(true, e)}>
-              Buy now
+            <Button 
+              variant="outline" 
+              className="flex-1 font-bold text-xs uppercase tracking-widest h-12 border-charcoal text-charcoal hover:bg-stone/5" 
+              onClick={(e) => handleAdd(true, e)}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? "Out of Stock" : "Buy now"}
             </Button>
           </div>
 

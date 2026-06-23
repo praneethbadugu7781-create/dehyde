@@ -15,7 +15,7 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   sizes: string[];
-  variants: { color: string; colorHex?: string; images: string[]; stock: number }[];
+  variants: { color: string; colorHex?: string; images: string[]; sizes: { size: string; stock: number }[]; stock: number }[];
   images: string[];
   stock: number;
   rewardCoins: number;

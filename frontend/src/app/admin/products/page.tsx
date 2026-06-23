@@ -99,6 +99,18 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState(emptyForm);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(["S", "M", "L", "XL"]);
+  const [primarySizesStock, setPrimarySizesStock] = useState<Record<string, string>>({
+    S: "50",
+    M: "50",
+    L: "50",
+    XL: "50",
+  });
+  const [newVariantSizesStock, setNewVariantSizesStock] = useState<Record<string, string>>({
+    S: "50",
+    M: "50",
+    L: "50",
+    XL: "50",
+  });
   const [imageUrls, setImageUrls] = useState("");
   const [showRawUrls, setShowRawUrls] = useState(false);
   const [showVariantRawUrls, setShowVariantRawUrls] = useState(false);
@@ -110,7 +122,6 @@ export default function AdminProductsPage() {
   const [newVariant, setNewVariant] = useState({
     color: "Off-Black",
     colorHex: "#1a1a1a",
-    stock: "50",
     imageUrls: "",
   });
 
@@ -143,9 +154,24 @@ export default function AdminProductsPage() {
   };
 
   const toggleSize = (size: string) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
-    );
+    setSelectedSizes((prev) => {
+      const next = prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size];
+      setPrimarySizesStock((current) => {
+        const updated = { ...current };
+        if (next.includes(size) && !updated[size]) {
+          updated[size] = "50";
+        }
+        return updated;
+      });
+      setNewVariantSizesStock((current) => {
+        const updated = { ...current };
+        if (next.includes(size) && !updated[size]) {
+          updated[size] = "50";
+        }
+        return updated;
+      });
+      return next;
+    });
   };
 
   const startEdit = (product: Product) => {
@@ -168,6 +194,13 @@ export default function AdminProductsPage() {
     setSelectedSizes(product.sizes || []);
     setImageUrls((firstVariant.images || []).join("\n"));
     
+    const primaryStocks: Record<string, string> = {};
+    (product.sizes || []).forEach((sz) => {
+      const sizeObj = firstVariant.sizes?.find((s: any) => s.size === sz);
+      primaryStocks[sz] = sizeObj ? String(sizeObj.stock) : "50";
+    });
+    setPrimarySizesStock(primaryStocks);
+    
     // Load other variants into local state
     const restVariants = product.variants ? product.variants.slice(1) : [];
     setVariantsList(restVariants);
@@ -178,6 +211,19 @@ export default function AdminProductsPage() {
   const cancelEdit = () => {
     setEditingProduct(null);
     setForm({ ...emptyForm, category: categories[0]?._id || "" });
+    setSelectedSizes(["S", "M", "L", "XL"]);
+    setPrimarySizesStock({
+      S: "50",
+      M: "50",
+      L: "50",
+      XL: "50",
+    });
+    setNewVariantSizesStock({
+      S: "50",
+      M: "50",
+      L: "50",
+      XL: "50",
+    });
     setSelectedSizes(["S", "M", "L", "XL"]);
     setImageUrls("");
     setVariantsList([]);
@@ -256,11 +302,17 @@ export default function AdminProductsPage() {
       .split(/\r?\n|,/)
       .map((url) => url.trim())
       .filter(Boolean);
-    const stock = Number(newVariant.stock || 0);
+
+    const sizes = selectedSizes.map((sz) => ({
+      size: sz,
+      stock: Number(newVariantSizesStock[sz] || 0),
+    }));
+    const stock = sizes.reduce((sum, s) => sum + s.stock, 0);
 
     const added = {
       color: newVariant.color,
       colorHex: newVariant.colorHex,
+      sizes,
       stock,
       images,
     };
@@ -269,9 +321,11 @@ export default function AdminProductsPage() {
     setNewVariant({
       color: "Off-Black",
       colorHex: "#1a1a1a",
-      stock: "50",
       imageUrls: "",
     });
+    setNewVariantSizesStock(
+      selectedSizes.reduce((acc, sz) => ({ ...acc, [sz]: "50" }), {})
+    );
   };
 
   const removeLocalVariant = (index: number) => {
@@ -292,13 +346,19 @@ export default function AdminProductsPage() {
       .split(/\r?\n|,/)
       .map((url) => url.trim())
       .filter(Boolean);
-    const stock = Number(form.stock || 0);
+
+    const primarySizes = selectedSizes.map((sz) => ({
+      size: sz,
+      stock: Number(primarySizesStock[sz] || 0),
+    }));
+    const primaryStock = primarySizes.reduce((sum, s) => sum + s.stock, 0);
 
     const primaryVariant = {
       color: form.color,
       colorHex: form.colorHex,
       images,
-      stock,
+      sizes: primarySizes,
+      stock: primaryStock,
     };
 
     let finalVariants = hasAdditionalColors 
@@ -316,10 +376,16 @@ export default function AdminProductsPage() {
         (v) => v.color.toLowerCase().trim() === newVariant.color.toLowerCase().trim()
       );
       if (!isAlreadyAdded) {
+        const sizes = selectedSizes.map((sz) => ({
+          size: sz,
+          stock: Number(newVariantSizesStock[sz] || 0),
+        }));
+        const stock = sizes.reduce((sum, s) => sum + s.stock, 0);
         finalVariants.push({
           color: newVariant.color.trim(),
           colorHex: newVariant.colorHex,
-          stock: Number(newVariant.stock || 0),
+          sizes,
+          stock,
           images: pendingImages,
         });
       }
@@ -355,6 +421,18 @@ export default function AdminProductsPage() {
       }
       setForm({ ...emptyForm, category: categories[0]?._id || "" });
       setSelectedSizes(["S", "M", "L", "XL"]);
+      setPrimarySizesStock({
+        S: "50",
+        M: "50",
+        L: "50",
+        XL: "50",
+      });
+      setNewVariantSizesStock({
+        S: "50",
+        M: "50",
+        L: "50",
+        XL: "50",
+      });
       setImageUrls("");
       setShowRawUrls(false);
       setShowVariantRawUrls(false);
@@ -363,7 +441,6 @@ export default function AdminProductsPage() {
       setNewVariant({
         color: "Off-Black",
         colorHex: "#1a1a1a",
-        stock: "50",
         imageUrls: "",
       });
       refresh();
@@ -635,17 +712,27 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Stock level for this original color */}
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Stock Level</label>
-                <input
-                  type="number"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
-                  placeholder="50"
-                  value={form.stock}
-                  onChange={(e) => update("stock", e.target.value)}
-                  required
-                />
+              {/* Size-wise Stock level for this original color */}
+              <div className="space-y-3 col-span-2">
+                <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Size-wise Stock Levels</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {selectedSizes.map((size) => (
+                    <div key={size} className="space-y-1">
+                      <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-bold block">{size} Stock</label>
+                      <input
+                        type="number"
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 h-10 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs"
+                        placeholder="50"
+                        value={primarySizesStock[size] || ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPrimarySizesStock((prev) => ({ ...prev, [size]: val }));
+                        }}
+                        required
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Original Images Upload */}
@@ -746,7 +833,7 @@ export default function AdminProductsPage() {
                                 <div className="min-w-0 text-xs">
                                   <p className="font-semibold text-charcoal">{v.color}</p>
                                   <p className="text-[10px] text-charcoal/40 font-mono mt-0.5">
-                                    Stock: {v.stock} · {v.images?.length || 0} images
+                                    Sizes: {v.sizes?.map((s: any) => `${s.size}:${s.stock}`).join(", ") || `Stock: ${v.stock}`} · {v.images?.length || 0} images
                                   </p>
                                 </div>
                               </div>
@@ -859,16 +946,27 @@ export default function AdminProductsPage() {
                           </div>
                         </div>
 
-                        {/* Variant Stock level */}
-                        <div className="space-y-1">
-                          <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium">Variant Stock Level</label>
-                          <input
-                            type="number"
-                            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
-                            placeholder="50"
-                            value={newVariant.stock}
-                            onChange={(e) => setNewVariant((curr) => ({ ...curr, stock: e.target.value }))}
-                          />
+                        {/* Variant Size-wise Stock levels */}
+                        <div className="space-y-3 col-span-2">
+                          <label className="text-[10px] uppercase tracking-wider text-charcoal/50 font-medium block">Variant Size-wise Stock Levels</label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {selectedSizes.map((size) => (
+                              <div key={size} className="space-y-1">
+                                <label className="text-[9px] uppercase tracking-wider text-charcoal/40 font-bold block">{size} Stock</label>
+                                <input
+                                  type="number"
+                                  className="w-full border border-gray-200 rounded-xl px-3 py-2 h-10 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-xs"
+                                  placeholder="50"
+                                  value={newVariantSizesStock[size] || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setNewVariantSizesStock((prev) => ({ ...prev, [size]: val }));
+                                  }}
+                                  required
+                                />
+                              </div>
+                            ))}
+                          </div>
                         </div>
 
                         {/* Variant Images Upload area */}

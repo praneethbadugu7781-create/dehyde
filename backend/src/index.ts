@@ -72,6 +72,38 @@ async function connectWithRetry(attempt = 1): Promise<void> {
     } catch (err) {
       console.error("Failed to clean up legacy collection banners:", err);
     }
+    try {
+      const { Product } = await import("./models/Product.js");
+      const products = await Product.find();
+      let migratedCount = 0;
+      for (const product of products) {
+        let modified = false;
+        if (product.variants && product.variants.length > 0) {
+          product.variants.forEach((variant) => {
+            if (!variant.sizes || variant.sizes.length === 0) {
+              const sizesToUse = product.sizes && product.sizes.length > 0 ? product.sizes : ["M"];
+              const sizeCount = sizesToUse.length;
+              const baseStock = Math.floor((variant.stock || 0) / sizeCount);
+              const remainder = (variant.stock || 0) % sizeCount;
+              variant.sizes = sizesToUse.map((sz, idx) => ({
+                size: sz,
+                stock: baseStock + (idx === 0 ? remainder : 0),
+              }));
+              modified = true;
+            }
+          });
+        }
+        if (modified) {
+          await product.save();
+          migratedCount++;
+        }
+      }
+      if (migratedCount > 0) {
+        console.log(`[DB Migration] Migrated ${migratedCount} products to size-wise variant stock.`);
+      }
+    } catch (err) {
+      console.error("Failed to migrate products size-wise stock:", err);
+    }
   } catch (err) {
     console.error(`MongoDB connection attempt ${attempt} failed:`, err);
     if (attempt < 10) {
