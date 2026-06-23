@@ -42,6 +42,7 @@ export interface IOrder extends Document {
   razorpayPaymentId?: string;
   razorpaySignature?: string;
   trackingNumber?: string;
+  courierName?: string;
   notes?: string;
 }
 
@@ -81,6 +82,7 @@ const orderSchema = new Schema<IOrder>(
     razorpayPaymentId: String,
     razorpaySignature: String,
     trackingNumber: String,
+    courierName: String,
     notes: String,
   },
   { timestamps: true }

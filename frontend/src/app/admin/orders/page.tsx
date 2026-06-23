@@ -31,6 +31,7 @@ interface Order {
   status: string;
   paymentMethod: string;
   trackingNumber?: string;
+  courierName?: string;
   items: OrderItem[];
   createdAt: string;
   shippingAddress: {
@@ -51,6 +52,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
+  const [courierNameInput, setCourierNameInput] = useState("");
   const [statusInput, setStatusInput] = useState("");
   const [savingChanges, setSavingChanges] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
@@ -220,10 +222,10 @@ export default function AdminOrdersPage() {
 
   useEffect(fetchOrders, [accessToken]);
 
-  const updateStatus = async (id: string, newStatus: string, trackingNumber?: string) => {
+  const updateStatus = async (id: string, newStatus: string, trackingNumber?: string, courierName?: string) => {
     if (!accessToken) return;
     try {
-      await apiClient.patch(`/admin/orders/${id}`, { status: newStatus, trackingNumber }, accessToken);
+      await apiClient.patch(`/admin/orders/${id}`, { status: newStatus, trackingNumber, courierName }, accessToken);
       fetchOrders();
     } catch (error) {
       console.error(error);
@@ -233,18 +235,23 @@ export default function AdminOrdersPage() {
 
   const handleStatusChangeInList = async (id: string, newStatus: string) => {
     let trackingNumber = undefined;
+    let courierName = undefined;
     if (newStatus === "shipped") {
+      const courier = prompt("Enter courier name (e.g. Delhivery, BlueDart, DTDC):");
+      if (courier === null) return; // Cancelled
       const num = prompt("Enter shipping tracking ID (triggers customer email notification):");
       if (num === null) return; // Cancelled
       trackingNumber = num;
+      courierName = courier;
     }
-    await updateStatus(id, newStatus, trackingNumber);
+    await updateStatus(id, newStatus, trackingNumber, courierName);
   };
 
   const handleOpenDetails = (order: Order) => {
     setSelectedOrder(order);
     setStatusInput(order.status);
     setTrackingInput(order.trackingNumber || "");
+    setCourierNameInput(order.courierName || "");
   };
 
   const handleSaveModalChanges = async () => {
@@ -253,7 +260,8 @@ export default function AdminOrdersPage() {
     try {
       await apiClient.patch(`/admin/orders/${selectedOrder._id}`, {
         status: statusInput,
-        trackingNumber: trackingInput
+        trackingNumber: trackingInput,
+        courierName: courierNameInput
       }, accessToken);
       fetchOrders();
       setSelectedOrder(null);
@@ -521,6 +529,16 @@ export default function AdminOrdersPage() {
                           <option value="cancelled">Cancelled</option>
                           <option value="refunded">Refunded</option>
                         </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Courier Name</label>
+                        <Input 
+                          placeholder="e.g. Delhivery, BlueDart, DTDC" 
+                          value={courierNameInput}
+                          onChange={(e) => setCourierNameInput(e.target.value)}
+                          className="border-gray-200 text-charcoal placeholder:text-charcoal/40 h-11"
+                        />
                       </div>
 
                       <div className="space-y-1">

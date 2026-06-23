@@ -185,7 +185,9 @@ export default function OrdersPage() {
                               <p className="text-xs text-charcoal/80">
                                 Tracking Number: <strong className="text-charcoal">{order.trackingNumber}</strong>
                               </p>
-                              <p className="text-[10px] text-muted mt-0.5">Shipped via Standard Courier Service</p>
+                              <p className="text-[10px] text-muted mt-0.5">
+                                Shipped via {order.courierName || "Standard Courier Service"}
+                              </p>
                             </div>
                           )}
                         </div>

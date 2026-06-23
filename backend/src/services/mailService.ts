@@ -19,7 +19,9 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
     description = `Great news! Your order has been packed and is ready to be handed over to our shipping partner.`;
   } else if (order.status === "shipped") {
     subject = `Order Shipped - DEHYDE #${order.orderNumber}`;
-    description = `Your order has been shipped!${order.trackingNumber ? ` Tracking Number: <strong>${order.trackingNumber}</strong>` : ""}. It is on its way to your delivery address.`;
+    const courierText = order.courierName ? ` via <strong>${order.courierName}</strong>` : "";
+    const trackingText = order.trackingNumber ? ` (Tracking Number: <strong>${order.trackingNumber}</strong>)` : "";
+    description = `Your order has been shipped${courierText}${trackingText}! It is on its way to your delivery address.`;
   } else if (order.status === "delivered") {
     subject = `Order Delivered - DEHYDE #${order.orderNumber}`;
     description = `Your order has been successfully delivered. Thank you for shopping with DEHYDE!`;
@@ -72,6 +74,12 @@ export async function sendOrderStatusEmail(email: string, customerName: string, 
             <td style="padding: 4px 0; font-weight: bold; color: #1a1a1a;">Payment:</td>
             <td style="padding: 4px 0; text-transform: capitalize;">${order.paymentMethod}</td>
           </tr>
+          ${order.courierName ? `
+          <tr>
+            <td style="padding: 4px 0; font-weight: bold; color: #1a1a1a;">Courier Partner:</td>
+            <td style="padding: 4px 0; font-weight: bold; color: #1a1a1a;">${order.courierName}</td>
+          </tr>
+          ` : ""}
           ${order.trackingNumber ? `
           <tr>
             <td style="padding: 4px 0; font-weight: bold; color: #1a1a1a;">Tracking ID:</td>

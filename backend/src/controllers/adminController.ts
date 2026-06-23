@@ -67,7 +67,7 @@ export const getAllOrders = asyncHandler(async (req, res) => {
 });
 
 export const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status, trackingNumber } = req.body;
+  const { status, trackingNumber, courierName } = req.body;
   const order = await Order.findById(req.params.id).populate("user", "name email");
   if (!order) {
     res.status(404).json({ success: false, message: "Order not found" });
@@ -77,6 +77,9 @@ export const updateOrderStatus = asyncHandler(async (req, res) => {
   order.status = status;
   if (trackingNumber !== undefined) {
     order.trackingNumber = trackingNumber;
+  }
+  if (courierName !== undefined) {
+    order.courierName = courierName;
   }
   await order.save();
 

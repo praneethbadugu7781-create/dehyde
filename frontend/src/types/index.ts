@@ -91,6 +91,7 @@ export interface Order {
   coinsEarned: number;
   status: string;
   trackingNumber?: string;
+  courierName?: string;
   createdAt: string;
 }
 
