@@ -53,10 +53,6 @@ export function generateInvoicePDF(order: IOrder, userEmail: string, userName: s
       doc.font("Helvetica").text(orderDate, 30, colY + 32);
       doc.font("Helvetica-Bold").text("Invoice Date:", 30, colY + 44);
       doc.font("Helvetica").text(invoiceDate, 30, colY + 54);
-      doc.font("Helvetica-Bold").text("PAN:", 30, colY + 66);
-      doc.font("Helvetica").text("AAXCS0655F", 30, colY + 76);
-      doc.font("Helvetica-Bold").text("CIN:", 30, colY + 88);
-      doc.font("Helvetica").text("U52399DL2016PTC299716", 30, colY + 98);
 
       const addr = order.shippingAddress || {};
 
@@ -70,9 +66,10 @@ export function generateInvoicePDF(order: IOrder, userEmail: string, userName: s
         `${addr.city || ""}, ${addr.state || ""} - ${addr.pincode || ""}`,
         `Phone: ${addr.phone || ""}`
       ].filter(l => l.trim() !== "");
+      
       billAddress.forEach(line => {
         doc.text(line, 200, billAddrY, { width: 155 });
-        billAddrY += 12;
+        billAddrY += doc.heightOfString(line, { width: 155 }) + 2;
       });
 
       // Column 3: Ship To
@@ -85,43 +82,35 @@ export function generateInvoicePDF(order: IOrder, userEmail: string, userName: s
         `${addr.city || ""}, ${addr.state || ""} - ${addr.pincode || ""}`,
         `Phone: ${addr.phone || ""}`
       ].filter(l => l.trim() !== "");
+      
       shipAddress.forEach(line => {
         doc.text(line, 370, shipAddrY, { width: 110 });
-        shipAddrY += 12;
+        shipAddrY += doc.heightOfString(line, { width: 110 }) + 2;
       });
 
       // Column 4: Warranty note
       doc.font("Helvetica-Oblique").fontSize(6.5).fillColor("#4b5563")
         .text("*Keep this invoice and manufacturer box for warranty purposes.", 490, colY, { width: 75, align: "right" });
 
-      const maxHeaderY = Math.max(colY + 115, billAddrY, shipAddrY);
+      const maxHeaderY = Math.max(colY + 65, billAddrY, shipAddrY) + 10;
       
       // Horizontal separator line before table
       doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(30, maxHeaderY).lineTo(565, maxHeaderY).stroke();
 
       // Items calculation
-      const totalDiscount = (order.discount || 0) + (order.coinDiscount || 0);
-      let remainingDiscount = totalDiscount;
       let subtotalQty = 0;
-      let subtotalGross = 0;
-      let subtotalDiscount = 0;
-      let subtotalTaxable = 0;
-      let subtotalSgst = 0;
-      let subtotalCgst = 0;
       let subtotalTotal = 0;
 
       // 1. Fetch images and load product details asynchronously in parallel
       const fetchedItems = await Promise.all(
         order.items.map(async (item) => {
           let categoryName = "Menswear";
-          let fsn = item.product ? String(item.product).substring(0, 12).toUpperCase() : "DEHYDE-SKU";
           try {
             const product = await Product.findById(item.product).populate("category");
             if (product) {
               if (product.category && typeof product.category === "object") {
                 categoryName = (product.category as any).name || "Menswear";
               }
-              fsn = product.slug.toUpperCase();
             }
           } catch (err) {
             console.error("Error fetching product details for invoice:", err);
@@ -135,86 +124,26 @@ export function generateInvoicePDF(order: IOrder, userEmail: string, userName: s
           return {
             item,
             category: categoryName,
-            fsn,
             imgBuffer
           };
         })
       );
 
       const itemsData = [];
-      for (let i = 0; i < fetchedItems.length; i++) {
-        const { item, category, fsn, imgBuffer } = fetchedItems[i];
+      for (const { item, category, imgBuffer } of fetchedItems) {
         const lineTotal = item.price * item.quantity;
-        
-        let itemDiscount = 0;
-        if (i === fetchedItems.length - 1) {
-          itemDiscount = remainingDiscount;
-        } else {
-          itemDiscount = order.subtotal > 0 ? Math.round((totalDiscount * lineTotal) / order.subtotal * 100) / 100 : 0;
-          remainingDiscount -= itemDiscount;
-        }
-
-        const grossAmount = lineTotal;
-        const taxableValue = (grossAmount - itemDiscount) / 1.12;
-        const sgst = taxableValue * 0.06;
-        const cgst = taxableValue * 0.06;
-        const itemTotal = grossAmount - itemDiscount;
-
         subtotalQty += item.quantity;
-        subtotalGross += grossAmount;
-        subtotalDiscount += itemDiscount;
-        subtotalTaxable += taxableValue;
-        subtotalSgst += sgst;
-        subtotalCgst += cgst;
-        subtotalTotal += itemTotal;
+        subtotalTotal += lineTotal;
 
         itemsData.push({
           category,
-          fsn,
-          hsn: "6203", // Standard HSN code for apparel
           title: item.title,
           size: item.size,
           color: item.color,
           qty: item.quantity,
-          gross: grossAmount,
-          discount: itemDiscount,
-          taxable: taxableValue,
-          sgst,
-          cgst,
-          total: itemTotal,
+          price: item.price,
+          total: lineTotal,
           imgBuffer,
-        });
-      }
-
-      // Add shipping charges row if shipping > 0
-      if (order.shipping > 0) {
-        const shippingGross = order.shipping;
-        const shippingTaxable = shippingGross / 1.18;
-        const shippingSgst = shippingTaxable * 0.09;
-        const shippingCgst = shippingTaxable * 0.09;
-
-        subtotalQty += 1;
-        subtotalGross += shippingGross;
-        subtotalTaxable += shippingTaxable;
-        subtotalSgst += shippingSgst;
-        subtotalCgst += shippingCgst;
-        subtotalTotal += shippingGross;
-
-        itemsData.push({
-          category: "Services",
-          fsn: "DELIVERY",
-          hsn: "9968",
-          title: "Shipping & Handling Charges",
-          size: "",
-          color: "",
-          qty: 1,
-          gross: shippingGross,
-          discount: 0,
-          taxable: shippingTaxable,
-          sgst: shippingSgst,
-          cgst: shippingCgst,
-          total: shippingGross,
-          imgBuffer: null,
         });
       }
 
@@ -224,109 +153,100 @@ export function generateInvoicePDF(order: IOrder, userEmail: string, userName: s
 
       // Table Headers
       const tableHeaderY = maxHeaderY + 22;
-      doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#111827");
-      doc.text("Product", 30, tableHeaderY, { width: 80 });
-      doc.text("Title", 115, tableHeaderY, { width: 145 });
-      doc.text("Qty", 265, tableHeaderY, { width: 20, align: "center" });
-      doc.text("Gross\nAmount Rs.", 290, tableHeaderY, { width: 50, align: "right" });
-      doc.text("Discounts\n/Coupons Rs.", 345, tableHeaderY, { width: 55, align: "right" });
-      doc.text("Taxable\nValue Rs.", 405, tableHeaderY, { width: 50, align: "right" });
-      doc.text("SGST\n/UTGST Rs.", 460, tableHeaderY, { width: 40, align: "right" });
-      doc.text("CGST\nRs.", 505, tableHeaderY, { width: 25, align: "right" });
-      doc.text("Total\nRs.", 535, tableHeaderY, { width: 30, align: "right" });
+      doc.font("Helvetica-Bold").fontSize(8).fillColor("#111827");
+      doc.text("Product", 30, tableHeaderY, { width: 40 });
+      doc.text("Item Details", 80, tableHeaderY, { width: 270 });
+      doc.text("Price", 360, tableHeaderY, { width: 60, align: "right" });
+      doc.text("Qty", 430, tableHeaderY, { width: 40, align: "center" });
+      doc.text("Total", 480, tableHeaderY, { width: 85, align: "right" });
 
-      doc.strokeColor("#111827").lineWidth(1).moveTo(30, tableHeaderY + 20).lineTo(565, tableHeaderY + 20).stroke();
+      doc.strokeColor("#111827").lineWidth(1).moveTo(30, tableHeaderY + 15).lineTo(565, tableHeaderY + 15).stroke();
 
       // Print Rows
-      let currentY = tableHeaderY + 25;
-      doc.font("Helvetica").fontSize(7);
+      let currentY = tableHeaderY + 22;
+      doc.font("Helvetica").fontSize(7.5);
       
       for (const item of itemsData) {
-        if (currentY > 700) {
+        if (currentY > 680) {
           doc.addPage();
           currentY = 40;
           doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(30, currentY).lineTo(565, currentY).stroke();
           currentY += 15;
         }
 
-        // Draw Product image or placeholder inside the Product column
+        // Draw Product image or placeholder
         if (item.category !== "Services") {
           if (item.imgBuffer) {
             try {
-              doc.image(item.imgBuffer, 30, currentY, { width: 28, height: 36 });
+              doc.image(item.imgBuffer, 30, currentY, { width: 30, height: 40 });
             } catch (imageErr) {
               console.error("Error drawing image in pdfkit:", imageErr);
-              doc.fillColor("#f3f4f6").strokeColor("#e5e7eb").rect(30, currentY, 28, 36).fillAndStroke();
-              doc.fontSize(5).fillColor("#9ca3af").text("No Image", 30, currentY + 15, { width: 28, align: "center" });
+              doc.fillColor("#f3f4f6").strokeColor("#e5e7eb").rect(30, currentY, 30, 40).fillAndStroke();
+              doc.fontSize(5).fillColor("#9ca3af").text("No Image", 30, currentY + 18, { width: 30, align: "center" });
             }
           } else {
-            doc.fillColor("#f3f4f6").strokeColor("#e5e7eb").rect(30, currentY, 28, 36).fillAndStroke();
-            doc.fontSize(5).fillColor("#9ca3af").text("No Image", 30, currentY + 15, { width: 28, align: "center" });
+            doc.fillColor("#f3f4f6").strokeColor("#e5e7eb").rect(30, currentY, 30, 40).fillAndStroke();
+            doc.fontSize(5).fillColor("#9ca3af").text("No Image", 30, currentY + 18, { width: 30, align: "center" });
           }
-
-          // Category + FSN + HSN next to the image at X=63
-          doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#111827").text(item.category, 63, currentY, { width: 47 });
-          doc.font("Helvetica").fontSize(6.5).fillColor("#6b7280")
-            .text(`FSN: ${item.fsn}`, 63, currentY + 10, { width: 47 })
-            .text(`HSN: ${item.hsn}`, 63, currentY + 20, { width: 47 });
-        } else {
-          // For Services like shipping
-          doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#111827").text(item.category, 30, currentY, { width: 80 });
-          doc.font("Helvetica").fontSize(6.5).fillColor("#6b7280")
-            .text(`FSN: ${item.fsn}`, 30, currentY + 10, { width: 80 })
-            .text(`HSN: ${item.hsn}`, 30, currentY + 20, { width: 80 });
         }
 
-        // Column 2: Title + specs + GST rates details
-        doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#111827").text(item.title, 115, currentY, { width: 145 });
+        // Column 2: Title & Details
+        doc.font("Helvetica-Bold").fontSize(8).fillColor("#111827").text(item.title, 80, currentY, { width: 270 });
         let detailsText = "";
         if (item.size || item.color) {
-          detailsText += `Size: ${item.size} | Color: ${item.color} | `;
+          detailsText += `Size: ${item.size} | Color: ${item.color}`;
         }
-        const gstRate = item.category === "Services" ? "9.0 %" : "6.0 %";
-        detailsText += `SGST/UTGST: ${gstRate} | CGST: ${gstRate}`;
-        doc.font("Helvetica").fontSize(6.5).fillColor("#6b7280").text(detailsText, 115, currentY + 18, { width: 145 });
+        if (detailsText) {
+          doc.font("Helvetica").fontSize(7).fillColor("#6b7280").text(detailsText, 80, currentY + 14, { width: 270 });
+        }
 
         // Numeric Columns
-        doc.font("Helvetica").fontSize(7.5).fillColor("#374151");
-        doc.text(String(item.qty), 265, currentY, { width: 20, align: "center" });
-        doc.text(item.gross.toFixed(2), 290, currentY, { width: 50, align: "right" });
-        doc.text(item.discount > 0 ? `-${item.discount.toFixed(2)}` : "0.00", 345, currentY, { width: 55, align: "right" });
-        doc.text(item.taxable.toFixed(2), 405, currentY, { width: 50, align: "right" });
-        doc.text(item.sgst.toFixed(2), 460, currentY, { width: 40, align: "right" });
-        doc.text(item.cgst.toFixed(2), 505, currentY, { width: 25, align: "right" });
-        doc.font("Helvetica-Bold").fillColor("#111827").text(item.total.toFixed(2), 535, currentY, { width: 30, align: "right" });
+        doc.font("Helvetica").fontSize(8).fillColor("#374151");
+        doc.text(`Rs. ${item.price.toFixed(2)}`, 360, currentY, { width: 60, align: "right" });
+        doc.text(String(item.qty), 430, currentY, { width: 40, align: "center" });
+        doc.font("Helvetica-Bold").fillColor("#111827").text(`Rs. ${item.total.toFixed(2)}`, 480, currentY, { width: 85, align: "right" });
 
-        currentY += 42;
+        currentY += 48;
       }
 
       // Total Divider Line
       doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(30, currentY).lineTo(565, currentY).stroke();
-      currentY += 5;
-
-      // Total Row
-      doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#111827");
-      doc.text("Total", 115, currentY, { width: 145 });
-      doc.text(String(subtotalQty), 265, currentY, { width: 20, align: "center" });
-      doc.text(subtotalGross.toFixed(2), 290, currentY, { width: 50, align: "right" });
-      doc.text(subtotalDiscount > 0 ? `-${subtotalDiscount.toFixed(2)}` : "0.00", 345, currentY, { width: 55, align: "right" });
-      doc.text(subtotalTaxable.toFixed(2), 405, currentY, { width: 50, align: "right" });
-      doc.text(subtotalSgst.toFixed(2), 460, currentY, { width: 40, align: "right" });
-      doc.text(subtotalCgst.toFixed(2), 505, currentY, { width: 25, align: "right" });
-      doc.text(subtotalTotal.toFixed(2), 535, currentY, { width: 30, align: "right" });
-
-      currentY += 12;
-      doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(30, currentY).lineTo(565, currentY).stroke();
-
-      // Grand Total Block
       currentY += 15;
-      if (currentY > 750) {
+
+      // Summary Block
+      if (currentY > 620) {
         doc.addPage();
         currentY = 40;
       }
-      doc.font("Helvetica-Bold").fontSize(12).fillColor("#111827");
-      doc.text("Grand Total", 300, currentY, { width: 120, align: "right" });
-      doc.text(`Rs. ${order.total.toFixed(2)}`, 440, currentY, { width: 125, align: "right" });
+      
+      const summaryX = 350;
+      doc.font("Helvetica").fontSize(8.5).fillColor("#4b5563");
+      
+      doc.text("Subtotal:", summaryX, currentY);
+      doc.font("Helvetica-Bold").fillColor("#111827").text(`Rs. ${order.subtotal.toFixed(2)}`, 495, currentY, { align: "right" });
+      currentY += 16;
+
+      if (order.discount > 0) {
+        doc.font("Helvetica").fillColor("#e11d48").text("Promo Discount:", summaryX, currentY);
+        doc.font("Helvetica-Bold").fillColor("#e11d48").text(`-Rs. ${order.discount.toFixed(2)}`, 495, currentY, { align: "right" });
+        currentY += 16;
+      }
+
+      if (order.coinDiscount > 0) {
+        doc.font("Helvetica").fillColor("#e11d48").text("Coins Discount:", summaryX, currentY);
+        doc.font("Helvetica-Bold").fillColor("#e11d48").text(`-Rs. ${order.coinDiscount.toFixed(2)}`, 495, currentY, { align: "right" });
+        currentY += 16;
+      }
+
+      doc.font("Helvetica").fillColor("#4b5563").text("Shipping Charges:", summaryX, currentY);
+      doc.font("Helvetica-Bold").fillColor("#111827").text(order.shipping === 0 ? "FREE" : `Rs. ${order.shipping.toFixed(2)}`, 495, currentY, { align: "right" });
+      currentY += 22;
+
+      // Double line before total
+      doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(summaryX, currentY - 5).lineTo(565, currentY - 5).stroke();
+
+      doc.font("Helvetica-Bold").fontSize(11).fillColor("#111827").text("Total Paid:", summaryX, currentY);
+      doc.text(`Rs. ${order.total.toFixed(2)}`, 495, currentY, { align: "right" });
 
       currentY += 18;
       doc.font("Helvetica").fontSize(7.5).fillColor("#6b7280");
