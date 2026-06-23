@@ -17,7 +17,7 @@ export function SocialPromo() {
         <div className="grid gap-12 lg:grid-cols-12 items-center">
           {/* Text and Actions (Left) */}
           <div className="lg:col-span-5 flex flex-col items-start">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-amber-600 font-bold">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-royal font-bold">
               Our Story & Community
             </p>
             <h2 className="font-display text-3xl md:text-4xl font-bold mt-2 text-royal tracking-tight leading-tight">
