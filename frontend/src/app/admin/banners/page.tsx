@@ -42,7 +42,7 @@ export default function AdminBannersPage() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [activeTab, setActiveTab] = useState<"hero" | "collection" | "promo">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "promo">("hero");
 
   const refresh = () => {
     if (!accessToken) return;
@@ -58,12 +58,12 @@ export default function AdminBannersPage() {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
-  const handleTabChange = (tab: "hero" | "collection" | "promo") => {
+  const handleTabChange = (tab: "hero" | "promo") => {
     setActiveTab(tab);
     setForm((current) => ({
       ...emptyForm,
       placement: tab,
-      cta: tab === "promo" ? "" : tab === "collection" ? "Explore" : "Explore Collection",
+      cta: tab === "promo" ? "" : "Explore Collection",
     }));
     setEditingId(null);
     setMessage("");
@@ -102,7 +102,7 @@ export default function AdminBannersPage() {
       setForm({
         ...emptyForm,
         placement: activeTab,
-        cta: activeTab === "promo" ? "" : activeTab === "collection" ? "Explore" : "Explore Collection",
+        cta: activeTab === "promo" ? "" : "Explore Collection",
       });
       setEditingId(null);
       refresh();
@@ -126,7 +126,7 @@ export default function AdminBannersPage() {
       placement: banner.placement || "hero",
       order: banner.order || 0,
     });
-    if (banner.placement === "hero" || banner.placement === "collection" || banner.placement === "promo") {
+    if (banner.placement === "hero" || banner.placement === "promo") {
       setActiveTab(banner.placement);
     }
   };
@@ -166,15 +166,11 @@ export default function AdminBannersPage() {
           <h1 className="font-serif text-3xl text-charcoal">
             {activeTab === "hero"
               ? "Hero Slideshow Banners"
-              : activeTab === "collection"
-              ? "Featured Collection Banners"
               : "Promo & Announcement Banners"}
           </h1>
           <p className="text-xs text-charcoal/50 mt-1">
             {activeTab === "hero"
               ? "Configure active images, styles, and text overlays for the homepage full-screen hero slideshow."
-              : activeTab === "collection"
-              ? "Configure collection categories, cover layouts, and shop category quick-links."
               : "Configure homepage announcement bars, promotional strips, or announcement overlays."}
           </p>
         </div>
@@ -182,7 +178,7 @@ export default function AdminBannersPage() {
 
       {/* Tabs Navigator */}
       <div className="flex border-b border-gray-100 mb-8 gap-4">
-        {(["hero", "collection", "promo"] as const).map((tab) => (
+        {(["hero", "promo"] as const).map((tab) => (
           <button
             key={tab}
             type="button"
@@ -193,7 +189,7 @@ export default function AdminBannersPage() {
                 : "border-transparent text-charcoal/30 hover:text-charcoal/60"
             }`}
           >
-            {tab === "hero" ? "Hero Slides" : tab === "collection" ? "Collection Cards" : "Promo Strips"}
+            {tab === "hero" ? "Hero Slides" : "Promo Strips"}
           </button>
         ))}
       </div>
@@ -208,7 +204,7 @@ export default function AdminBannersPage() {
         >
           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
             <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 font-bold">
-              {editingId ? "Edit Banner Slide" : `Add ${activeTab === "hero" ? "Hero Slide" : activeTab === "collection" ? "Collection Card" : "Promo Strip"}`}
+              {editingId ? "Edit Banner Slide" : `Add ${activeTab === "hero" ? "Hero Slide" : "Promo Strip"}`}
             </p>
             {editingId && (
               <button
@@ -228,11 +224,11 @@ export default function AdminBannersPage() {
             {/* Title / Primary Text */}
             <div className="space-y-1">
               <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
-                {activeTab === "hero" ? "Main Title" : activeTab === "collection" ? "Collection Title" : "Promo Message"}
+                {activeTab === "hero" ? "Main Title" : "Promo Message"}
               </label>
               <Input
                 className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
-                placeholder={activeTab === "hero" ? "e.g. Defined by silence." : activeTab === "collection" ? "e.g. Cargo Pants" : "e.g. Black Friday Sale: 50% Off"}
+                placeholder={activeTab === "hero" ? "e.g. Defined by silence." : "e.g. Black Friday Sale: 50% Off"}
                 value={form.title}
                 onChange={(e) => update("title", e.target.value)}
                 required
@@ -243,11 +239,11 @@ export default function AdminBannersPage() {
             {activeTab !== "promo" && (
               <div className="space-y-1">
                 <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
-                  {activeTab === "hero" ? "Subtitle / Lead Text" : "Description / Subtitle"}
+                  Subtitle / Lead Text
                 </label>
                 <Input
                   className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
-                  placeholder={activeTab === "hero" ? "e.g. Premium streetwear from India" : "e.g. Urban Utility Cargo Pants"}
+                  placeholder="e.g. Premium streetwear from India"
                   value={form.subtitle}
                   onChange={(e) => update("subtitle", e.target.value)}
                 />
@@ -274,7 +270,7 @@ export default function AdminBannersPage() {
                   <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Button Label (CTA)</label>
                   <Input
                     className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
-                    placeholder={activeTab === "hero" ? "Explore Collection" : "Explore"}
+                    placeholder="Explore Collection"
                     value={form.cta}
                     onChange={(e) => update("cta", e.target.value)}
                   />
@@ -330,7 +326,7 @@ export default function AdminBannersPage() {
                   <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">Type</label>
                   <Input
                     className="border-gray-200 text-charcoal/50 bg-gray-50 uppercase text-[10px] tracking-wider"
-                    value={activeTab === "collection" ? "Collection Card" : "Promo Strip"}
+                    value="Promo Strip"
                     disabled
                   />
                 </div>
@@ -341,7 +337,7 @@ export default function AdminBannersPage() {
             {activeTab !== "promo" && (
               <div className="space-y-3 pt-4 border-t border-gray-100">
                 <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
-                  {activeTab === "hero" ? "Hero Image" : activeTab === "collection" ? "Card Image" : "Banner Image"}
+                  Hero Image
                 </label>
                 <input
                   type="file"
@@ -395,7 +391,7 @@ export default function AdminBannersPage() {
         {/* List Container */}
         <div className="bg-white border border-gray-100 p-6 md:p-8 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] h-fit">
           <p className="text-[10px] uppercase tracking-editorial text-charcoal/40 border-b border-gray-100 pb-4 font-bold">
-            Active {activeTab === "hero" ? "Hero Slides" : activeTab === "collection" ? "Collections" : "Promo Banners"} List
+            Active {activeTab === "hero" ? "Hero Slides" : "Promo Banners"} List
           </p>
 
           <div className="mt-6 space-y-4">

@@ -11,7 +11,7 @@ export interface IBanner extends Document {
   cta?: string;
   order: number;
   isActive: boolean;
-  placement: "hero" | "collection" | "promo";
+  placement: "hero" | "promo";
 }
 
 const bannerSchema = new Schema<IBanner>(
@@ -19,7 +19,7 @@ const bannerSchema = new Schema<IBanner>(
     title: String,
     subtitle: String,
     price: String,
-    layout: { type: String, enum: ["campaign", "bottom-left"], default: "bottom-left" },
+    layout: { type: String, enum: ["bottom-left", "campaign"], default: "bottom-left" },
     image: {
       type: String,
       required: function (this: any) {
@@ -31,7 +31,7 @@ const bannerSchema = new Schema<IBanner>(
     cta: String,
     order: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
-    placement: { type: String, enum: ["hero", "collection", "promo"], default: "hero" },
+    placement: { type: String, enum: ["hero", "promo"], default: "hero" },
   },
   { timestamps: true }
 );

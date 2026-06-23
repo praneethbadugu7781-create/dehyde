@@ -1,5 +1,4 @@
 import { Hero } from "@/components/home/Hero";
-import { RatingSection } from "@/components/home/RatingSection";
 import { CategoryTabs } from "@/components/home/CategoryTabs";
 import { NewArrivals } from "@/components/home/NewArrivals";
 import { TrendingProducts } from "@/components/home/TrendingProducts";
@@ -14,9 +13,6 @@ export default function HomePage() {
 
       {/* 2. Existing Dehyde Website Content begins here */}
       <div className="w-full relative">
-        {/* Google Ratings and Store Trust Indicators */}
-        <RatingSection />
-
         {/* Category Switcher Tabs */}
         <CategoryTabs />
 

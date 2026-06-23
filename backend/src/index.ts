@@ -63,6 +63,15 @@ app.use(errorHandler);
 async function connectWithRetry(attempt = 1): Promise<void> {
   try {
     await connectDB();
+    try {
+      const { Banner } = await import("./models/Banner.js");
+      const res = await Banner.deleteMany({ placement: "collection" });
+      if (res.deletedCount > 0) {
+        console.log(`[DB Cleanup] Deleted ${res.deletedCount} legacy collection banners.`);
+      }
+    } catch (err) {
+      console.error("Failed to clean up legacy collection banners:", err);
+    }
   } catch (err) {
     console.error(`MongoDB connection attempt ${attempt} failed:`, err);
     if (attempt < 10) {
