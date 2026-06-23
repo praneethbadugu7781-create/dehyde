@@ -194,7 +194,7 @@ export function Footer() {
   return (
     <>
       {showSuggestions && <SuggestionsSection />}
-      <footer className="bg-black text-white border-t border-white/10 py-16 md:py-20 font-sans">
+      <footer className="bg-gradient-to-b from-[#0d1b3e] to-[#071026] text-white border-t border-royal/20 py-16 md:py-20 font-sans">
         <div className="mx-auto w-full max-w-[1400px] px-6 md:px-10">
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Column 1: Newsletter Signup (Left, wide) */}
@@ -203,7 +203,7 @@ export function Footer() {
                 <h4 className="font-display text-xl font-bold uppercase tracking-[0.1em] text-white">
                   Subscribe to our newsletter
                 </h4>
-                <p className="mt-3 text-xs text-white/50 leading-relaxed max-w-sm">
+                <p className="mt-3 text-xs text-blue-100/60 leading-relaxed max-w-sm">
                   Get early access to collection drops, editorial news, and exclusive promotional pricing.
                 </p>
                 {subscribed ? (
@@ -211,18 +211,18 @@ export function Footer() {
                     Thank you! You have successfully subscribed to our newsletter.
                   </p>
                 ) : (
-                  <form onSubmit={handleSubscribe} className="mt-6 flex max-w-sm border-b border-white/30 focus-within:border-white transition-colors py-1.5">
+                  <form onSubmit={handleSubscribe} className="mt-6 flex max-w-sm border-b border-royal/30 focus-within:border-royal transition-colors py-1.5">
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Your email address"
-                      className="w-full bg-transparent text-xs text-white placeholder-white/40 focus:outline-none"
+                      className="w-full bg-transparent text-xs text-white placeholder-white/35 focus:outline-none"
                     />
                     <button
                       type="submit"
-                      className="text-[11px] uppercase tracking-wider font-semibold text-white/80 hover:text-white transition-colors"
+                      className="text-[11px] uppercase tracking-wider font-extrabold text-royal hover:text-white transition-colors"
                     >
                       Subscribe
                     </button>
@@ -241,14 +241,14 @@ export function Footer() {
                 <p className="font-display text-xl font-bold tracking-[0.25em] text-white">
                   DEHYDE
                 </p>
-                <p className="mt-4 text-xs text-white/60 leading-relaxed">
+                <p className="mt-4 text-xs text-blue-100/60 leading-relaxed">
                   DEHYDE: Premium modern clothing label merging urban utility with high-end minimalist aesthetics. Resilient silhouettes crafted for everyday modern living.
                 </p>
               </div>
               <div className="mt-6">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full border border-white/20 bg-transparent text-white px-5 py-2.5 hover:bg-white hover:text-black transition-all duration-300"
+                  className="inline-flex items-center justify-center text-[10px] uppercase tracking-wider font-extrabold rounded-full border border-royal/30 bg-transparent text-white px-6 py-3 hover:bg-royal hover:border-royal transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm"
                 >
                   Contact DEHYDE
                 </Link>
@@ -264,27 +264,27 @@ export function Footer() {
                 </h5>
                 <ul className="space-y-3 text-xs">
                   <li>
-                    <Link href="/" className="text-white/60 hover:text-white transition-colors">
+                    <Link href="/" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Home
                     </Link>
                   </li>
                   <li>
-                    <Link href="/about" className="text-white/60 hover:text-white transition-colors">
+                    <Link href="/about" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       About
                     </Link>
                   </li>
                   <li>
-                    <Link href="/shop" className="text-white/60 hover:text-white transition-colors">
+                    <Link href="/shop" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Shop
                     </Link>
                   </li>
                   <li>
-                    <Link href="/contact" className="text-white/60 hover:text-white transition-colors">
+                    <Link href="/contact" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Contact
                     </Link>
                   </li>
                   <li>
-                    <Link href="/suggestions" className="text-white/60 hover:text-white transition-colors">
+                    <Link href="/suggestions" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Suggestions & Feedback
                     </Link>
                   </li>
@@ -298,27 +298,27 @@ export function Footer() {
                 </h5>
                 <ul className="space-y-3 text-xs">
                   <li>
-                    <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Instagram
                     </a>
                   </li>
                   <li>
-                    <a href="https://dribbble.com" target="_blank" rel="noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    <a href="https://dribbble.com" target="_blank" rel="noreferrer" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Dribbble
                     </a>
                   </li>
                   <li>
-                    <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Facebook
                     </a>
                   </li>
                   <li>
-                    <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Twitter
                     </a>
                   </li>
                   <li>
-                    <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-white/60 hover:text-white transition-colors">
+                    <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-blue-100/60 hover:text-royal transition-all duration-300 hover:pl-1 block">
                       Youtube
                     </a>
                   </li>
@@ -330,7 +330,7 @@ export function Footer() {
                 <h5 className="text-[10px] uppercase tracking-[0.2em] text-white/40 font-semibold mb-5">
                   Get in touch
                 </h5>
-                <ul className="space-y-3 text-xs text-white/60">
+                <ul className="space-y-3 text-xs text-blue-100/60">
                   <li className="break-all">dehyde333@gmail.com</li>
                   <li>+91 62818 11294</li>
                   <li>Gudivada, Andhra Pradesh, India</li>
