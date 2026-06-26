@@ -79,13 +79,23 @@ export function ProductCard({ product, index = 0 }: Props) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (flyingItem) return;
+    if (flyingItem || product.stock <= 0) return;
 
-    // Default values
-    const selectedSize = product.sizes?.[0] || "M";
-    const variantColor = selectedVariantIdx !== null && product.variants?.[selectedVariantIdx]
-      ? product.variants[selectedVariantIdx].color
-      : (product.variants?.[0]?.color || "Default");
+    // Pick the first in-stock size from the active variant
+    const activeVariant = selectedVariantIdx !== null && product.variants?.[selectedVariantIdx]
+      ? product.variants[selectedVariantIdx]
+      : product.variants?.[0];
+    const variantColor = activeVariant?.color || "Default";
+
+    let selectedSize = product.sizes?.[0] || "M";
+    if (activeVariant?.sizes?.length) {
+      const inStockSize = product.sizes?.find((s) => {
+        const entry = activeVariant.sizes.find((sz) => sz.size === s);
+        return entry ? entry.stock > 0 : false;
+      });
+      if (!inStockSize) return; // All sizes out of stock for this variant
+      selectedSize = inStockSize;
+    }
 
     const cartItem: CartItem = {
       productId: product._id,

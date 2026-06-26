@@ -25,7 +25,19 @@ export default function ProductDetailsClient({ product }: Props) {
   const [related, setRelated] = useState<Product[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [variantImageOverride, setVariantImageOverride] = useState<string | null>(null);
-  const [size, setSize] = useState(product.sizes?.[0] || "");
+  // Auto-select first in-stock size for the default variant
+  const getFirstInStockSize = () => {
+    const firstVariant = product.variants?.[0];
+    if (firstVariant?.sizes?.length) {
+      const inStock = product.sizes?.find((s) => {
+        const sizeEntry = firstVariant.sizes.find((sz) => sz.size === s);
+        return sizeEntry ? sizeEntry.stock > 0 : false;
+      });
+      return inStock || product.sizes?.[0] || "";
+    }
+    return product.sizes?.[0] || "";
+  };
+  const [size, setSize] = useState(getFirstInStockSize());
   const [color, setColor] = useState(product.variants?.[0]?.color || "");
 
   const copyToClipboard = () => {
@@ -138,6 +150,12 @@ export default function ProductDetailsClient({ product }: Props) {
   const handleAdd = (buyNow = false, e?: React.MouseEvent<HTMLButtonElement>) => {
     if (!size) {
       alert("Please select a size first.");
+      return;
+    }
+
+    // Block adding out-of-stock items
+    if (isOutOfStock) {
+      alert("This size is currently out of stock. Please select a different size.");
       return;
     }
 
@@ -401,9 +419,10 @@ export default function ProductDetailsClient({ product }: Props) {
                   <button
                     key={s}
                     type="button"
-                    onClick={() => setSize(s)}
+                    onClick={() => !outOfStock && setSize(s)}
+                    disabled={outOfStock}
                     className={`min-w-[48px] border px-4 py-3 text-xs uppercase relative transition-all ${
-                      size === s
+                      size === s && !outOfStock
                         ? "border-charcoal bg-charcoal text-offwhite"
                         : outOfStock
                         ? "border-charcoal/15 text-charcoal/30 cursor-not-allowed bg-stone/5"
