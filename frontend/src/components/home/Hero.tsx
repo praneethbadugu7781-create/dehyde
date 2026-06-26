@@ -14,6 +14,7 @@ interface BannerData {
   subtitle: string;
   price?: string;
   image: string;
+  mobileImage?: string;
   cta: string;
   link: string;
   layout: "campaign" | "bottom-left";
@@ -83,6 +84,7 @@ export function Hero() {
               subtitle: b.subtitle || "Premium Modern Streetwear",
               price: b.price || "",
               image: b.image,
+              mobileImage: b.mobileImage,
               cta: b.cta || "Shop Now",
               link: b.link || "/shop",
               layout: b.layout || "bottom-left"
@@ -159,14 +161,26 @@ export function Hero() {
                   transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0 origin-center"
                 >
+                  {/* Desktop Image */}
                   <Image
                     src={banner.image}
                     alt={banner.title}
                     fill
                     priority={isFirst}
-                    className="object-cover object-center"
+                    className={`object-cover object-center ${banner.mobileImage ? "hidden md:block" : ""}`}
                     sizes="100vw"
                   />
+                  {/* Mobile Image */}
+                  {banner.mobileImage && (
+                    <Image
+                      src={banner.mobileImage}
+                      alt={`${banner.title} Mobile`}
+                      fill
+                      priority={isFirst}
+                      className="object-cover object-center block md:hidden"
+                      sizes="100vw"
+                    />
+                  )}
                 </motion.div>
                 {/* Conditional overlay based on banner layout */}
                 {banner.layout === "campaign" ? (

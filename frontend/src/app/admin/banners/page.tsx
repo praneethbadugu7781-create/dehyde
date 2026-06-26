@@ -15,6 +15,7 @@ interface Banner {
   price?: string;
   layout?: string;
   image?: string;
+  mobileImage?: string;
   link?: string;
   cta?: string;
   isActive: boolean;
@@ -28,6 +29,7 @@ const emptyForm = {
   price: "",
   layout: "bottom-left",
   image: "",
+  mobileImage: "",
   link: "/shop",
   cta: "Explore Collection",
   placement: "hero",
@@ -40,6 +42,7 @@ export default function AdminBannersPage() {
   const [form, setForm] = useState({ ...emptyForm, placement: "hero" });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadingMobile, setUploadingMobile] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"hero" | "promo">("hero");
@@ -69,19 +72,27 @@ export default function AdminBannersPage() {
     setMessage("");
   };
 
-  const handleUpload = async (file: File | null) => {
+  const handleUpload = async (file: File | null, field: "image" | "mobileImage") => {
     if (!file || !accessToken) return;
-    setUploading(true);
+    if (field === "image") {
+      setUploading(true);
+    } else {
+      setUploadingMobile(true);
+    }
     setMessage("");
     try {
       const data = new FormData();
       data.append("image", file);
       const res = await apiClient.upload<{ success: boolean; data: { url: string } }>("/upload", data, accessToken);
-      update("image", res.data.url);
+      update(field, res.data.url);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Image upload failed");
     } finally {
-      setUploading(false);
+      if (field === "image") {
+        setUploading(false);
+      } else {
+        setUploadingMobile(false);
+      }
     }
   };
 
@@ -121,6 +132,7 @@ export default function AdminBannersPage() {
       price: banner.price || "",
       layout: banner.layout || "bottom-left",
       image: banner.image || "",
+      mobileImage: banner.mobileImage || "",
       link: banner.link || "/shop",
       cta: banner.cta || "",
       placement: banner.placement || "hero",
@@ -337,12 +349,12 @@ export default function AdminBannersPage() {
             {activeTab !== "promo" && (
               <div className="space-y-3 pt-4 border-t border-gray-100">
                 <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
-                  Hero Image
+                  Hero Image (Desktop/Landscape)
                 </label>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => handleUpload(e.target.files?.[0] || null)}
+                  onChange={(e) => handleUpload(e.target.files?.[0] || null, "image")}
                   className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
                 />
                 <Input
@@ -357,7 +369,34 @@ export default function AdminBannersPage() {
 
             {activeTab !== "promo" && form.image && (
               <div className="relative h-32 w-full mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
-                <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                <img src={form.image} alt="Desktop Preview" className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {/* Mobile Image Upload Block */}
+            {activeTab !== "promo" && (
+              <div className="space-y-3 pt-4 border-t border-gray-100">
+                <label className="text-[9px] uppercase tracking-widest text-charcoal/50 font-bold block">
+                  Mobile Hero Image (Mobile/Portrait)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleUpload(e.target.files?.[0] || null, "mobileImage")}
+                  className="w-full text-xs text-charcoal/60 file:mr-4 file:border-0 file:bg-gray-100 file:px-4 file:py-3 file:text-[10px] file:uppercase file:tracking-editorial file:text-charcoal file:rounded-xl file:cursor-pointer"
+                />
+                <Input
+                  className="border-gray-200 text-charcoal placeholder:text-charcoal/40"
+                  placeholder="Or paste mobile image URL"
+                  value={form.mobileImage}
+                  onChange={(e) => update("mobileImage", e.target.value)}
+                />
+              </div>
+            )}
+
+            {activeTab !== "promo" && form.mobileImage && (
+              <div className="relative h-32 w-24 mt-4 rounded-xl overflow-hidden border border-gray-200 shadow-inner">
+                <img src={form.mobileImage} alt="Mobile Preview" className="w-full h-full object-cover" />
               </div>
             )}
           </div>
@@ -377,9 +416,9 @@ export default function AdminBannersPage() {
           <Button
             type="submit"
             className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
-            disabled={saving || uploading || (activeTab !== "promo" && !form.image)}
+            disabled={saving || uploading || uploadingMobile || (activeTab !== "promo" && !form.image)}
           >
-            {saving ? "Saving..." : uploading ? "Uploading..." : (
+            {saving ? "Saving..." : (uploading || uploadingMobile) ? "Uploading..." : (
               <>
                 {editingId ? <Edit2 size={14} /> : <Plus size={14} />}
                 {editingId ? "Update Banner" : "Add Banner"}
@@ -402,8 +441,15 @@ export default function AdminBannersPage() {
               >
                 <div className="flex items-center gap-4 min-w-0">
                   {banner.placement !== "promo" && banner.image && (
-                    <div className="w-20 h-14 bg-black flex-shrink-0 relative rounded-lg overflow-hidden border border-gray-200/50">
-                      <img src={banner.image} alt={banner.title} className="w-full h-full object-cover opacity-80" />
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      <div className="w-20 h-14 bg-black relative rounded-lg overflow-hidden border border-gray-200/50" title="Desktop Image">
+                        <img src={banner.image} alt={banner.title} className="w-full h-full object-cover opacity-80" />
+                      </div>
+                      {banner.mobileImage && (
+                        <div className="w-10 h-14 bg-black relative rounded-lg overflow-hidden border border-gray-200/50" title="Mobile Image">
+                          <img src={banner.mobileImage} alt={`${banner.title} Mobile`} className="w-full h-full object-cover opacity-80" />
+                        </div>
+                      )}
                     </div>
                   )}
                   {banner.placement === "promo" && (
