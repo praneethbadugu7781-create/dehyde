@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -238,9 +239,15 @@ export function Footer() {
             {/* Column 2: Brand Description & CTA */}
             <div className="lg:col-span-4 flex flex-col justify-between border-t lg:border-t-0 lg:border-x border-white/10 pt-10 lg:pt-0 lg:px-8">
               <div>
-                <p className="font-display text-xl font-bold tracking-[0.25em] text-white">
-                  DEHYDE
-                </p>
+                <div className="h-8 md:h-10 flex items-center">
+                  <Image
+                    src="/logo.png"
+                    alt="DEHYDE Logo"
+                    width={150}
+                    height={40}
+                    className="h-full w-auto object-contain brightness-0 invert"
+                  />
+                </div>
                 <p className="mt-4 text-xs text-blue-100/60 leading-relaxed">
                   At DeHyde, we create trendy, premium-quality menswear at affordable prices. Designed for young individuals who value style, comfort, and quality without compromise.
                 </p>

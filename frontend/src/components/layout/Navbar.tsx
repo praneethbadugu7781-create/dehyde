@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -110,9 +111,16 @@ export function Navbar() {
             {/* Center Logo */}
             <Link
               href="/"
-              className="absolute left-1/2 -translate-x-1/2 font-display text-xl md:text-2xl font-bold tracking-[0.25em]"
+              className="absolute left-1/2 -translate-x-1/2 flex items-center h-8 md:h-10"
             >
-              DEHYDE
+              <Image
+                src="/logo.png"
+                alt="DEHYDE Logo"
+                width={150}
+                height={40}
+                className="h-full w-auto object-contain"
+                priority
+              />
             </Link>
 
             {/* Right Tools */}

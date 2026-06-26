@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { LayoutDashboard, Package, ShoppingCart, Users, Ticket, Star, Truck, ArrowLeft, LogOut, MessageSquare } from "lucide-react";
@@ -72,12 +73,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </Link>
 
         <div className="w-full max-w-md bg-white border border-gray-150 p-8 md:p-10 rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
-          <div className="text-center mb-8">
-            <div className="bg-royal text-white font-serif font-bold text-2xl h-12 w-12 flex items-center justify-center rounded-sm mx-auto mb-4">
-              D
+          <div className="text-center mb-8 flex flex-col items-center">
+            <div className="h-12 w-auto mb-4 flex items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="DEHYDE Logo"
+                width={150}
+                height={40}
+                className="h-full w-auto object-contain"
+                priority
+              />
             </div>
-            <h1 className="font-serif text-3xl tracking-widest uppercase">DEHYDE</h1>
-            <p className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold mt-1.5">Administrator Portal</p>
+            <p className="text-[10px] uppercase tracking-widest text-charcoal/40 font-bold">Administrator Portal</p>
           </div>
 
           <form onSubmit={handleLoginSubmit} className="space-y-6">
@@ -142,10 +149,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 bg-royal text-offwhite flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-20">
         <div className="p-6 flex items-center gap-3">
-          <div className="bg-white text-royal font-serif font-bold text-xl h-10 w-10 flex items-center justify-center rounded-sm">
-            D
+          <div className="h-9 w-auto flex items-center">
+            <Image
+              src="/logo.png"
+              alt="DEHYDE Logo"
+              width={120}
+              height={32}
+              className="h-full w-auto object-contain brightness-0 invert"
+              priority
+            />
           </div>
-          <span className="font-serif text-lg tracking-widest">DEHYDE</span>
           <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-sm uppercase tracking-wider ml-auto">Admin</span>
         </div>
 
