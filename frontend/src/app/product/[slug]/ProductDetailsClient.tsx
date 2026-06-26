@@ -10,7 +10,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { apiClient } from "@/lib/api";
 import type { Product } from "@/types";
 import { productImage } from "@/lib/products";
-import { Heart, Share2 } from "lucide-react";
+import { Heart, Share2, Coins } from "lucide-react";
 import { useWishlistStore } from "@/store/wishlistStore";
 
 interface Props {
@@ -331,10 +331,25 @@ export default function ProductDetailsClient({ product }: Props) {
             )}
           </div>
           {product.rewardCoins > 0 && (
-            <p className="mt-4 text-xs text-muted">
-              Earn <span className="text-charcoal">{product.rewardCoins} DEHYDE coins</span> (₹
-              {product.rewardCoins} value) on this purchase
-            </p>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-5 flex items-center gap-3 bg-gradient-to-r from-amber-50/60 to-amber-50/10 border-l-[3px] border-amber-500 rounded-r-xl px-4 py-3 shadow-[0_2px_8px_rgba(245,158,11,0.03)] group cursor-default"
+            >
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-600 relative overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Coins size={16} className="relative z-10 animate-[spin_4s_linear_infinite]" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent animate-pulse" />
+              </div>
+              <div className="text-xs">
+                <p className="font-semibold text-charcoal flex items-center gap-1.5">
+                  Earn <span className="text-amber-600 font-bold font-serif text-sm tracking-wide">{product.rewardCoins} DEHYDE Coins</span>
+                </p>
+                <p className="text-[10px] text-muted/80 mt-0.5 font-medium">
+                  Worth <span className="font-semibold text-charcoal/70">₹{product.rewardCoins}</span> in savings on your next checkout!
+                </p>
+              </div>
+            </motion.div>
           )}
           <p className="mt-8 text-sm leading-relaxed text-muted">{product.description}</p>
 
