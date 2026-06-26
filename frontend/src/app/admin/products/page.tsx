@@ -76,6 +76,66 @@ function getClosestColorName(hex: string): string {
   return closestName;
 }
 
+function getColorHexFromName(name: string): string | null {
+  const normalized = name.toLowerCase().trim();
+  const colors: Record<string, string> = {
+    red: "#ff0000",
+    blue: "#0000ff",
+    green: "#008000",
+    black: "#000000",
+    white: "#ffffff",
+    yellow: "#ffff00",
+    orange: "#ffa500",
+    grey: "#808080",
+    gray: "#808080",
+    brown: "#a52a2a",
+    pink: "#ffc0cb",
+    beige: "#f5f5dc",
+    navy: "#000080",
+    purple: "#800080",
+    violet: "#ee82ee",
+    indigo: "#4b0082",
+    gold: "#ffd700",
+    silver: "#c0c0c0",
+    teal: "#008080",
+    cyan: "#00ffff",
+    magenta: "#ff00ff",
+    lime: "#00ff00",
+    olive: "#808000",
+    maroon: "#800000",
+    aqua: "#00ffff",
+    crimson: "#dc143c",
+    coral: "#ff7f50",
+    turquoise: "#40e0d0",
+    lavender: "#e6e6fa",
+    plum: "#dda0dd",
+    peach: "#ffdab9",
+    apricot: "#fbceb1",
+    mustard: "#ffdb58",
+    khaki: "#f0e68c",
+    amber: "#ffbf00",
+    emerald: "#50c878",
+    ruby: "#e0115f",
+    sapphire: "#0f52ba",
+    rust: "#b7410e",
+    charcoal: "#36454f",
+    tan: "#d2b48c",
+    cream: "#fffdd0",
+    ivory: "#fffff0",
+    burgundy: "#800020",
+    fuchsia: "#ff00ff",
+    // Brand custom presets
+    "off-black": "#1a1a1a",
+    "cream white": "#f5f2eb",
+    "concrete grey": "#a3a3a3",
+    "warm taupe": "#8c8275",
+    "sage green": "#7d8471",
+    "midnight navy": "#1d2d44",
+    "crimson red": "#8b2635"
+  };
+  return colors[normalized] || null;
+}
+
 
 const emptyForm = {
   title: "",
@@ -186,7 +246,16 @@ export default function AdminProductsPage() {
   }, [form.category, categories, editingProduct]);
 
   const update = (key: keyof typeof form, value: string | boolean) => {
-    setForm((current) => ({ ...current, [key]: value }));
+    setForm((current) => {
+      const next = { ...current, [key]: value };
+      if (key === "color" && typeof value === "string") {
+        const hex = getColorHexFromName(value);
+        if (hex) {
+          next.colorHex = hex;
+        }
+      }
+      return next;
+    });
   };
 
   const toggleSize = (size: string) => {
@@ -926,7 +995,17 @@ export default function AdminProductsPage() {
                               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 h-11 bg-white text-charcoal outline-none focus:border-charcoal hover:border-gray-300 transition-all text-sm"
                               placeholder="e.g. Sage Green"
                               value={newVariant.color}
-                              onChange={(e) => setNewVariant((curr) => ({ ...curr, color: e.target.value }))}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setNewVariant((curr) => {
+                                  const hex = getColorHexFromName(val);
+                                  return {
+                                    ...curr,
+                                    color: val,
+                                    colorHex: hex || curr.colorHex,
+                                  };
+                                });
+                              }}
                             />
                           </div>
 
