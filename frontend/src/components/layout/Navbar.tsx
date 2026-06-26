@@ -118,7 +118,8 @@ export function Navbar() {
                 alt="DEHYDE Logo"
                 width={150}
                 height={40}
-                className="h-full w-auto object-contain"
+                className="h-full w-auto object-contain transition-all duration-300"
+                style={isDarkHeader ? { filter: "brightness(0) invert(1)" } : undefined}
                 priority
               />
             </Link>
