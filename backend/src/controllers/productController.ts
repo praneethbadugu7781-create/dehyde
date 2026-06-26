@@ -106,7 +106,14 @@ export const searchProducts = asyncHandler(async (req, res) => {
 
 export const createProduct = asyncHandler(async (req: AuthRequest, res: Response) => {
   const data = req.body;
-  data.slug = data.slug || slugify(data.title);
+  const baseSlug = slugify(data.slug || data.title || "product");
+  let slug = baseSlug;
+  let count = 1;
+  while (await Product.exists({ slug })) {
+    slug = `${baseSlug}-${count}`;
+    count++;
+  }
+  data.slug = slug;
   const product = await Product.create(data);
   res.status(201).json({ success: true, data: product });
 });
@@ -117,7 +124,18 @@ export const updateProduct = asyncHandler(async (req: AuthRequest, res: Response
     res.status(404).json({ success: false, message: "Product not found" });
     return;
   }
-  Object.assign(product, req.body);
+  const data = req.body;
+  if (data.slug && data.slug !== product.slug) {
+    const baseSlug = slugify(data.slug);
+    let slug = baseSlug;
+    let count = 1;
+    while (await Product.exists({ slug, _id: { $ne: product._id } })) {
+      slug = `${baseSlug}-${count}`;
+      count++;
+    }
+    data.slug = slug;
+  }
+  Object.assign(product, data);
   await product.save();
   res.json({ success: true, data: product });
 });
