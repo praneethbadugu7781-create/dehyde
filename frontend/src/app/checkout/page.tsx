@@ -388,11 +388,7 @@ export default function CheckoutPage() {
             return;
           }
 
-          if (paymentMethod === "cod") {
-            clearCart();
-            window.location.href = `/account/orders?success=1`;
-            return;
-          }
+
 
           const { razorpayOrderId, amount, key, order } = apiResponse.data;
           if (amount === 0) {
@@ -968,6 +964,19 @@ export default function CheckoutPage() {
                 <span>Total</span>
                 <span>{formatPrice(grandTotal)}</span>
               </div>
+
+              {paymentMethod === "cod" && (
+                <div className="space-y-2 border-t border-dashed border-charcoal/10 pt-3 text-xs text-charcoal/80">
+                  <div className="flex justify-between font-medium text-green-600">
+                    <span>Pay Online (COD Deposit)</span>
+                    <span>{formatPrice(Math.min(150, grandTotal))}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-charcoal">
+                    <span>Pay on Delivery (Cash)</span>
+                    <span>{formatPrice(Math.max(0, grandTotal - 150))}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="mt-4 text-xs text-muted">

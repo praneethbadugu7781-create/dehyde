@@ -40,8 +40,12 @@ export default function OrdersPage() {
   }
 
   const getStatusStep = (status: string) => {
-    const steps = ["paid", "processing", "shipped", "delivered"];
-    return steps.indexOf(status.toLowerCase());
+    const s = status.toLowerCase();
+    if (s === "paid" || s === "confirmed") return 0;
+    if (s === "processing" || s === "packed") return 1;
+    if (s === "shipped") return 2;
+    if (s === "delivered") return 3;
+    return -1;
   };
 
   const getStatusColor = (status: string) => {
@@ -152,25 +156,25 @@ export default function OrdersPage() {
                             />
 
                             {/* Tracking Milestones */}
-                            {["Paid", "Processing", "Shipped", "Delivered"].map((label, index) => {
+                            {[(order.paymentMethod === "cod" ? "Confirmed" : "Paid"), "Processing", "Shipped", "Delivered"].map((label, index) => {
                               const isCompleted = index <= currentStepIndex;
                               const isActive = index === currentStepIndex;
                               
                               return (
                                 <div key={label} className="relative z-10 flex flex-col items-center">
                                   <div
-                                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] transition-all duration-300 ${
+                                    className={`w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all duration-500 ${
                                       isCompleted
-                                        ? "bg-royal border-royal text-offwhite scale-110"
+                                        ? "bg-royal border-royal text-white scale-110 shadow-[0_0_12px_rgba(29,78,216,0.35)]"
                                         : "bg-white border-gray-200 text-gray-300"
-                                    } ${isActive ? "ring-4 ring-royal/10" : ""}`}
+                                    } ${isActive ? "ring-4 ring-royal/20 animate-pulse" : ""}`}
                                   >
                                     {isCompleted ? "✓" : index + 1}
                                   </div>
                                   <span
-                                    className={`text-[9px] uppercase tracking-widest mt-2 font-medium ${
+                                    className={`text-[9px] uppercase tracking-widest mt-2.5 font-bold transition-all duration-300 ${
                                       isCompleted ? "text-royal" : "text-gray-400"
-                                    }`}
+                                    } ${isActive ? "scale-105" : ""}`}
                                   >
                                     {label}
                                   </span>
@@ -241,9 +245,21 @@ export default function OrdersPage() {
                               </div>
                             )}
                             <div className="border-t border-gray-50 pt-2 flex justify-between font-serif text-sm text-charcoal font-medium">
-                              <span>{order.paymentMethod === "cod" && order.status === "confirmed" ? "Total Amount (to Pay)" : "Total Amount"}</span>
+                              <span>Total Amount</span>
                               <span>{formatPrice(order.total)}</span>
                             </div>
+                            {order.paymentMethod === "cod" && (
+                              <div className="space-y-1.5 border-t border-dashed border-gray-100 pt-2 text-[11px] text-charcoal/80 animate-in fade-in duration-300">
+                                <div className="flex justify-between font-medium text-green-600">
+                                  <span>Paid Online (COD Deposit)</span>
+                                  <span>{formatPrice(Math.min(150, order.total))}</span>
+                                </div>
+                                <div className="flex justify-between font-bold text-charcoal">
+                                  <span>Remaining to Collect (Cash)</span>
+                                  <span>{formatPrice(Math.max(0, order.total - 150))}</span>
+                                </div>
+                              </div>
+                            )}
                             {order.coinsEarned > 0 && (
                               <div className="border-t border-dashed border-gray-100 pt-2 text-[10px] text-green-600 flex justify-between items-center">
                                 <span>Coins Credited to Wallet:</span>

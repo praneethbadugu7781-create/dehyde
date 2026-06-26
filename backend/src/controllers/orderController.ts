@@ -150,51 +150,15 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     codFee,
     total,
     coinsEarned,
-    status: paymentMethod === "cod" ? "confirmed" : "pending",
+    status: "pending",
     paymentMethod,
   });
 
-  const amountPaise = Math.round(total * 100);
+  const paymentAmount = paymentMethod === "cod" ? Math.min(150, total) : total;
+  const amountPaise = Math.round(paymentAmount * 100);
   let razorpayOrder = null;
   
-  if (paymentMethod === "cod") {
-    // Process COD order fulfillment immediately
-    for (const item of order.items) {
-      const product = await Product.findById(item.product);
-      if (product) {
-        deductProductStock(product, item.color, item.size, item.quantity);
-        await product.save();
-      }
-    }
-
-    if (order.coinsRedeemed > 0) {
-      await redeemCoins(userId, order.coinsRedeemed, order._id);
-    }
-
-    if (order.couponCode) {
-      await Coupon.findOneAndUpdate({ code: order.couponCode }, { $inc: { usedCount: 1 } });
-    }
-
-    // Keep status "confirmed" for COD
-    await creditCoins(
-      userId,
-      order.coinsEarned,
-      order._id,
-      `Earned from order ${order.orderNumber}`
-    );
-
-    const user = await User.findById(userId);
-    if (user) {
-      generateInvoicePDF(order, user.email, user.name || "Customer")
-        .then(pdfBuffer => {
-          sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(console.error);
-        })
-        .catch(err => {
-          console.error("Failed to generate COD order PDF invoice:", err);
-          sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
-        });
-    }
-  } else if (amountPaise > 0) {
+  if (amountPaise > 0) {
     razorpayOrder = await createRazorpayOrder(amountPaise, orderNumber);
     order.razorpayOrderId = razorpayOrder.id;
     await order.save();
@@ -216,7 +180,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       await Coupon.findOneAndUpdate({ code: order.couponCode }, { $inc: { usedCount: 1 } });
     }
 
-    order.status = "paid";
+    order.status = paymentMethod === "cod" ? "confirmed" : "paid";
     await order.save();
 
     await creditCoins(
@@ -281,7 +245,7 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
     await Coupon.findOneAndUpdate({ code: order.couponCode }, { $inc: { usedCount: 1 } });
   }
 
-  order.status = "paid";
+  order.status = order.paymentMethod === "cod" ? "confirmed" : "paid";
   order.razorpayPaymentId = razorpayPaymentId;
   order.razorpaySignature = razorpaySignature;
   await order.save();
