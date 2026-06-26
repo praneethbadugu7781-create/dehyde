@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Heart, ShoppingCart } from "lucide-react";
 import type { Product, CartItem } from "@/types";
 import { formatPrice } from "@/lib/utils";
@@ -52,6 +52,15 @@ export function ProductCard({ product, index = 0 }: Props) {
   // Track selected color variant index
   const [selectedVariantIdx, setSelectedVariantIdx] = useState<number | null>(null);
   const [added, setAdded] = useState(false);
+  const [flyingItem, setFlyingItem] = useState<{
+    id: number;
+    startX: number;
+    startY: number;
+    width: number;
+    height: number;
+    endX: number;
+    endY: number;
+  } | null>(null);
 
   // Determine which image to show
   let currentImage = primaryImage;
@@ -69,6 +78,8 @@ export function ProductCard({ product, index = 0 }: Props) {
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (flyingItem) return;
 
     // Default values
     const selectedSize = product.sizes?.[0] || "M";
@@ -88,9 +99,42 @@ export function ProductCard({ product, index = 0 }: Props) {
       rewardCoins: product.rewardCoins || 0
     };
 
-    addItem(cartItem);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    const imgEl = document.getElementById(`product-card-image-${product._id}`);
+    const cartBtn = document.getElementById("nav-cart-btn");
+
+    if (imgEl && cartBtn) {
+      const imgRect = imgEl.getBoundingClientRect();
+      const cartRect = cartBtn.getBoundingClientRect();
+
+      setFlyingItem({
+        id: Date.now(),
+        startX: imgRect.left,
+        startY: imgRect.top,
+        width: imgRect.width,
+        height: imgRect.height,
+        endX: cartRect.left + cartRect.width / 2 - 15,
+        endY: cartRect.top + cartRect.height / 2 - 15,
+      });
+
+      setTimeout(() => {
+        setFlyingItem(null);
+
+        // Add bounce effect to cart icon
+        cartBtn.classList.add("cart-bounce");
+        setTimeout(() => {
+          cartBtn.classList.remove("cart-bounce");
+        }, 400);
+
+        addItem(cartItem);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 2000);
+      }, 1000);
+    } else {
+      // Fallback
+      addItem(cartItem);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }
   };
 
   return (
@@ -104,7 +148,10 @@ export function ProductCard({ product, index = 0 }: Props) {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Product Image Frame */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#f8f8f8]">
+      <div 
+        id={`product-card-image-${product._id}`}
+        className="relative aspect-[3/4] w-full overflow-hidden bg-[#f8f8f8]"
+      >
         <Link href={`/product/${product.slug}`} className="absolute inset-0">
           {currentImage ? (
             <>
@@ -238,6 +285,42 @@ export function ProductCard({ product, index = 0 }: Props) {
           </div>
         </Link>
       </div>
+      <AnimatePresence>
+        {flyingItem && (
+          <motion.div
+            key={flyingItem.id}
+            initial={{
+              position: "fixed",
+              left: flyingItem.startX,
+              top: flyingItem.startY,
+              width: flyingItem.width,
+              height: flyingItem.height,
+              opacity: 0.8,
+              borderRadius: "8px",
+              overflow: "hidden",
+              zIndex: 9999,
+              pointerEvents: "none",
+            }}
+            animate={{
+              left: flyingItem.endX,
+              top: flyingItem.endY,
+              width: 30,
+              height: 30,
+              opacity: 0.2,
+              borderRadius: "50%",
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 50,
+              damping: 15,
+              mass: 0.8,
+            }}
+          >
+            <img src={currentImage || ""} alt="" className="w-full h-full object-cover" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.article>
   );
 }

@@ -58,6 +58,7 @@ export default function ProductDetailsClient({ product }: Props) {
   };
 
   const [flyingItem, setFlyingItem] = useState<{
+    id: number;
     startX: number;
     startY: number;
     width: number;
@@ -158,6 +159,7 @@ export default function ProductDetailsClient({ product }: Props) {
         const startRect = (isImgVisible || !btnRect) ? imgRect : btnRect;
 
         setFlyingItem({
+          id: Date.now(),
           startX: startRect.left,
           startY: startRect.top,
           width: startRect.width,
@@ -514,7 +516,7 @@ export default function ProductDetailsClient({ product }: Props) {
       <AnimatePresence>
         {flyingItem && (
           <motion.div
-            key="fly-item"
+            key={flyingItem.id}
             initial={{
               position: "fixed",
               left: flyingItem.startX,
