@@ -15,6 +15,7 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import { User } from "../models/User.js";
 import { sendOrderStatusEmail } from "../services/mailService.js";
 import { generateInvoicePDF } from "../services/invoiceService.js";
+import { sendAdminNewOrderNotification } from "../services/notificationService.js";
 
 async function getShippingFee(subtotal: number) {
   const settings = await Settings.findOne({ key: "global" });
@@ -200,6 +201,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
           console.error("Failed to generate free order PDF invoice:", err);
           sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
         });
+      sendAdminNewOrderNotification(order, user.name || "Customer").catch(console.error);
     }
   }
 
@@ -267,6 +269,7 @@ export const verifyPayment = asyncHandler(async (req: AuthRequest, res: Response
         console.error("Failed to generate order PDF invoice:", err);
         sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
       });
+    sendAdminNewOrderNotification(order, user.name || "Customer").catch(console.error);
   }
 
   res.json({ success: true, data: order });
