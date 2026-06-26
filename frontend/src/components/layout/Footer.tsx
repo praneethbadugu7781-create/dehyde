@@ -159,7 +159,7 @@ function SuggestionsSection() {
                 <Button 
                   type="submit" 
                   disabled={submitting} 
-                  className="w-full py-3 text-[10px] uppercase tracking-widest bg-royal text-white hover:bg-blue-800 rounded-xl font-bold transition-all shadow-sm"
+                  className="w-full py-3 text-[10px] uppercase tracking-widest bg-royal text-white hover:bg-neutral-800 rounded-xl font-bold transition-all shadow-sm"
                 >
                   {submitting ? "Submitting..." : "Submit to Design Team"}
                 </Button>
@@ -242,7 +242,7 @@ export function Footer() {
                   DEHYDE
                 </p>
                 <p className="mt-4 text-xs text-blue-100/60 leading-relaxed">
-                  DEHYDE: Premium modern clothing label merging urban utility with high-end minimalist aesthetics. Resilient silhouettes crafted for everyday modern living.
+                  At DeHyde, we create trendy, premium-quality menswear at affordable prices. Designed for young individuals who value style, comfort, and quality without compromise.
                 </p>
               </div>
               <div className="mt-6">

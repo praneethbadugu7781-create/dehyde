@@ -33,7 +33,7 @@ export function NewArrivals() {
           </div>
           <Link
             href="/shop"
-            className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-royal text-white px-5 py-2.5 hover:bg-blue-800 transition-colors"
+            className="inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full bg-royal text-white px-5 py-2.5 hover:bg-neutral-800 transition-colors"
           >
             See all collections
           </Link>

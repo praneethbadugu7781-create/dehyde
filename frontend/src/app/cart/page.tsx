@@ -329,7 +329,7 @@ export default function CartPage() {
                                       setCouponInput(c.code);
                                       setCoupon(c.code);
                                     }}
-                                    className="text-royal hover:text-blue-800 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
+                                    className="text-royal hover:text-neutral-600 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
                                   >
                                     Apply
                                   </button>
@@ -485,7 +485,7 @@ export default function CartPage() {
             </div>
             <Link
               href="/checkout"
-              className="mt-8 flex w-full items-center justify-center bg-royal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite hover:bg-blue-800 transition-colors"
+              className="mt-8 flex w-full items-center justify-center bg-royal px-8 py-4 text-xs uppercase tracking-editorial text-offwhite hover:bg-neutral-800 transition-colors"
             >
               Proceed to checkout
             </Link>

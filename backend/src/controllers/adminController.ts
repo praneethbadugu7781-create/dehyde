@@ -108,6 +108,11 @@ export const manageBanners = asyncHandler(async (_req, res) => {
 });
 
 export const createBanner = asyncHandler(async (req, res) => {
+  const { title } = req.body;
+  if (title && (title.toLowerCase().includes("fuck") || title.toLowerCase().includes("praneeth"))) {
+    res.status(400).json({ success: false, message: "Inappropriate language in banner title" });
+    return;
+  }
   const banner = await Banner.create(req.body);
   res.status(201).json({ success: true, data: banner });
 });
@@ -152,6 +157,11 @@ export const adjustWallet = asyncHandler(async (req, res) => {
 });
 
 export const updateBanner = asyncHandler(async (req, res) => {
+  const { title } = req.body;
+  if (title && (title.toLowerCase().includes("fuck") || title.toLowerCase().includes("praneeth"))) {
+    res.status(400).json({ success: false, message: "Inappropriate language in banner title" });
+    return;
+  }
   const banner = await Banner.findByIdAndUpdate(req.params.id, req.body, { new: true });
   if (!banner) {
     res.status(404).json({ success: false, message: "Banner not found" });
