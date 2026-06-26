@@ -149,6 +149,42 @@ export default function AdminProductsPage() {
 
   useEffect(refresh, [accessToken, user?.role]);
 
+  const getCategoryName = (categoryId: string) => {
+    const cat = categories.find((c) => c._id === categoryId);
+    return cat ? cat.name : "";
+  };
+
+  const isPantsCategorySelected = () => {
+    return getCategoryName(form.category).toLowerCase().includes("pant");
+  };
+
+  const getAvailableSizes = () => {
+    return isPantsCategorySelected() ? ["30", "32", "34", "36", "38"] : ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+  };
+
+  // Dynamically update sizes when category changes (only when not editing)
+  useEffect(() => {
+    if (editingProduct || !form.category || categories.length === 0) return;
+    const isPants = isPantsCategorySelected();
+    if (isPants) {
+      const hasPantSizes = selectedSizes.some((s) => ["30", "32", "34", "36", "38"].includes(s));
+      if (!hasPantSizes) {
+        setSelectedSizes(["30", "32", "34", "36", "38"]);
+        const defaultStock: Record<string, string> = { "30": "50", "32": "50", "34": "50", "36": "50", "38": "50" };
+        setPrimarySizesStock(defaultStock);
+        setNewVariantSizesStock(defaultStock);
+      }
+    } else {
+      const hasLetterSizes = selectedSizes.some((s) => ["XS", "S", "M", "L", "XL", "XXL", "XXXL"].includes(s));
+      if (!hasLetterSizes) {
+        setSelectedSizes(["S", "M", "L", "XL"]);
+        const defaultStock: Record<string, string> = { S: "50", M: "50", L: "50", XL: "50" };
+        setPrimarySizesStock(defaultStock);
+        setNewVariantSizesStock(defaultStock);
+      }
+    }
+  }, [form.category, categories, editingProduct]);
+
   const update = (key: keyof typeof form, value: string | boolean) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
@@ -210,21 +246,16 @@ export default function AdminProductsPage() {
 
   const cancelEdit = () => {
     setEditingProduct(null);
-    setForm({ ...emptyForm, category: categories[0]?._id || "" });
-    setSelectedSizes(["S", "M", "L", "XL"]);
-    setPrimarySizesStock({
-      S: "50",
-      M: "50",
-      L: "50",
-      XL: "50",
-    });
-    setNewVariantSizesStock({
-      S: "50",
-      M: "50",
-      L: "50",
-      XL: "50",
-    });
-    setSelectedSizes(["S", "M", "L", "XL"]);
+    const firstCat = categories[0];
+    const isFirstPants = firstCat?.name.toLowerCase().includes("pant") || false;
+    const defaultSizes = isFirstPants ? ["30", "32", "34", "36", "38"] : ["S", "M", "L", "XL"];
+    const defaultStock: Record<string, string> = {};
+    defaultSizes.forEach((s) => { defaultStock[s] = "50"; });
+
+    setForm({ ...emptyForm, category: firstCat?._id || "" });
+    setSelectedSizes(defaultSizes);
+    setPrimarySizesStock(defaultStock);
+    setNewVariantSizesStock(defaultStock);
     setImageUrls("");
     setVariantsList([]);
     setHasAdditionalColors(false);
@@ -419,20 +450,16 @@ export default function AdminProductsPage() {
         await apiClient.post("/admin/products", payload, accessToken);
         setMessage("Product added successfully!");
       }
-      setForm({ ...emptyForm, category: categories[0]?._id || "" });
-      setSelectedSizes(["S", "M", "L", "XL"]);
-      setPrimarySizesStock({
-        S: "50",
-        M: "50",
-        L: "50",
-        XL: "50",
-      });
-      setNewVariantSizesStock({
-        S: "50",
-        M: "50",
-        L: "50",
-        XL: "50",
-      });
+      const firstCat = categories[0];
+      const isFirstPants = firstCat?.name.toLowerCase().includes("pant") || false;
+      const defaultSizes = isFirstPants ? ["30", "32", "34", "36", "38"] : ["S", "M", "L", "XL"];
+      const defaultStock: Record<string, string> = {};
+      defaultSizes.forEach((s) => { defaultStock[s] = "50"; });
+
+      setForm({ ...emptyForm, category: firstCat?._id || "" });
+      setSelectedSizes(defaultSizes);
+      setPrimarySizesStock(defaultStock);
+      setNewVariantSizesStock(defaultStock);
       setImageUrls("");
       setShowRawUrls(false);
       setShowVariantRawUrls(false);
@@ -596,7 +623,7 @@ export default function AdminProductsPage() {
                   Select Available Sizes
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {ALL_SIZES.map((size) => {
+                  {getAvailableSizes().map((size) => {
                     const isSelected = selectedSizes.includes(size);
                     return (
                       <button
