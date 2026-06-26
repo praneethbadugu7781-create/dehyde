@@ -733,7 +733,7 @@ export default function CheckoutPage() {
                                       setCouponInput(c.code);
                                       setCoupon(c.code);
                                     }}
-                                    className="text-royal hover:text-neutral-600 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
+                                    className="text-royal hover:text-blue-800 text-[10px] uppercase tracking-wider font-bold border border-royal/20 hover:border-royal/50 px-2.5 py-1 rounded transition-all cursor-pointer bg-white"
                                   >
                                     Apply
                                   </button>

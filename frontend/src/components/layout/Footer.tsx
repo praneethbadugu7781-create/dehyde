@@ -159,7 +159,7 @@ function SuggestionsSection() {
                 <Button 
                   type="submit" 
                   disabled={submitting} 
-                  className="w-full py-3 text-[10px] uppercase tracking-widest bg-royal text-white hover:bg-neutral-800 rounded-xl font-bold transition-all shadow-sm"
+                  className="w-full py-3 text-[10px] uppercase tracking-widest bg-royal text-white hover:bg-blue-800 rounded-xl font-bold transition-all shadow-sm"
                 >
                   {submitting ? "Submitting..." : "Submit to Design Team"}
                 </Button>

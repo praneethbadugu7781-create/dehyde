@@ -120,7 +120,7 @@ export default function AboutPage() {
 
           {/* CTA Footer */}
           <div className="mt-20 text-center">
-            <Button asChild className="rounded-full px-10 py-5 bg-royal text-white hover:bg-neutral-800 transition-colors shadow-md">
+            <Button asChild className="rounded-full px-10 py-5 bg-royal text-white hover:bg-blue-800 transition-colors shadow-md">
               <Link href="/shop">Explore Our Collections</Link>
             </Button>
           </div>

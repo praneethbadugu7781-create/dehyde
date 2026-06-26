@@ -200,7 +200,7 @@ export function Navbar() {
                   <div className="border-t border-gray-100 pt-3">
                     <Link
                       href={accessToken ? "/account/wallet" : "/account"}
-                      className="w-full inline-flex items-center justify-center text-[9px] uppercase tracking-widest font-extrabold bg-royal text-white hover:bg-neutral-800 py-2.5 rounded-lg transition-colors"
+                      className="w-full inline-flex items-center justify-center text-[9px] uppercase tracking-widest font-extrabold bg-royal text-white hover:bg-blue-800 py-2.5 rounded-lg transition-colors"
                     >
                       {accessToken ? "Manage Coins Wallet" : "Get Started Now"}
                     </Link>
@@ -240,7 +240,7 @@ export function Navbar() {
                   "hidden md:inline-flex items-center justify-center text-[11px] uppercase tracking-wider font-semibold rounded-full px-5 py-2.5 transition-all duration-300",
                   isDarkHeader
                     ? "bg-white text-royal hover:bg-neutral-200"
-                    : "bg-royal text-white hover:bg-neutral-800"
+                    : "bg-royal text-white hover:bg-blue-800"
                 )}
               >
                 Shop all items

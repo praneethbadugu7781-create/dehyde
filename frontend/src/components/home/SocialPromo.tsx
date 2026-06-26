@@ -32,7 +32,7 @@ export function SocialPromo() {
                 href="https://www.instagram.com/dehyde_333?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider font-extrabold rounded-full bg-royal text-white px-5 py-3.5 hover:bg-neutral-800 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider font-extrabold rounded-full bg-royal text-white px-5 py-3.5 hover:bg-blue-800 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
               >
                 <Instagram className="h-4 w-4" />
                 Follow Instagram
