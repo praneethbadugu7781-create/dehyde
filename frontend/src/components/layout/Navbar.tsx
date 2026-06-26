@@ -111,13 +111,13 @@ export function Navbar() {
             {/* Center Logo */}
             <Link
               href="/"
-              className="absolute left-1/2 -translate-x-1/2 flex items-center h-7 md:h-10"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center h-7 md:h-10 z-10"
             >
               <Image
                 src="/logo.png"
                 alt="DEHYDE Logo"
-                width={120}
-                height={32}
+                width={150}
+                height={40}
                 className="h-full w-auto object-contain"
                 priority
               />
