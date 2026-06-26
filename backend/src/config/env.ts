@@ -38,7 +38,7 @@ export const env = {
   },
   rewards: {
     enabled: process.env.REWARDS_ENABLED !== "false",
-    maxRedemptionPercent: parseInt(process.env.MAX_COIN_REDEMPTION_PERCENT || "30", 10),
+    maxRedemptionPercent: parseInt(process.env.MAX_COIN_REDEMPTION_PERCENT || "70", 10),
     expiryDays: parseInt(process.env.COIN_EXPIRY_DAYS || "365", 10),
   },
 };

@@ -775,7 +775,7 @@ export default function CheckoutPage() {
                       <p className="text-xs font-semibold text-amber-900">DEHYDE Coins</p>
                     </div>
                     <p className="text-[11px] text-amber-800/80 leading-relaxed pl-6">
-                      <Link href="/account/login?redirect=/checkout" className="underline hover:text-royal font-medium">Sign in</Link> to redeem loyalty coins and save up to 30%.
+                      <Link href="/account/login?redirect=/checkout" className="underline hover:text-royal font-medium">Sign in</Link> to redeem loyalty coins and save up to 70%.
                     </p>
                   </div>
                 ) : (
@@ -814,7 +814,7 @@ export default function CheckoutPage() {
                           </span>
                         </div>
                         <p className="text-[11px] text-amber-700/80 leading-snug">
-                          1 Coin = ₹1. Redeem up to 30% of subtotal (max ₹{Math.floor(total * 0.3)}).
+                          1 Coin = ₹1. Redeem up to 70% of subtotal (max ₹{Math.floor(total * 0.7)}).
                         </p>
                         {availableCoins !== null && availableCoins > 0 ? (
                           <div className="space-y-2">
@@ -824,10 +824,10 @@ export default function CheckoutPage() {
                                 <input
                                   type="number"
                                   min={0}
-                                  max={Math.min(Math.floor(total * 0.3), availableCoins)}
+                                  max={Math.min(Math.floor(total * 0.7), availableCoins)}
                                   value={coinsToRedeem || ""}
                                   onChange={(e) => {
-                                    const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                    const maxVal = Math.min(Math.floor(total * 0.7), availableCoins);
                                     let val = Math.max(0, parseInt(e.target.value) || 0);
                                     if (val > maxVal) val = maxVal;
                                     setCoins(val);

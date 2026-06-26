@@ -15,7 +15,7 @@ const settingsSchema = new Schema<ISettings>(
   {
     key: { type: String, default: "global", unique: true },
     rewardsEnabled: { type: Boolean, default: true },
-    maxCoinRedemptionPercent: { type: Number, default: 30 },
+    maxCoinRedemptionPercent: { type: Number, default: 70 },
     coinExpiryDays: { type: Number, default: 365 },
     freeShippingThreshold: { type: Number, default: 2999 },
     defaultShippingFee: { type: Number, default: 99 },

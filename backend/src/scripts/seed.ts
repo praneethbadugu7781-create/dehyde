@@ -27,7 +27,7 @@ async function seed() {
     { key: "global" },
     {
       rewardsEnabled: true,
-      maxCoinRedemptionPercent: 30,
+      maxCoinRedemptionPercent: 70,
       coinExpiryDays: 365,
       freeShippingThreshold: 2999,
       defaultShippingFee: 99,

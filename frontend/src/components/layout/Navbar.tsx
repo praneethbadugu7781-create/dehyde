@@ -191,8 +191,8 @@ export function Navbar() {
                     </div>
                     <p className="text-[11px] text-muted leading-relaxed">
                       {accessToken 
-                        ? `Equivalent to ₹${coinsBalance !== null ? coinsBalance : 0} cash value. You can redeem these to get up to 30% off your purchase at checkout!` 
-                        : "Join DEHYDE Rewards and receive up to 30% off your purchases. Earn 1 coin for every ₹1 spent."
+                        ? `Equivalent to ₹${coinsBalance !== null ? coinsBalance : 0} cash value. You can redeem these to get up to 70% off your purchase at checkout!` 
+                        : "Join DEHYDE Rewards and receive up to 70% off your purchases. Earn 1 coin for every ₹1 spent."
                       }
                     </p>
                   </div>

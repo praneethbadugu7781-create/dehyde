@@ -34,7 +34,7 @@ export default function WalletPage() {
           ← Account
         </Link>
         <h1 className="editorial-heading mt-6 text-5xl">DEHYDE Rewards</h1>
-        <p className="mt-4 text-sm text-muted">1 coin = ₹1 · Redeem up to 30% on orders</p>
+        <p className="mt-4 text-sm text-muted">1 coin = ₹1 · Redeem up to 70% on orders</p>
 
         {/* How it works card */}
         <div className="mt-8 bg-amber-50/15 border border-amber-200/40 p-6 rounded-xl space-y-4">
@@ -50,7 +50,7 @@ export default function WalletPage() {
             </div>
             <div className="space-y-1">
               <p className="font-bold text-charcoal">3. Save Big</p>
-              <p className="text-muted leading-relaxed">Redeem your coins at checkout to pay for up to 30% of your order.</p>
+              <p className="text-muted leading-relaxed">Redeem your coins at checkout to pay for up to 70% of your order.</p>
             </div>
           </div>
         </div>

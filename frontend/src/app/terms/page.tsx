@@ -41,7 +41,7 @@ export default function TermsPage() {
       <ul className="list-disc pl-5 space-y-2">
         <li>1 DEHYDE Coin is equivalent to ₹1.</li>
         <li>Coins are non-transferable, cannot be exchanged for physical cash, and can only be used for discounts on future purchases at dehyde.in.</li>
-        <li>Redemption limits are capped at a maximum percentage (currently 30%) per order as configured in our store settings. Coins expire 365 days after the date of credit.</li>
+        <li>Redemption limits are capped at a maximum percentage (currently 70%) per order as configured in our store settings. Coins expire 365 days after the date of credit.</li>
       </ul>
 
       <h3 className="font-serif text-lg text-charcoal mt-8">6. Intellectual Property</h3>
