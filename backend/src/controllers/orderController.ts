@@ -44,7 +44,7 @@ function deductProductStock(product: any, color: string, size: string, quantity:
 }
 
 export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { items, shippingAddress, couponCode, coinsToRedeem = 0, shippingMethod = "standard" } = req.body;
+  const { items, shippingAddress, couponCode, coinsToRedeem = 0, shippingMethod = "standard", paymentMethod = "razorpay" } = req.body;
   const userId = req.user!.userId;
 
   let subtotal = 0;
@@ -126,7 +126,13 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
   } else {
     shipping = await getShippingFee(subtotal - discount - coinDiscount);
   }
-  const total = Math.max(0, subtotal - discount - coinDiscount + shipping);
+
+  let codFee = 0;
+  if (paymentMethod === "cod") {
+    codFee = 150;
+  }
+
+  const total = Math.max(0, subtotal - discount - coinDiscount + shipping + codFee);
 
   const orderNumber = generateOrderNumber();
   const order = await Order.create({
@@ -141,14 +147,54 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     coinDiscount,
     shipping,
     shippingMethod,
+    codFee,
     total,
     coinsEarned,
-    status: "pending",
+    status: paymentMethod === "cod" ? "confirmed" : "pending",
+    paymentMethod,
   });
 
   const amountPaise = Math.round(total * 100);
   let razorpayOrder = null;
-  if (amountPaise > 0) {
+  
+  if (paymentMethod === "cod") {
+    // Process COD order fulfillment immediately
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        deductProductStock(product, item.color, item.size, item.quantity);
+        await product.save();
+      }
+    }
+
+    if (order.coinsRedeemed > 0) {
+      await redeemCoins(userId, order.coinsRedeemed, order._id);
+    }
+
+    if (order.couponCode) {
+      await Coupon.findOneAndUpdate({ code: order.couponCode }, { $inc: { usedCount: 1 } });
+    }
+
+    // Keep status "confirmed" for COD
+    await creditCoins(
+      userId,
+      order.coinsEarned,
+      order._id,
+      `Earned from order ${order.orderNumber}`
+    );
+
+    const user = await User.findById(userId);
+    if (user) {
+      generateInvoicePDF(order, user.email, user.name || "Customer")
+        .then(pdfBuffer => {
+          sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(console.error);
+        })
+        .catch(err => {
+          console.error("Failed to generate COD order PDF invoice:", err);
+          sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
+        });
+    }
+  } else if (amountPaise > 0) {
     razorpayOrder = await createRazorpayOrder(amountPaise, orderNumber);
     order.razorpayOrderId = razorpayOrder.id;
     await order.save();

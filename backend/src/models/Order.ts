@@ -38,6 +38,7 @@ export interface IOrder extends Document {
   coinsEarned: number;
   status: OrderStatus;
   paymentMethod: string;
+  codFee?: number;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
@@ -78,6 +79,7 @@ const orderSchema = new Schema<IOrder>(
       default: "pending",
     },
     paymentMethod: { type: String, default: "razorpay" },
+    codFee: { type: Number, default: 0 },
     razorpayOrderId: String,
     razorpayPaymentId: String,
     razorpaySignature: String,

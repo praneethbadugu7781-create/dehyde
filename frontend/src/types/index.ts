@@ -90,6 +90,8 @@ export interface Order {
   total: number;
   coinsEarned: number;
   status: string;
+  paymentMethod?: string;
+  codFee?: number;
   trackingNumber?: string;
   courierName?: string;
   createdAt: string;

@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="w-full max-w-md bg-white border border-gray-150 p-8 md:p-10 rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.03)]">
           <div className="text-center mb-8">
-            <div className="bg-charcoal text-white font-serif font-bold text-2xl h-12 w-12 flex items-center justify-center rounded-sm mx-auto mb-4">
+            <div className="bg-royal text-white font-serif font-bold text-2xl h-12 w-12 flex items-center justify-center rounded-sm mx-auto mb-4">
               D
             </div>
             <h1 className="font-serif text-3xl tracking-widest uppercase">DEHYDE</h1>
@@ -116,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Button
               type="submit"
               disabled={loginLoading}
-              className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
+              className="w-full bg-royal text-white hover:bg-blue-800 h-12 text-xs uppercase tracking-widest rounded-xl font-bold transition-all shadow-md hover:shadow-lg"
             >
               {loginLoading ? "Authenticating..." : "Sign In to Panel"}
             </Button>
@@ -140,9 +140,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-[#f8f6f3] text-[#333] flex font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-charcoal text-offwhite flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-20">
+      <aside className="w-64 bg-royal text-offwhite flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-20">
         <div className="p-6 flex items-center gap-3">
-          <div className="bg-white text-charcoal font-serif font-bold text-xl h-10 w-10 flex items-center justify-center rounded-sm">
+          <div className="bg-white text-royal font-serif font-bold text-xl h-10 w-10 flex items-center justify-center rounded-sm">
             D
           </div>
           <span className="font-serif text-lg tracking-widest">DEHYDE</span>
@@ -189,7 +189,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="text-[11px] font-bold tracking-widest text-charcoal/50 uppercase">Admin Panel</div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-charcoal/60">{user.email}</span>
-            <div className="w-8 h-8 rounded-full bg-charcoal text-white flex items-center justify-center text-xs font-medium">
+            <div className="w-8 h-8 rounded-full bg-royal text-white flex items-center justify-center text-xs font-medium">
               {user.email?.[0].toUpperCase()}
             </div>
           </div>

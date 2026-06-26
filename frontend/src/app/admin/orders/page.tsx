@@ -30,6 +30,7 @@ interface Order {
   shipping: number;
   status: string;
   paymentMethod: string;
+  codFee?: number;
   trackingNumber?: string;
   courierName?: string;
   items: OrderItem[];
@@ -616,8 +617,14 @@ export default function AdminOrdersPage() {
                         <span>Shipping Charges:</span>
                         <span>{selectedOrder.shipping === 0 ? "FREE" : formatPrice(selectedOrder.shipping)}</span>
                       </div>
+                      {selectedOrder.codFee && selectedOrder.codFee > 0 && (
+                        <div className="flex justify-between text-royal font-medium">
+                          <span>COD Charge:</span>
+                          <span>{formatPrice(selectedOrder.codFee)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-charcoal font-bold border-t border-gray-200/80 pt-3 text-base">
-                        <span>Total Paid:</span>
+                        <span>{selectedOrder.paymentMethod === "cod" && selectedOrder.status === "confirmed" ? "Total (to Collect):" : "Total:"}</span>
                         <span>{formatPrice(selectedOrder.total)}</span>
                       </div>
                     </div>
@@ -636,7 +643,7 @@ export default function AdminOrdersPage() {
                 </Button>
                 <Button 
                   onClick={handleSaveModalChanges} 
-                  className="bg-charcoal text-white hover:bg-black h-11 px-8 text-[10px] uppercase tracking-widest rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
+                  className="bg-royal text-white hover:bg-blue-800 h-11 px-8 text-[10px] uppercase tracking-widest rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
                   disabled={savingChanges}
                 >
                   {savingChanges ? "Saving..." : "Save Changes"}

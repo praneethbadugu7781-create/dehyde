@@ -177,7 +177,7 @@ export default function AdminCouponsPage() {
           </div>
 
           {message && <p className="text-xs text-amber-600 p-3 bg-amber-50 rounded-md font-medium">{message}</p>}
-          <Button type="submit" className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl" disabled={saving}>
+          <Button type="submit" className="w-full bg-royal text-white hover:bg-blue-800 h-12 text-xs uppercase tracking-widest mt-4 rounded-xl" disabled={saving}>
             {saving ? "Saving..." : "Create Coupon"}
           </Button>
         </motion.form>

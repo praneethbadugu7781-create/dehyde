@@ -102,8 +102,8 @@ export default function AdminSuggestionsPage() {
               onClick={() => setFilterType(type)}
               className={`px-4 py-2.5 text-xs uppercase tracking-widest border transition-all rounded-xl font-medium ${
                 filterType === type
-                  ? "border-charcoal bg-charcoal text-offwhite shadow-sm"
-                  : "border-gray-200 bg-white text-charcoal/60 hover:border-charcoal/40"
+                  ? "border-royal bg-royal text-offwhite shadow-sm"
+                  : "border-gray-200 bg-white text-charcoal/60 hover:border-royal/40"
               }`}
             >
               {type === "all" ? "All Logs" : type === "inquiry" ? "Inquiries" : `${type}s`}

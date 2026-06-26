@@ -234,8 +234,14 @@ export default function OrdersPage() {
                               <span className="text-muted">Shipping Fee</span>
                               <span>{order.shipping > 0 ? formatPrice(order.shipping) : "Free"}</span>
                             </div>
+                            {order.codFee && order.codFee > 0 && (
+                              <div className="flex justify-between text-royal font-semibold">
+                                <span className="text-muted">COD Charge</span>
+                                <span>{formatPrice(order.codFee)}</span>
+                              </div>
+                            )}
                             <div className="border-t border-gray-50 pt-2 flex justify-between font-serif text-sm text-charcoal font-medium">
-                              <span>Total Amount Paid</span>
+                              <span>{order.paymentMethod === "cod" && order.status === "confirmed" ? "Total Amount (to Pay)" : "Total Amount"}</span>
                               <span>{formatPrice(order.total)}</span>
                             </div>
                             {order.coinsEarned > 0 && (

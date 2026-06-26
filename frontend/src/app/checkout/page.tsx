@@ -155,6 +155,7 @@ export default function CheckoutPage() {
   }, []);
   const [shippingDetails, setShippingDetails] = useState<any>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
   const [address, setAddress] = useState({
     fullName: user?.name || "",
     phone: user?.phone || "",
@@ -265,7 +266,8 @@ export default function CheckoutPage() {
     }
   }
 
-  const grandTotal = Math.max(0, totalAfterDiscount + shipping);
+  const codFee = paymentMethod === "cod" ? 150 : 0;
+  const grandTotal = Math.max(0, totalAfterDiscount + shipping + codFee);
 
   const isAddressComplete =
     address.fullName.trim() !== "" &&
@@ -291,6 +293,9 @@ export default function CheckoutPage() {
         });
         if (shippingMethod === "express" && !res.data.express.isAvailable) {
           setShippingMethod("standard");
+        }
+        if (!res.data.isCodAvailable) {
+          setPaymentMethod("razorpay");
         }
       }
     } catch (err) {
@@ -351,6 +356,7 @@ export default function CheckoutPage() {
           couponCode,
           coinsToRedeem,
           shippingMethod,
+          paymentMethod,
         },
         accessToken
       )
@@ -379,6 +385,12 @@ export default function CheckoutPage() {
           if (!apiResponse.success) {
             alert(apiResponse.message || "Failed to create order");
             resetTruckAnimation();
+            return;
+          }
+
+          if (paymentMethod === "cod") {
+            clearCart();
+            window.location.href = `/account/orders?success=1`;
             return;
           }
 
@@ -573,6 +585,68 @@ export default function CheckoutPage() {
                     ⚠️ Cash on Delivery (COD) is not available for this remote pincode ({address.pincode}). Only prepaid options are enabled.
                   </p>
                 )}
+
+                {/* Payment Method Selection */}
+                <div className="mt-8 space-y-4 border-t border-charcoal/10 pt-6">
+                  <p className="text-[10px] uppercase tracking-editorial text-muted mb-2">Payment Method</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Razorpay Option */}
+                    <div
+                      onClick={() => setPaymentMethod("razorpay")}
+                      className={`p-4 border rounded-xl cursor-pointer transition-all flex flex-col justify-between ${
+                        paymentMethod === "razorpay"
+                          ? "border-royal bg-blue-50/10 shadow-[0_2px_10px_rgba(29,78,216,0.05)]"
+                          : "border-gray-200 hover:border-gray-300 bg-white"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-xs text-charcoal uppercase tracking-wider">Pay Online</span>
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                          paymentMethod === "razorpay" ? "border-royal text-royal" : "border-gray-300"
+                        }`}>
+                          {paymentMethod === "razorpay" && <div className="w-2 h-2 rounded-full bg-royal" />}
+                        </div>
+                      </div>
+                      <p className="text-muted text-[11px] mt-2 leading-relaxed">
+                        Pay securely using Cards, UPI, Netbanking, or Wallets via Razorpay.
+                      </p>
+                    </div>
+
+                    {/* Cash on Delivery Option */}
+                    <div
+                      onClick={() => {
+                        if (shippingDetails && !shippingDetails.isCodAvailable) return;
+                        setPaymentMethod("cod");
+                      }}
+                      className={`p-4 border rounded-xl flex flex-col justify-between ${
+                        shippingDetails && !shippingDetails.isCodAvailable
+                          ? "opacity-50 cursor-not-allowed border-gray-150 bg-gray-50/50"
+                          : "cursor-pointer transition-all"
+                      } ${
+                        paymentMethod === "cod"
+                          ? "border-royal bg-blue-50/10 shadow-[0_2px_10px_rgba(29,78,216,0.05)]"
+                          : (shippingDetails && !shippingDetails.isCodAvailable ? "" : "border-gray-200 hover:border-gray-300 bg-white")
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-xs text-charcoal uppercase tracking-wider">Cash on Delivery</span>
+                          <span className="text-[9px] font-bold text-royal bg-blue-100/60 px-1.5 py-0.5 rounded-md">
+                            +₹150
+                          </span>
+                        </div>
+                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                          paymentMethod === "cod" ? "border-royal text-royal" : "border-gray-300"
+                        }`}>
+                          {paymentMethod === "cod" && <div className="w-2 h-2 rounded-full bg-royal" />}
+                        </div>
+                      </div>
+                      <p className="text-muted text-[11px] mt-2 leading-relaxed">
+                        Pay cash when your order is delivered to your doorstep.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -839,7 +913,7 @@ export default function CheckoutPage() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                  const maxVal = Math.min(Math.floor(total * 0.7), availableCoins);
                                   setCoins(maxVal);
                                 }}
                                 className="bg-amber-600 hover:bg-amber-700 text-offwhite text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
@@ -882,6 +956,13 @@ export default function CheckoutPage() {
                 <span className="text-muted">Shipping</span>
                 <span>{shipping === 0 ? "FREE" : formatPrice(shipping)}</span>
               </div>
+
+              {paymentMethod === "cod" && (
+                <div className="flex justify-between text-royal font-semibold">
+                  <span>COD Charge</span>
+                  <span>{formatPrice(150)}</span>
+                </div>
+              )}
               
               <div className="flex justify-between border-t border-charcoal/10 pt-4 text-base font-bold">
                 <span>Total</span>
@@ -907,7 +988,7 @@ export default function CheckoutPage() {
                   disabled={loading || isAnimating}
                   className="truck-button"
                 >
-                  <span className="default">Pay with Razorpay</span>
+                  <span className="default">{paymentMethod === "cod" ? "Place Order (COD)" : "Pay with Razorpay"}</span>
                   <span className="success">
                     Order Placed
                     <svg viewBox="0 0 12 10">

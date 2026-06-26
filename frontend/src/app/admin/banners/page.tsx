@@ -415,7 +415,7 @@ export default function AdminBannersPage() {
 
           <Button
             type="submit"
-            className="w-full bg-charcoal text-white hover:bg-black h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
+            className="w-full bg-royal text-white hover:bg-blue-800 h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all"
             disabled={saving || uploading || uploadingMobile || (activeTab !== "promo" && !form.image)}
           >
             {saving ? "Saving..." : (uploading || uploadingMobile) ? "Uploading..." : (

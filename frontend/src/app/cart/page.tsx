@@ -435,7 +435,7 @@ export default function CartPage() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const maxVal = Math.min(Math.floor(total * 0.3), availableCoins);
+                                  const maxVal = Math.min(Math.floor(total * 0.7), availableCoins);
                                   setCoins(maxVal);
                                 }}
                                 className="bg-amber-600 hover:bg-amber-700 text-offwhite text-[10px] uppercase tracking-wider font-bold px-3 py-2 rounded-lg transition-colors cursor-pointer shadow-sm"

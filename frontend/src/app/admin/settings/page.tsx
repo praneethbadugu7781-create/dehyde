@@ -214,7 +214,7 @@ export default function AdminSettingsPage() {
         {message && <p className={`text-xs p-3 rounded-md font-medium ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>{message}</p>}
         
         <div className="flex justify-end pt-4">
-          <Button onClick={handleSave} className="bg-charcoal text-white hover:bg-black h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={saving || imageUploading}>
+          <Button onClick={handleSave} className="bg-royal text-white hover:bg-blue-800 h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={saving || imageUploading}>
             {saving ? "Saving Changes..." : imageUploading ? "Uploading Image..." : "Save Settings"}
           </Button>
         </div>
@@ -294,7 +294,7 @@ export default function AdminSettingsPage() {
           )}
 
           <div className="flex justify-end">
-            <Button type="submit" className="bg-charcoal text-white hover:bg-black h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={pwdSaving}>
+            <Button type="submit" className="bg-royal text-white hover:bg-blue-800 h-12 px-8 text-xs uppercase tracking-widest rounded-xl" disabled={pwdSaving}>
               {pwdSaving ? "Updating Password..." : "Update Password"}
             </Button>
           </div>

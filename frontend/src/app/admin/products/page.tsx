@@ -701,7 +701,7 @@ export default function AdminProductsPage() {
                         onClick={() => toggleSize(size)}
                         className={`h-10 px-4 rounded-xl text-xs uppercase tracking-wider transition-all font-semibold border ${
                           isSelected
-                            ? "bg-charcoal text-white border-charcoal shadow-sm"
+                            ? "bg-royal text-white border-royal shadow-sm"
                             : "bg-white text-charcoal/60 border-gray-200 hover:border-gray-300 hover:text-charcoal"
                         }`}
                       >
@@ -1143,7 +1143,7 @@ export default function AdminProductsPage() {
                           type="button"
                           onClick={addLocalVariant}
                           disabled={uploading}
-                          className="w-full bg-charcoal text-offwhite hover:bg-black h-10 text-[10px] uppercase tracking-widest rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+                          className="w-full bg-royal text-offwhite hover:bg-blue-800 h-10 text-[10px] uppercase tracking-widest rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
                         >
                           <Plus size={12} />
                           Add Color Option
@@ -1190,7 +1190,7 @@ export default function AdminProductsPage() {
             <Button
               type="submit"
               className={`w-full text-white h-12 text-xs uppercase tracking-widest mt-4 rounded-xl flex items-center justify-center gap-2 font-bold shadow-md hover:shadow-lg transition-all ${
-                editingProduct ? "bg-amber-600 hover:bg-amber-700" : "bg-charcoal hover:bg-black"
+                editingProduct ? "bg-amber-600 hover:bg-amber-700" : "bg-royal hover:bg-blue-800"
               }`}
               disabled={saving || uploading || categories.length === 0}
             >
