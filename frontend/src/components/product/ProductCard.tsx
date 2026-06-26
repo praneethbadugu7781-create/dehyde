@@ -184,16 +184,19 @@ export function ProductCard({ product, index = 0 }: Props) {
         </Link>
 
         {/* Floating Action Badge (Top Left) */}
-        {product.trending && (
+        {product.stock <= 0 ? (
+          <span className="absolute left-3 top-3 bg-red-600 text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
+            Out of stock
+          </span>
+        ) : product.trending ? (
           <span className="absolute left-3 top-3 bg-royal text-white text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
             Best seller
           </span>
-        )}
-        {!product.trending && product.featured && (
+        ) : product.featured ? (
           <span className="absolute left-3 top-3 bg-neutral-200 text-black text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full z-10">
             New
           </span>
-        )}
+        ) : null}
 
         {/* Floating Wishlist Button (Top Right) */}
         <button
@@ -209,15 +212,20 @@ export function ProductCard({ product, index = 0 }: Props) {
         <div className="absolute inset-x-0 bottom-4 z-10 flex justify-center px-4">
           <button
             type="button"
+            disabled={product.stock <= 0}
             onClick={handleQuickAdd}
             className={cn(
               "w-full text-[10px] uppercase tracking-[0.15em] font-semibold py-3 px-4 rounded-full border shadow-sm transition-all duration-300 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 flex items-center justify-center gap-2",
-              added
+              product.stock <= 0
+                ? "bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed"
+                : added
                 ? "bg-emerald-600 text-white border-emerald-600"
                 : "bg-white text-black border-black/5 hover:bg-royal hover:text-white"
             )}
           >
-            {added ? (
+            {product.stock <= 0 ? (
+              "Out of stock"
+            ) : added ? (
               "Added to cart!"
             ) : (
               <>

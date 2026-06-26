@@ -81,7 +81,7 @@ export function Navbar() {
               : "bg-white/90 backdrop-blur-md border-royal/10 py-2.5 text-royal"
           )}
         >
-          <nav className="mx-auto w-full max-w-[1400px] px-6 md:px-10 flex items-center justify-between">
+          <nav className="relative mx-auto w-full max-w-[1400px] px-4 md:px-10 flex items-center justify-between">
             {/* Mobile Menu Button */}
             <button
               type="button"
@@ -111,20 +111,20 @@ export function Navbar() {
             {/* Center Logo */}
             <Link
               href="/"
-              className="absolute left-1/2 -translate-x-1/2 flex items-center h-8 md:h-10"
+              className="absolute left-1/2 -translate-x-1/2 flex items-center h-7 md:h-10"
             >
               <Image
                 src="/logo.png"
                 alt="DEHYDE Logo"
-                width={150}
-                height={40}
+                width={120}
+                height={32}
                 className="h-full w-auto object-contain"
                 priority
               />
             </Link>
 
             {/* Right Tools */}
-            <div className="flex items-center gap-4 md:gap-6">
+            <div className="flex items-center gap-3 md:gap-6">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
@@ -261,68 +261,155 @@ export function Navbar() {
       {/* Mobile Drawer Overlay */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-black/95 text-white lg:hidden"
-          >
-            <div className="flex h-full flex-col p-8">
-              <button
-                type="button"
-                className="self-end p-2 -mr-2 text-white/80 hover:text-white"
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                <X className="h-6 w-6" strokeWidth={1.5} />
-              </button>
-              <nav className="mt-16 flex flex-col gap-6 text-center">
-                {NAV_LINKS.map((link, i) => (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <Link
-                      href={link.href}
-                      onClick={() => setMenuOpen(false)}
-                      className={cn(
-                        "font-display text-3xl font-medium tracking-wide block py-2",
-                        pathname === link.href ? "text-white" : "text-white/60"
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  </motion.div>
-                ))}
-                
-                <hr className="border-white/10 my-4" />
-                
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: NAV_LINKS.length * 0.05 }}
-                  className="flex flex-col gap-4 text-center mt-2"
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 z-[60] bg-royal/20 backdrop-blur-sm lg:hidden"
+            />
+
+            {/* Drawer Content */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-y-0 left-0 z-[65] w-[85%] max-w-[360px] bg-white text-royal shadow-2xl flex flex-col lg:hidden border-r border-royal/10"
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between p-5 border-b border-royal/10">
+                <Link href="/" onClick={() => setMenuOpen(false)} className="flex items-center h-7">
+                  <Image
+                    src="/logo.png"
+                    alt="DEHYDE Logo"
+                    width={110}
+                    height={30}
+                    className="h-full w-auto object-contain"
+                    priority
+                  />
+                </Link>
+                <button
+                  type="button"
+                  className="p-1.5 rounded-full hover:bg-royal/5 text-royal transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close menu"
                 >
-                  <Link
-                    href="/account"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-white/60 hover:text-white text-lg tracking-wide"
-                  >
-                    My Account
-                  </Link>
-                  <Link
-                    href="/account/wishlist"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-white/60 hover:text-white text-lg tracking-wide"
-                  >
-                    Wishlist
-                  </Link>
-                </motion.div>
-              </nav>
-            </div>
-          </motion.div>
+                  <X className="h-5 w-5" strokeWidth={1.5} />
+                </button>
+              </div>
+
+              {/* Drawer Links */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col justify-between">
+                <div className="flex flex-col gap-1">
+                  {NAV_LINKS.map((link, i) => {
+                    const isActive = pathname === link.href;
+                    return (
+                      <motion.div
+                        key={link.href}
+                        initial={{ opacity: 0, x: -15 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={cn(
+                            "group flex items-center justify-between py-3.5 border-b border-royal/5 font-display text-[20px] tracking-wide font-medium transition-all duration-300",
+                            isActive ? "text-royal font-bold pl-2" : "text-royal/60 hover:text-royal hover:pl-2"
+                          )}
+                        >
+                          <span>{link.label}</span>
+                          <span className={cn(
+                            "text-xs transition-all duration-300",
+                            isActive ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                          )}>
+                            →
+                          </span>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+
+                  <div className="h-px bg-royal/10 my-4" />
+
+                  {/* Secondary Account Links */}
+                  <div className="flex flex-col gap-1.5">
+                    <motion.div
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: NAV_LINKS.length * 0.04 }}
+                    >
+                      <Link
+                        href="/account"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 py-2.5 text-royal/70 hover:text-royal text-xs font-bold uppercase tracking-wider transition-colors"
+                      >
+                        <User className="h-4 w-4" strokeWidth={1.5} />
+                        My Account
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (NAV_LINKS.length + 1) * 0.04 }}
+                    >
+                      <Link
+                        href="/account/wishlist"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-3 py-2.5 text-royal/70 hover:text-royal text-xs font-bold uppercase tracking-wider transition-colors"
+                      >
+                        <Heart className="h-4 w-4" strokeWidth={1.5} />
+                        Wishlist
+                      </Link>
+                    </motion.div>
+
+                    {/* Premium Coins Widget in Menu */}
+                    <motion.div
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (NAV_LINKS.length + 2) * 0.04 }}
+                    >
+                      <Link
+                        href={accessToken ? "/account/wallet" : "/account"}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center justify-between py-3 px-4 bg-amber-50/80 hover:bg-amber-100/60 border border-amber-200/40 rounded-xl transition-all duration-300 mt-4 group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="h-5.5 w-5.5 rounded-full bg-amber-500 flex items-center justify-center border border-amber-600 shadow-inner flex-shrink-0 animate-coin-spin-pulse">
+                            <svg className="h-3.5 w-3.5 text-white fill-current" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" stroke="#d97706" strokeWidth="1.5" />
+                              <circle cx="12" cy="12" r="7" stroke="#d97706" strokeWidth="1" strokeDasharray="2 1" />
+                              <text x="12" y="15.5" fontFamily="serif" fontWeight="bold" fontSize="10" textAnchor="middle" fill="#78350f">D</text>
+                            </svg>
+                          </div>
+                          <span className="text-amber-800 text-[10px] font-extrabold uppercase tracking-wider">
+                            {accessToken ? `${coinsBalance !== null ? coinsBalance : "0"} Coins` : "DEHYDE Rewards"}
+                          </span>
+                        </div>
+                        <span className="text-amber-700 text-xs font-bold group-hover:translate-x-1 transition-transform">→</span>
+                      </Link>
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Footer Brand Info */}
+                <div className="mt-8 pt-6 border-t border-royal/10 text-center">
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-royal/40 mb-2">
+                    Premium Menswear
+                  </p>
+                  <p className="text-xs text-royal/70 font-serif leading-relaxed px-2">
+                    At DeHyde, we create trendy, premium-quality menswear at affordable prices. Designed for young individuals who value style, comfort, and quality.
+                  </p>
+                  <p className="text-[9px] text-royal/40 mt-3 font-mono">
+                    support@dehyde.in
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

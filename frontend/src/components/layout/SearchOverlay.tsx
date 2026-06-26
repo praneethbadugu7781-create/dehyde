@@ -48,7 +48,7 @@ export function SearchOverlay({ open, onClose }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[70] bg-offwhite"
+          className="fixed inset-0 z-[70] bg-offwhite text-charcoal"
         >
           <motion.div
             initial={{ y: -20, opacity: 0 }}
@@ -62,7 +62,7 @@ export function SearchOverlay({ open, onClose }: Props) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search collections, pieces..."
-                className="flex-1 bg-transparent font-serif text-2xl outline-none placeholder:text-muted md:text-4xl"
+                className="flex-1 bg-transparent font-serif text-2xl outline-none placeholder:text-muted text-charcoal md:text-4xl"
               />
               <button type="button" onClick={onClose} aria-label="Close search">
                 <X className="h-6 w-6" strokeWidth={1} />

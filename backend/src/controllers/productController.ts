@@ -34,7 +34,14 @@ export const getProducts = asyncHandler(async (req, res) => {
   }
   if (size) filter.sizes = size;
   if (color) filter["variants.color"] = { $regex: color, $options: "i" };
-  if (search) filter.$text = { $search: String(search) };
+  if (search) {
+    const searchStr = String(search).trim();
+    filter.$or = [
+      { title: { $regex: searchStr, $options: "i" } },
+      { tags: { $regex: searchStr, $options: "i" } },
+      { description: { $regex: searchStr, $options: "i" } },
+    ];
+  }
 
   const sortMap: Record<string, Record<string, 1 | -1>> = {
     newest: { createdAt: -1 },
@@ -85,9 +92,9 @@ export const searchProducts = asyncHandler(async (req, res) => {
   const products = await Product.find({
     isActive: true,
     $or: [
-      { $text: { $search: q } },
       { title: { $regex: q, $options: "i" } },
       { tags: { $regex: q, $options: "i" } },
+      { description: { $regex: q, $options: "i" } },
     ],
   })
     .select("title slug price images rewardCoins category")
