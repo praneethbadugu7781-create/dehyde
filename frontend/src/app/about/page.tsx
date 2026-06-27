@@ -8,7 +8,7 @@ export default function AboutPage() {
       {/* Premium Hero Banner */}
       <section className="relative h-[80vh] min-h-[550px] flex items-end">
         <Image
-          src="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=2000&auto=format&fit=crop"
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop"
           alt="DEHYDE Premium Streetwear Campaign"
           fill
           className="object-cover object-top filter brightness-[0.85]"
