@@ -4,13 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/api";
+import { Star } from "lucide-react";
 
 export default function SuggestionsPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [type, setType] = useState<"suggestion" | "feedback">("suggestion");
+  const [type, setType] = useState<"suggestion" | "feedback">("feedback");
   const [message, setMessage] = useState("");
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +30,7 @@ export default function SuggestionsPage() {
         phone,
         type,
         message,
+        ...(rating > 0 ? { rating } : {}),
       });
       setSubmitted(true);
     } catch (err: any) {
@@ -43,7 +47,7 @@ export default function SuggestionsPage() {
           <p className="text-[10px] uppercase tracking-editorial text-muted mb-3">Shape DEHYDE</p>
           <h1 className="editorial-heading text-4xl md:text-5xl">Suggestions & Feedback</h1>
           <p className="mt-4 text-sm text-muted max-w-md mx-auto leading-relaxed">
-            We are constantly refining our fits, fabrics, and customer experience. Share your concepts, ideas, or feedback directly with our design and operations team.
+            We are constantly refining our fits, fabrics, and customer experience. Share your review, ideas, or feedback directly with our team.
           </p>
         </div>
 
@@ -55,7 +59,7 @@ export default function SuggestionsPage() {
               </div>
               <h3 className="font-serif text-2xl text-charcoal">Thank You</h3>
               <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
-                Your ideas have been recorded. Our team reviews all suggestions weekly to guide future collection drops.
+                Your feedback has been submitted! Once approved by our team, it will be featured on our website.
               </p>
               <div className="pt-6">
                 <Button onClick={() => {
@@ -63,7 +67,8 @@ export default function SuggestionsPage() {
                   setEmail("");
                   setPhone("");
                   setMessage("");
-                  setType("suggestion");
+                  setRating(0);
+                  setType("feedback");
                   setSubmitted(false);
                 }} variant="outline" className="text-xs uppercase tracking-widest px-6 py-2">
                   Submit another note
@@ -96,8 +101,40 @@ export default function SuggestionsPage() {
                         : "border-gray-200 bg-transparent text-charcoal/60 hover:border-charcoal/40"
                     }`}
                   >
-                    💬 General Feedback
+                    💬 Review / Feedback
                   </button>
+                </div>
+              </div>
+
+              {/* Star Rating */}
+              <div>
+                <label className="text-[9px] uppercase tracking-widest text-muted block mb-3 font-bold">
+                  Your Rating {type === "suggestion" ? "(Optional)" : ""}
+                </label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star === rating ? 0 : star)}
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      className="p-1 transition-transform hover:scale-110"
+                    >
+                      <Star
+                        className={`h-7 w-7 transition-colors ${
+                          star <= (hoverRating || rating)
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-none text-gray-300"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  {rating > 0 && (
+                    <span className="ml-3 text-xs text-charcoal/50 self-center font-medium">
+                      {rating}/5
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -148,7 +185,7 @@ export default function SuggestionsPage() {
                   placeholder={
                     type === "suggestion"
                       ? "What feature, style, fabric, or option would you like to see?"
-                      : "Tell us about your experience with our product or website."
+                      : "Share your experience with our products — this may be featured on our website!"
                   }
                   rows={6}
                   required
@@ -164,7 +201,7 @@ export default function SuggestionsPage() {
               )}
 
               <Button type="submit" disabled={submitting} className="w-full py-4 text-xs uppercase tracking-widest rounded-xl font-bold transition-all shadow-md hover:shadow-lg">
-                {submitting ? "Submitting Note..." : "Submit to Design Team"}
+                {submitting ? "Submitting..." : "Submit Feedback"}
               </Button>
             </form>
           )}

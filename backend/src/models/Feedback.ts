@@ -7,6 +7,8 @@ export interface IFeedback extends Document {
   phone?: string;
   type: "suggestion" | "feedback" | "inquiry";
   message: string;
+  status: "pending" | "approved" | "rejected";
+  rating?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,6 +21,8 @@ const feedbackSchema = new Schema<IFeedback>(
     phone: String,
     type: { type: String, enum: ["suggestion", "feedback", "inquiry"], default: "suggestion" },
     message: { type: String, required: true },
+    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    rating: { type: Number, min: 1, max: 5 },
   },
   { timestamps: true }
 );

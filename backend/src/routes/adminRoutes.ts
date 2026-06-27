@@ -31,6 +31,7 @@ router.patch("/products/:id", products.updateProduct);
 // Suggestions & Feedback
 router.get("/feedback", feedback.getAllFeedback);
 router.delete("/feedback/:id", feedback.deleteFeedback);
+router.patch("/feedback/:id", feedback.updateFeedbackStatus);
 
 export default router;
 
