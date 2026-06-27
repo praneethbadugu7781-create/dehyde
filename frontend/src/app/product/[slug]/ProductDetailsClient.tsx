@@ -342,11 +342,21 @@ export default function ProductDetailsClient({ product }: Props) {
               </AnimatePresence>
             </div>
           </div>
-          <div className="mt-6 flex items-center gap-4">
-            <span className="text-lg">{formatPrice(product.price)}</span>
-            {product.compareAtPrice && (
-              <span className="text-sm text-muted line-through">
-                {formatPrice(product.compareAtPrice)}
+          {/* Premium Pricing Block */}
+          <div className="mt-6 p-4 rounded-xl border border-charcoal/5 bg-neutral-50/50 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-baseline gap-3">
+              <span className="text-2xl md:text-3xl font-extrabold text-charcoal tracking-tight">
+                {formatPrice(product.price)}
+              </span>
+              {product.compareAtPrice && product.compareAtPrice > product.price && (
+                <span className="text-sm md:text-base text-neutral-400 line-through font-normal">
+                  {formatPrice(product.compareAtPrice)}
+                </span>
+              )}
+            </div>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <span className="bg-royal text-white text-[10px] uppercase tracking-widest font-extrabold px-3 py-1.5 rounded-full shadow-sm">
+                Save {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
               </span>
             )}
           </div>
