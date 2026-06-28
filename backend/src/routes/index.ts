@@ -12,6 +12,7 @@ import bannerRoutes from "./bannerRoutes.js";
 import settingRoutes from "./settingRoutes.js";
 import couponRoutes from "./couponRoutes.js";
 import feedbackRoutes from "./feedbackRoutes.js";
+import offerRoutes from "./offerRoutes.js";
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.use("/banners", bannerRoutes);
 router.use("/settings", settingRoutes);
 router.use("/coupons", couponRoutes);
 router.use("/feedback", feedbackRoutes);
+router.use("/offers", offerRoutes);
 
 router.get("/health", (_req, res) => {
   res.json({

@@ -1,8 +1,10 @@
 import { Router } from "express";
 import * as orders from "../controllers/orderController.js";
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, optionalAuth } from "../middleware/auth.js";
 
 const router = Router();
+
+router.post("/calculate", optionalAuth, orders.calculateOrderSummary);
 
 router.use(authenticate);
 router.post("/", orders.createOrder);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { LayoutDashboard, Package, ShoppingCart, Users, Ticket, Star, Truck, ArrowLeft, LogOut, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, Ticket, Star, Truck, ArrowLeft, LogOut, MessageSquare, Tag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -140,6 +140,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Customers", href: "/admin/customers", icon: Users },
     { name: "Banners", href: "/admin/banners", icon: Star },
     { name: "Coupons", href: "/admin/coupons", icon: Ticket },
+    { name: "Offers", href: "/admin/offers", icon: Tag },
     { name: "Suggestions", href: "/admin/suggestions", icon: MessageSquare },
     { name: "Settings", href: "/admin/settings", icon: Truck },
   ];

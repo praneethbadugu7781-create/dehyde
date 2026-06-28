@@ -3,6 +3,8 @@ import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
 import { Coupon } from "../models/Coupon.js";
 import { Settings } from "../models/Settings.js";
+import { Offer } from "../models/Offer.js";
+import { calculateOffers } from "../utils/offerCalculator.js";
 import { AuthRequest } from "../middleware/auth.js";
 import { generateOrderNumber } from "../utils/slugify.js";
 import { createRazorpayOrder, verifyPaymentSignature } from "../services/razorpayService.js";
@@ -43,63 +45,119 @@ function deductProductStock(product: any, color: string, size: string, quantity:
   }
 }
 
-export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { items, shippingAddress, couponCode, coinsToRedeem = 0, shippingMethod = "standard", paymentMethod = "razorpay" } = req.body;
-  const userId = req.user!.userId;
+async function computeOrderTotals(params: {
+  items: any[];
+  userId?: string;
+  couponCode?: string;
+  coinsToRedeem?: number;
+  shippingMethod?: string;
+  paymentMethod?: string;
+}) {
+  const {
+    items,
+    userId,
+    couponCode,
+    coinsToRedeem = 0,
+    shippingMethod = "standard",
+    paymentMethod = "razorpay",
+  } = params;
 
   let subtotal = 0;
   let coinsEarned = 0;
+  const rawCartItemsForOffers: any[] = [];
   const orderItems = [];
 
   for (const item of items) {
     const product = await Product.findById(item.productId);
     if (!product || !product.isActive) {
-      res.status(400).json({ success: false, message: `Product unavailable: ${item.productId}` });
-      return;
+      throw new Error(`Product unavailable: ${item.productId}`);
     }
-    
+
     // Size-wise stock check
     const variant = product.variants?.find((v: any) => v.color === item.color);
     if (variant) {
       if (variant.sizes && variant.sizes.length > 0) {
         const sizeObj = variant.sizes.find((s: any) => s.size === item.size);
         if (!sizeObj || sizeObj.stock < item.quantity) {
-          res.status(400).json({
-            success: false,
-            message: `Insufficient stock for ${product.title} (Color: ${item.color}, Size: ${item.size})`,
-          });
-          return;
+          throw new Error(
+            `Insufficient stock for ${product.title} (Color: ${item.color}, Size: ${item.size})`
+          );
         }
       } else {
         if (variant.stock < item.quantity) {
-          res.status(400).json({
-            success: false,
-            message: `Insufficient stock for ${product.title} (Color: ${item.color})`,
-          });
-          return;
+          throw new Error(`Insufficient stock for ${product.title} (Color: ${item.color})`);
         }
       }
     } else {
       if (product.stock < item.quantity) {
-        res.status(400).json({ success: false, message: `Insufficient stock for ${product.title}` });
-        return;
+        throw new Error(`Insufficient stock for ${product.title}`);
       }
     }
-    const lineTotal = product.price * item.quantity;
-    subtotal += lineTotal;
+
+    subtotal += product.price * item.quantity;
     coinsEarned += product.rewardCoins * item.quantity;
+
+    rawCartItemsForOffers.push({
+      productId: product._id.toString(),
+      price: product.price,
+      quantity: item.quantity,
+      category: product.category ? product.category.toString() : "",
+      title: product.title,
+      image: product.images[0] || item.image || "",
+      size: item.size,
+      color: item.color,
+      rewardCoins: product.rewardCoins,
+    });
+
     orderItems.push({
       product: product._id,
       title: product.title,
-      image: product.images[0] || item.image,
+      image: product.images[0] || item.image || "",
       size: item.size,
       color: item.color,
       quantity: item.quantity,
       price: product.price,
       rewardCoins: product.rewardCoins,
+      freeQuantity: 0,
+      offerDiscount: 0,
     });
   }
 
+  // 1. Fetch active offers and apply
+  const now = new Date();
+  const activeOffers = await Offer.find({
+    isActive: true,
+    $and: [
+      {
+        $or: [
+          { startDate: { $exists: false } },
+          { startDate: null },
+          { startDate: { $lte: now } },
+        ],
+      },
+      {
+        $or: [
+          { endDate: { $exists: false } },
+          { endDate: null },
+          { endDate: { $gte: now } },
+        ],
+      },
+    ],
+  });
+
+  const offerResult = calculateOffers(rawCartItemsForOffers, activeOffers);
+
+  // Update orderItems with calculation results
+  for (let i = 0; i < orderItems.length; i++) {
+    const updated = offerResult.items[i];
+    orderItems[i].freeQuantity = updated.freeQuantity;
+    orderItems[i].offerDiscount = updated.offerDiscount;
+  }
+
+  // Remaining subtotal after offer discounts
+  const subtotalAfterOffers = subtotal - offerResult.offerDiscount;
+
+  // 2. Apply Coupon on the remaining subtotal after offers
   let discount = 0;
   if (couponCode) {
     const coupon = await Coupon.findOne({
@@ -107,24 +165,30 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
       isActive: true,
       $or: [{ expiresAt: { $exists: false } }, { expiresAt: { $gt: new Date() } }],
     });
-    if (coupon && coupon.usedCount < coupon.usageLimit && subtotal >= coupon.minOrder) {
+    if (coupon && coupon.usedCount < coupon.usageLimit && subtotalAfterOffers >= coupon.minOrder) {
       discount =
-         coupon.type === "percent"
-          ? Math.min((subtotal * coupon.value) / 100, coupon.maxDiscount ?? Infinity)
+        coupon.type === "percent"
+          ? Math.min((subtotalAfterOffers * coupon.value) / 100, coupon.maxDiscount ?? Infinity)
           : coupon.value;
     }
   }
 
-  const { maxCoins } = await calculateMaxRedeemable(userId, subtotal - discount);
-  const coinsRedeemed = Math.min(coinsToRedeem, maxCoins);
-  const coinDiscount = coinsRedeemed;
+  // 3. Apply Coins on remaining subtotal
+  let coinsRedeemed = 0;
+  let coinDiscount = 0;
+  if (userId) {
+    const { maxCoins } = await calculateMaxRedeemable(userId, subtotalAfterOffers - discount);
+    coinsRedeemed = Math.min(coinsToRedeem, maxCoins);
+    coinDiscount = coinsRedeemed;
+  }
 
+  // 4. Calculate shipping
   const settings = await Settings.findOne({ key: "global" });
   let shipping = 0;
   if (shippingMethod === "express") {
     shipping = settings?.expressShippingFee ?? 149;
   } else {
-    shipping = await getShippingFee(subtotal - discount - coinDiscount);
+    shipping = await getShippingFee(subtotalAfterOffers - discount - coinDiscount);
   }
 
   let codFee = 0;
@@ -132,38 +196,105 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     codFee = 150;
   }
 
-  const total = Math.max(0, subtotal - discount - coinDiscount + shipping + codFee);
+  const total = Math.max(0, subtotalAfterOffers - discount - coinDiscount + shipping + codFee);
+
+  return {
+    subtotal,
+    offerDiscount: offerResult.offerDiscount,
+    discount,
+    coinsRedeemed,
+    coinDiscount,
+    shipping,
+    codFee,
+    total,
+    coinsEarned,
+    items: orderItems,
+    appliedOffers: offerResult.appliedOffers,
+  };
+}
+
+export const calculateOrderSummary = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const {
+    items,
+    couponCode,
+    coinsToRedeem = 0,
+    shippingMethod = "standard",
+    paymentMethod = "razorpay",
+  } = req.body;
+  const userId = req.user?.userId;
+
+  try {
+    const totals = await computeOrderTotals({
+      items,
+      userId,
+      couponCode,
+      coinsToRedeem,
+      shippingMethod,
+      paymentMethod,
+    });
+    res.json({ success: true, data: totals });
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message || "Calculation failed" });
+  }
+});
+
+export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const {
+    items,
+    shippingAddress,
+    couponCode,
+    coinsToRedeem = 0,
+    shippingMethod = "standard",
+    paymentMethod = "razorpay",
+  } = req.body;
+  const userId = req.user!.userId;
+
+  let totals;
+  try {
+    totals = await computeOrderTotals({
+      items,
+      userId,
+      couponCode,
+      coinsToRedeem,
+      shippingMethod,
+      paymentMethod,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, message: err.message || "Order creation calculation failed" });
+    return;
+  }
 
   const orderNumber = generateOrderNumber();
   const order = await Order.create({
     user: userId,
     orderNumber,
-    items: orderItems,
+    items: totals.items,
     shippingAddress,
-    subtotal,
-    discount,
+    subtotal: totals.subtotal,
+    offerDiscount: totals.offerDiscount,
+    discount: totals.discount,
     couponCode,
-    coinsRedeemed,
-    coinDiscount,
-    shipping,
+    coinsRedeemed: totals.coinsRedeemed,
+    coinDiscount: totals.coinDiscount,
+    shipping: totals.shipping,
     shippingMethod,
-    codFee,
-    total,
-    coinsEarned,
+    codFee: totals.codFee,
+    total: totals.total,
+    coinsEarned: totals.coinsEarned,
     status: "pending",
     paymentMethod,
   });
 
-  const paymentAmount = paymentMethod === "cod" ? Math.min(150, total) : total;
+  const paymentAmount = paymentMethod === "cod" ? Math.min(150, totals.total) : totals.total;
   const amountPaise = Math.round(paymentAmount * 100);
   let razorpayOrder = null;
-  
+
   if (amountPaise > 0) {
     razorpayOrder = await createRazorpayOrder(amountPaise, orderNumber);
     order.razorpayOrderId = razorpayOrder.id;
     await order.save();
   } else {
-    // Free order (100% covered by coupon/coins or standard shipping fee configured as 0)
+    // Free order (100% covered by coupon/coins/offers or standard shipping fee configured as 0)
     for (const item of order.items) {
       const product = await Product.findById(item.product);
       if (product) {
@@ -193,10 +324,12 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     const user = await User.findById(userId);
     if (user) {
       generateInvoicePDF(order, user.email, user.name || "Customer")
-        .then(pdfBuffer => {
-          sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(console.error);
+        .then((pdfBuffer) => {
+          sendOrderStatusEmail(user.email, user.name || "Customer", order, pdfBuffer).catch(
+            console.error
+          );
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Failed to generate free order PDF invoice:", err);
           sendOrderStatusEmail(user.email, user.name || "Customer", order).catch(console.error);
         });

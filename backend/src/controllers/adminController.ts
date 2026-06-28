@@ -5,6 +5,7 @@ import { Coupon } from "../models/Coupon.js";
 import { Banner } from "../models/Banner.js";
 import { Settings } from "../models/Settings.js";
 import { Wallet } from "../models/Wallet.js";
+import { Offer } from "../models/Offer.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { AuthRequest } from "../middleware/auth.js";
 import bcrypt from "bcryptjs";
@@ -215,6 +216,42 @@ export const deleteCoupon = asyncHandler(async (req, res) => {
     return;
   }
   res.json({ success: true, message: "Coupon deleted" });
+});
+
+export const manageOffers = asyncHandler(async (req, res) => {
+  if (req.method === "GET") {
+    const offers = await Offer.find()
+      .populate("targetCategories", "name slug")
+      .populate("targetProducts", "title slug")
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: offers });
+    return;
+  }
+  const offer = await Offer.create(req.body);
+  const populated = await Offer.findById(offer._id)
+    .populate("targetCategories", "name slug")
+    .populate("targetProducts", "title slug");
+  res.status(201).json({ success: true, data: populated });
+});
+
+export const updateOffer = asyncHandler(async (req, res) => {
+  const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    .populate("targetCategories", "name slug")
+    .populate("targetProducts", "title slug");
+  if (!offer) {
+    res.status(404).json({ success: false, message: "Offer not found" });
+    return;
+  }
+  res.json({ success: true, data: offer });
+});
+
+export const deleteOffer = asyncHandler(async (req, res) => {
+  const offer = await Offer.findByIdAndDelete(req.params.id);
+  if (!offer) {
+    res.status(404).json({ success: false, message: "Offer not found" });
+    return;
+  }
+  res.json({ success: true, message: "Offer deleted successfully" });
 });
 
 export const exportOrders = asyncHandler(async (req, res) => {

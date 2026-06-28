@@ -9,6 +9,8 @@ export interface IOrderItem {
   quantity: number;
   price: number;
   rewardCoins: number;
+  freeQuantity?: number;
+  offerDiscount?: number;
 }
 
 export type OrderStatus =
@@ -28,6 +30,7 @@ export interface IOrder extends Document {
   items: IOrderItem[];
   shippingAddress: Record<string, string>;
   subtotal: number;
+  offerDiscount: number;
   discount: number;
   couponCode?: string;
   coinsRedeemed: number;
@@ -56,6 +59,8 @@ const orderItemSchema = new Schema<IOrderItem>({
   quantity: Number,
   price: Number,
   rewardCoins: Number,
+  freeQuantity: { type: Number, default: 0 },
+  offerDiscount: { type: Number, default: 0 },
 });
 
 const orderSchema = new Schema<IOrder>(
@@ -65,6 +70,7 @@ const orderSchema = new Schema<IOrder>(
     items: [orderItemSchema],
     shippingAddress: { type: Schema.Types.Mixed, required: true },
     subtotal: Number,
+    offerDiscount: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     couponCode: String,
     coinsRedeemed: { type: Number, default: 0 },

@@ -206,6 +206,7 @@ export default function ProductDetailsClient({ product }: Props) {
             color,
             quantity: 1,
             rewardCoins: product.rewardCoins,
+            category: typeof product.category === "object" ? product.category._id : product.category,
           });
         }, 1000);
       } else {
@@ -220,6 +221,7 @@ export default function ProductDetailsClient({ product }: Props) {
           color,
           quantity: 1,
           rewardCoins: product.rewardCoins,
+          category: typeof product.category === "object" ? product.category._id : product.category,
         });
       }
     } else {
@@ -233,6 +235,7 @@ export default function ProductDetailsClient({ product }: Props) {
         color,
         quantity: 1,
         rewardCoins: product.rewardCoins,
+        category: typeof product.category === "object" ? product.category._id : product.category,
       });
       window.location.href = "/checkout";
     }

@@ -34,6 +34,21 @@ export interface CartItem {
   color: string;
   quantity: number;
   rewardCoins: number;
+  category?: string;
+}
+
+export interface Offer {
+  _id: string;
+  title: string;
+  type: string;
+  buyQuantity: number;
+  getQuantity: number;
+  targetType: "all" | "category" | "product";
+  targetCategories: { _id: string; name: string; slug: string }[];
+  targetProducts: { _id: string; title: string; slug: string }[];
+  isActive: boolean;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface User {

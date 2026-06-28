@@ -106,7 +106,8 @@ export function ProductCard({ product, index = 0 }: Props) {
       size: selectedSize,
       color: variantColor,
       quantity: 1,
-      rewardCoins: product.rewardCoins || 0
+      rewardCoins: product.rewardCoins || 0,
+      category: typeof product.category === "object" ? product.category._id : product.category,
     };
 
     const imgEl = document.getElementById(`product-card-image-${product._id}`);

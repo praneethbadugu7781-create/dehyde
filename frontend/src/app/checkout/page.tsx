@@ -175,7 +175,46 @@ export default function CheckoutPage() {
   const [showAvailableOffers, setShowAvailableOffers] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
+  const [calculation, setCalculation] = useState<any>(null);
+  const [calculating, setCalculating] = useState(false);
+
   const total = subtotal();
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setCalculation(null);
+      return;
+    }
+    setCalculating(true);
+    apiClient
+      .post<any>("/orders/calculate", {
+        items: items.map((i) => ({
+          productId: i.productId,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+          price: i.price,
+          image: i.image,
+          title: i.title,
+          category: i.category,
+        })),
+        couponCode: couponCode || undefined,
+        coinsToRedeem: coinsToRedeem || 0,
+        shippingMethod: shippingMethod,
+        paymentMethod: paymentMethod,
+      }, accessToken || undefined)
+      .then((res) => {
+        if (res.success && res.data) {
+          setCalculation(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Checkout calculation failed", err);
+      })
+      .finally(() => {
+        setCalculating(false);
+      });
+  }, [items, couponCode, coinsToRedeem, shippingMethod, paymentMethod, accessToken]);
 
   useEffect(() => {
     // Fetch active coupons
@@ -245,8 +284,12 @@ export default function CheckoutPage() {
     setCouponInput("");
   };
 
+  const offerDiscount = calculation ? calculation.offerDiscount : 0;
+
   let couponDiscount = 0;
-  if (couponDetails) {
+  if (calculation) {
+    couponDiscount = calculation.discount;
+  } else if (couponDetails) {
     if (couponDetails.type === "percent") {
       couponDiscount = Math.min((total * couponDetails.value) / 100, couponDetails.maxDiscount ?? Infinity);
     } else {
@@ -254,7 +297,9 @@ export default function CheckoutPage() {
     }
   }
 
-  const totalAfterDiscount = Math.max(0, total - couponDiscount - coinsToRedeem);
+  const currentCoinDiscount = calculation ? calculation.coinDiscount : coinsToRedeem;
+
+  const totalAfterDiscount = Math.max(0, total - offerDiscount - couponDiscount - currentCoinDiscount);
   
   let shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
   
@@ -265,9 +310,12 @@ export default function CheckoutPage() {
       shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
     }
   }
+  if (calculation) {
+    shipping = calculation.shipping;
+  }
 
   const codFee = paymentMethod === "cod" ? 150 : 0;
-  const grandTotal = Math.max(0, totalAfterDiscount + shipping + codFee);
+  const grandTotal = calculation ? calculation.total : Math.max(0, totalAfterDiscount + shipping + codFee);
 
   const isAddressComplete =
     address.fullName.trim() !== "" &&
@@ -351,6 +399,8 @@ export default function CheckoutPage() {
             color: i.color,
             quantity: i.quantity,
             image: i.image,
+            title: i.title,
+            category: i.category,
           })),
           shippingAddress: address,
           couponCode,
@@ -677,10 +727,36 @@ export default function CheckoutPage() {
                     </p>
                     <p className="text-[10px] text-muted mt-0.5">Qty: {item.quantity}</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-semibold text-charcoal">
-                      {formatPrice(item.price * item.quantity)}
-                    </span>
+                  <div className="text-right flex flex-col items-end">
+                    {(() => {
+                      const matched = calculation?.items?.find(
+                        (ci: any) =>
+                          ci.product === item.productId &&
+                          ci.size === item.size &&
+                          ci.color === item.color
+                      );
+                      const hasFree = matched && matched.freeQuantity > 0;
+                      const lineTotal = matched
+                        ? matched.price * (matched.quantity - matched.freeQuantity)
+                        : item.price * item.quantity;
+                      return hasFree ? (
+                        <>
+                          <span className="text-xs font-bold text-charcoal">
+                            {formatPrice(lineTotal)}
+                          </span>
+                          <span className="text-[9px] text-muted line-through">
+                            {formatPrice(item.price * item.quantity)}
+                          </span>
+                          <span className="text-[8px] uppercase tracking-wider font-bold text-green-700 bg-green-50 px-1 py-0.5 rounded border border-green-150 mt-0.5 scale-90 origin-right">
+                            {matched.freeQuantity} Free
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-xs font-semibold text-charcoal">
+                          {formatPrice(item.price * item.quantity)}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -934,17 +1010,36 @@ export default function CheckoutPage() {
                 )}
               </div>
               
+              {offerDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-semibold animate-in fade-in duration-300">
+                  <span>Offers Discount</span>
+                  <span>-{formatPrice(offerDiscount)}</span>
+                </div>
+              )}
+
               {couponDiscount > 0 && (
-                <div className="flex justify-between text-green-600 font-semibold">
-                  <span>Promo discount ({couponDetails?.code})</span>
+                <div className="flex justify-between text-green-600 font-semibold animate-in fade-in duration-300">
+                  <span>Promo discount ({couponDetails?.code || couponCode})</span>
                   <span>-{formatPrice(couponDiscount)}</span>
                 </div>
               )}
 
-              {coinsToRedeem > 0 && (
-                <div className="flex justify-between text-muted">
+              {currentCoinDiscount > 0 && (
+                <div className="flex justify-between text-muted animate-in fade-in duration-300">
                   <span>Coin discount</span>
-                  <span>-{formatPrice(coinsToRedeem)}</span>
+                  <span>-{formatPrice(currentCoinDiscount)}</span>
+                </div>
+              )}
+
+              {calculation?.appliedOffers?.length > 0 && (
+                <div className="bg-green-50/40 border border-green-200/50 p-3.5 rounded-xl space-y-1.5 animate-in fade-in duration-300 mt-2">
+                  <p className="text-[9px] font-bold text-green-800 uppercase tracking-wider">Applied Promotions</p>
+                  {calculation.appliedOffers.map((o: any) => (
+                    <div key={o.offerId} className="flex justify-between text-xs text-green-700 font-medium">
+                      <span>✓ {o.title}</span>
+                      <span>-{formatPrice(o.discount)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 

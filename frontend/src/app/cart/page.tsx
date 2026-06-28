@@ -27,6 +27,45 @@ export default function CartPage() {
   const [showAvailableOffers, setShowAvailableOffers] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<any[]>([]);
 
+  const [calculation, setCalculation] = useState<any>(null);
+  const [calculating, setCalculating] = useState(false);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setCalculation(null);
+      return;
+    }
+    setCalculating(true);
+    apiClient
+      .post<any>("/orders/calculate", {
+        items: items.map((i) => ({
+          productId: i.productId,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+          price: i.price,
+          image: i.image,
+          title: i.title,
+          category: i.category,
+        })),
+        couponCode: couponCode || undefined,
+        coinsToRedeem: coinsToRedeem || 0,
+        shippingMethod: "standard",
+        paymentMethod: "razorpay",
+      }, accessToken || undefined)
+      .then((res) => {
+        if (res.success && res.data) {
+          setCalculation(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Cart price calculation failed", err);
+      })
+      .finally(() => {
+        setCalculating(false);
+      });
+  }, [items, couponCode, coinsToRedeem, accessToken]);
+
   const [shippingRules, setShippingRules] = useState({
     freeShippingThreshold: 2999,
     defaultShippingFee: 99
@@ -114,8 +153,12 @@ export default function CartPage() {
     setCouponInput("");
   };
 
+  const offerDiscount = calculation ? calculation.offerDiscount : 0;
+
   let couponDiscount = 0;
-  if (couponDetails) {
+  if (calculation) {
+    couponDiscount = calculation.discount;
+  } else if (couponDetails) {
     if (couponDetails.type === "percent") {
       couponDiscount = Math.min((total * couponDetails.value) / 100, couponDetails.maxDiscount ?? Infinity);
     } else {
@@ -123,9 +166,11 @@ export default function CartPage() {
     }
   }
 
-  const totalAfterDiscount = Math.max(0, total - couponDiscount - coinDiscount);
-  const shipping = totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee;
-  const grandTotal = Math.max(0, totalAfterDiscount + shipping);
+  const currentCoinDiscount = calculation ? calculation.coinDiscount : coinDiscount;
+
+  const totalAfterDiscount = Math.max(0, total - offerDiscount - couponDiscount - currentCoinDiscount);
+  const shipping = calculation ? calculation.shipping : (totalAfterDiscount >= shippingRules.freeShippingThreshold ? 0 : shippingRules.defaultShippingFee);
+  const grandTotal = calculation ? calculation.total : Math.max(0, totalAfterDiscount + shipping);
 
   if (items.length === 0) {
     return (
@@ -196,7 +241,39 @@ export default function CartPage() {
                         <Plus className="h-3 w-3" />
                       </button>
                     </div>
-                    <p className="text-sm">{formatPrice(item.price * item.quantity)}</p>
+                    {(() => {
+                      const matched = calculation?.items?.find(
+                        (ci: any) =>
+                          ci.product === item.productId &&
+                          ci.size === item.size &&
+                          ci.color === item.color
+                      );
+                      const hasFree = matched && matched.freeQuantity > 0;
+                      const lineTotal = matched
+                        ? matched.price * (matched.quantity - matched.freeQuantity)
+                        : item.price * item.quantity;
+                      return (
+                        <div className="text-right flex flex-col items-end">
+                          {hasFree ? (
+                            <>
+                              <span className="text-sm font-bold text-charcoal">
+                                {formatPrice(lineTotal)}
+                              </span>
+                              <span className="text-[10px] text-muted line-through font-mono">
+                                {formatPrice(item.price * item.quantity)}
+                              </span>
+                              <span className="text-[9px] uppercase tracking-wider font-bold text-green-700 bg-green-50 px-2 py-0.5 border border-green-200 mt-1 rounded-md">
+                                Buy {matched.quantity - matched.freeQuantity} Get {matched.freeQuantity} Free
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-sm text-charcoal">
+                              {formatPrice(item.price * item.quantity)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
                 <button
@@ -460,17 +537,36 @@ export default function CartPage() {
                 )}
               </div>
 
+              {offerDiscount > 0 && (
+                <div className="flex justify-between text-green-600 font-semibold animate-in fade-in duration-300">
+                  <span>Offers Discount</span>
+                  <span>-{formatPrice(offerDiscount)}</span>
+                </div>
+              )}
+
               {couponDiscount > 0 && (
                 <div className="flex justify-between text-green-600 font-semibold animate-in fade-in duration-300">
-                  <span>Promo discount ({couponDetails?.code})</span>
+                  <span>Promo discount ({couponDetails?.code || couponCode})</span>
                   <span>-{formatPrice(couponDiscount)}</span>
                 </div>
               )}
 
-              {coinDiscount > 0 && (
+              {currentCoinDiscount > 0 && (
                 <div className="flex justify-between text-muted">
                   <span>Coin discount</span>
-                  <span>-{formatPrice(coinDiscount)}</span>
+                  <span>-{formatPrice(currentCoinDiscount)}</span>
+                </div>
+              )}
+
+              {calculation?.appliedOffers?.length > 0 && (
+                <div className="bg-green-50/40 border border-green-200/50 p-3.5 rounded-xl space-y-1.5 animate-in fade-in duration-300 mt-2">
+                  <p className="text-[9px] font-bold text-green-800 uppercase tracking-wider">Applied Promotions</p>
+                  {calculation.appliedOffers.map((o: any) => (
+                    <div key={o.offerId} className="flex justify-between text-xs text-green-700 font-medium">
+                      <span>✓ {o.title}</span>
+                      <span>-{formatPrice(o.discount)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
 
